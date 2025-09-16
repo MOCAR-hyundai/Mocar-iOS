@@ -26,11 +26,11 @@ struct ReviewStep: View {
             
             Spacer()
             VStack(spacing: 12) {
-                InfoRow(label: "차량 번호", value: viewModel.carNumber)
-                InfoRow(label: "소유자명", value: viewModel.ownerName)
-                InfoRow(label: "주행거리", value: viewModel.mileage)
-                InfoRow(label: "희망가격", value: viewModel.price)
-                InfoRow(label: "추가정보", value: viewModel.additionalInfo)}
+                CarInfoRow(label: "차량 번호", value: viewModel.carNumber)
+                CarInfoRow(label: "소유자명", value: viewModel.ownerName)
+                CarInfoRow(label: "주행거리", value: viewModel.mileage)
+                CarInfoRow(label: "희망가격", value: viewModel.price)
+                CarInfoRow(label: "추가정보", value: viewModel.additionalInfo)}
             
             ScrollView(.horizontal) {
                 HStack {

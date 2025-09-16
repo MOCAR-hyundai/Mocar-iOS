@@ -31,11 +31,11 @@ struct CarInfoStep: View {
                 .padding(.bottom)
             
             VStack {
-                InfoRow(label: "차량 번호", value: viewModel.carNumber)
+                CarInfoRow(label: "차량 번호", value: viewModel.carNumber)
                 
                 // 수정 필요
-                InfoRow(label: "모델명", value: "현대 싼타페 CM 2WD(2.0 VGT) CLX 고급형")
-                InfoRow(label: "연식", value: "2015년식")
+                CarInfoRow(label: "모델명", value: "현대 싼타페 CM 2WD(2.0 VGT) CLX 고급형")
+                CarInfoRow(label: "연식", value: "2015년식")
             }
             .padding()
             .background(

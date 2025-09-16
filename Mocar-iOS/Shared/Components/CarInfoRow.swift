@@ -7,7 +7,7 @@
 
 import SwiftUI
 
-struct InfoRow: View {
+struct CarInfoRow: View {
     let label: String
     let value: String
     
