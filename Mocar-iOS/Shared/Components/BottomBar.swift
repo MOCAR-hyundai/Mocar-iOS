@@ -16,7 +16,6 @@ struct BottomBar: View {
                     Image("Home")
                     Text("내차사기")
                 }
-//            CarNumberView()
             SellCarFlowView()
                 .tabItem {
                     Image("Car")
