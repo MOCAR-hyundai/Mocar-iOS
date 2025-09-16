@@ -9,10 +9,12 @@ import Foundation
 
 
 struct Favorite: Codable, Identifiable {
-    var id: String
+    var id:UUID = UUID() 
     var userId: String
     var listingId: String
     var createdAt: Date
+    
+
 }
 
 

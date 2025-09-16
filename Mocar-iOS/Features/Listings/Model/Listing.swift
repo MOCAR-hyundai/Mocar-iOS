@@ -13,7 +13,7 @@ struct ListingStats: Codable {
 }
 
 struct Listing : Identifiable, Codable{
-    var id: String
+    var id: UUID = UUID()
     var sellerId: String
     var title: String
     var brand: String
@@ -37,7 +37,6 @@ struct Listing : Identifiable, Codable{
 extension Listing {
     static let listingData: [Listing] = [
         Listing(
-            id: "1",
             sellerId: "user123",
             title: "Ferrari 488 GTB",
             brand: "Ferrari",
@@ -56,7 +55,6 @@ extension Listing {
             updatedAt: Date()
         ),
         Listing(
-            id: "2",
             sellerId: "user456",
             title: "BMW M3",
             brand: "BMW",
@@ -75,7 +73,6 @@ extension Listing {
             updatedAt: Date()
         ),
         Listing(
-            id: "3",
             sellerId: "user789",
             title: "Hyundai Sonata",
             brand: "Hyundai",
@@ -94,7 +91,6 @@ extension Listing {
             updatedAt: Date()
         ),
         Listing(
-            id: "4",
             sellerId: "user234",
             title: "Audi A6",
             brand: "Audi",
@@ -113,7 +109,6 @@ extension Listing {
             updatedAt: Date()
         ),
         Listing(
-            id: "5",
             sellerId: "user567",
             title: "Tesla Model 3",
             brand: "Tesla",
@@ -132,7 +127,6 @@ extension Listing {
             updatedAt: Date()
         ),
         Listing(
-            id: "6",
             sellerId: "user567",
             title: "Tesla Model 1",
             brand: "Tesla",
@@ -151,7 +145,6 @@ extension Listing {
             updatedAt: Date()
         ),
         Listing(
-            id: "7",
             sellerId: "user567",
             title: "Tesla Model 3",
             brand: "Tesla",

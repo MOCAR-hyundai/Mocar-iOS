@@ -11,8 +11,9 @@ import SwiftUI
 struct Mocar_iOSApp: App {
     var body: some Scene {
         WindowGroup {
+            HomeView()
             //ContentView()
-            BottomBar()
+            //BottomBar()
         }
     }
 }
