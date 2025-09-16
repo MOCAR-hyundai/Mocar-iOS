@@ -30,7 +30,13 @@ struct ReviewStep: View {
                 CarInfoRow(label: "소유자명", value: viewModel.ownerName)
                 CarInfoRow(label: "주행거리", value: viewModel.mileage)
                 CarInfoRow(label: "희망가격", value: viewModel.price)
-                CarInfoRow(label: "추가정보", value: viewModel.additionalInfo)}
+                CarInfoRow(label: "추가정보", value: viewModel.additionalInfo)
+            }
+            .padding()
+            .background(
+                RoundedRectangle(cornerRadius: 8)
+                    .stroke(Color.gray, lineWidth: 1)
+            )
             
             ScrollView(.horizontal) {
                 HStack {
