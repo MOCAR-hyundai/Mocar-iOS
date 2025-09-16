@@ -15,6 +15,7 @@ struct SellCarFlowView: View {
             ProgressView(value: Double(viewModel.step.rawValue + 1),
                          total: Double(SellStep.allCases.count))
                 .padding()
+                .animation(.easeInOut, value: viewModel.step)
             
             Text(viewModel.step.title)
                 .font(.headline)

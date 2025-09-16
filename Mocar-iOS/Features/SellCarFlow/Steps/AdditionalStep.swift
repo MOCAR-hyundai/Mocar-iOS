@@ -18,12 +18,14 @@ struct AdditionalStep: View {
                 .font(.title)
                 .fontWeight(.bold)
                 .padding(.bottom, 16)
-            TextField("추가 정보 입력", text: $viewModel.additionalInfo)
-                .padding()
+            TextEditor(text: $viewModel.additionalInfo)
+                .padding(8) // 내부 여백
+                .frame(height: 150) // 원하는 높이
                 .background(
                     RoundedRectangle(cornerRadius: 8)
                         .stroke(Color.black, lineWidth: 2)
-                    )
+                )
+                .multilineTextAlignment(.leading)
             
             Spacer()
             
@@ -52,3 +54,4 @@ struct AdditionalStep: View {
         }
     }
 }
+
