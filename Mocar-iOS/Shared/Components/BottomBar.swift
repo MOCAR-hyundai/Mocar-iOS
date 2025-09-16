@@ -8,6 +8,7 @@
 import SwiftUI
 
 struct BottomBar: View {
+    
     var body: some View {
         TabView {
             ContentView()
@@ -15,7 +16,8 @@ struct BottomBar: View {
                     Image("Home")
                     Text("내차사기")
                 }
-            ContentView()
+//            CarNumberView()
+            SellCarFlowView()
                 .tabItem {
                     Image("Car")
                     Text("내차팔기")
