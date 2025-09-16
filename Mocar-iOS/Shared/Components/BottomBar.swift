@@ -31,7 +31,7 @@ struct BottomBar: View {
                     Image("Chat")
                     Text("채팅")
                 }
-            ContentView()
+            MyPageView()
                 .tabItem {
                     Image("User")
                     Text("마이페이지")
