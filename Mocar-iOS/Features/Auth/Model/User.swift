@@ -5,14 +5,17 @@
 //  Created by Admin on 9/16/25.
 //
 
-import SwiftUI
+import Foundation
+import FirebaseFirestore
 
-struct User: View {
-    var body: some View {
-        Text(/*@START_MENU_TOKEN@*/"Hello, World!"/*@END_MENU_TOKEN@*/)
-    }
-}
-
-#Preview {
-    User()
+struct User: Identifiable, Codable {
+    @DocumentID var id: String?        // uid
+    let email: String
+    let name: String
+    let photoUrl: String
+    let phone: String
+    let rating: Double
+    let ratingCount: Int
+    let createdAt: Date?
+    let updatedAt: Date?
 }
