@@ -16,7 +16,7 @@ struct CheckableItem: Identifiable {
 
 struct CheckOptionsRow: View {
     @Binding var item: CheckableItem
-    
+
     var body: some View {
         Button(action: {
             item.checked.toggle() // 클릭하면 체크 상태 토글
@@ -25,7 +25,7 @@ struct CheckOptionsRow: View {
                 // 체크 아이콘
                 Image(systemName: item.checked ? "checkmark.circle.fill" : "circle")
                     .foregroundColor(item.checked ? Color.accentColor : Color(.systemGray3))
-                
+
                 // 항목 이름
                 Text(item.name)
                     .foregroundColor(.black)
@@ -33,5 +33,7 @@ struct CheckOptionsRow: View {
             }
             .frame(height: 50)
         }
+        .buttonStyle(.plain)
+        .contentShape(Rectangle())
     }
 }

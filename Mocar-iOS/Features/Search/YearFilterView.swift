@@ -10,18 +10,18 @@ import SwiftUI
 struct YearFilterView: View {
     @Binding var minYear: Int
     @Binding var maxYear: Int
-    
+
     @State private var minText: String = ""
     @State private var maxText: String = ""
-    
+
     private let yearRange: ClosedRange<Int> = 2006...Calendar.current.component(.year, from: Date())
-    
+
     var body: some View {
         VStack {
             VStack(alignment: .leading, spacing: 20) {
                 Text("연식")
                     .font(.headline)
-                
+
                 // 슬라이더: Int ↔ Double 변환
                 RangeSlider(
                     lowerValue: Binding(
@@ -50,34 +50,40 @@ struct YearFilterView: View {
                     .keyboardType(.numberPad)
                     .padding(10)
                     .background(RoundedRectangle(cornerRadius: 8).stroke(Color.gray))
-                    .onChange(of: minText) {
-                        minText = minText.filter { "0123456789".contains($0) }
-                        if let value = Int(minText) {
+                    .onChange(of: minText) { newValue in
+                        let filtered = newValue.filter { "0123456789".contains($0) }
+                        if filtered != newValue {
+                            minText = filtered
+                        }
+                        if let value = Int(filtered) {
                             minYear = min(max(value, yearRange.lowerBound), maxYear)
                         }
                     }
                     .onSubmit {
                         minText = String(minYear)
                     }
-                
+
                 Text("년")
-                
+
                 Spacer()
-                
+
                 TextField("최대", text: $maxText)
                     .keyboardType(.numberPad)
                     .padding(10)
                     .background(RoundedRectangle(cornerRadius: 8).stroke(Color.gray))
-                    .onChange(of: maxText) {
-                        maxText = maxText.filter { "0123456789".contains($0) }
-                        if let value = Int(maxText) {
+                    .onChange(of: maxText) { newValue in
+                        let filtered = newValue.filter { "0123456789".contains($0) }
+                        if filtered != newValue {
+                            maxText = filtered
+                        }
+                        if let value = Int(filtered) {
                             maxYear = max(min(value, yearRange.upperBound), minYear)
                         }
                     }
                     .onSubmit {
                         maxText = String(maxYear)
                     }
-                
+
                 Text("년")
             }
         }
@@ -85,6 +91,18 @@ struct YearFilterView: View {
         .onAppear {
             minText = String(minYear)
             maxText = String(maxYear)
+        }
+        .onChange(of: minYear) { newValue in
+            let value = String(newValue)
+            if minText != value {
+                minText = value
+            }
+        }
+        .onChange(of: maxYear) { newValue in
+            let value = String(newValue)
+            if maxText != value {
+                maxText = value
+            }
         }
         Spacer()
     }

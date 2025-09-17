@@ -10,18 +10,18 @@ import SwiftUI
 struct MileageFilterView: View {
     @Binding var minMileage: Int
     @Binding var maxMileage: Int
-    
+
     @State private var minText: String = ""
     @State private var maxText: String = ""
-    
+
     private let mileageRange: ClosedRange<Int> = 0...200000
-    
+
     var body: some View {
         VStack {
             VStack(alignment: .leading, spacing: 20) {
                 Text("주행거리")
                     .font(.headline)
-                
+
                 // 슬라이더: Int ↔ Double 변환
                 RangeSlider(
                     lowerValue: Binding(
@@ -50,34 +50,40 @@ struct MileageFilterView: View {
                     .keyboardType(.numberPad)
                     .padding(10)
                     .background(RoundedRectangle(cornerRadius: 8).stroke(Color.gray))
-                    .onChange(of: minText) {
-                        minText = minText.filter { "0123456789".contains($0) }
-                        if let value = Int(minText) {
+                    .onChange(of: minText) { newValue in
+                        let filtered = newValue.filter { "0123456789".contains($0) }
+                        if filtered != newValue {
+                            minText = filtered
+                        }
+                        if let value = Int(filtered) {
                             minMileage = min(max(value, mileageRange.lowerBound), maxMileage)
                         }
                     }
                     .onSubmit {
                         minText = String(minMileage)
                     }
-                
+
                 Text("km")
-                
+
                 Spacer()
-                
+
                 TextField("최대", text: $maxText)
                     .keyboardType(.numberPad)
                     .padding(10)
                     .background(RoundedRectangle(cornerRadius: 8).stroke(Color.gray))
-                    .onChange(of: maxText) {
-                        maxText = maxText.filter { "0123456789".contains($0) }
-                        if let value = Int(maxText) {
+                    .onChange(of: maxText) { newValue in
+                        let filtered = newValue.filter { "0123456789".contains($0) }
+                        if filtered != newValue {
+                            maxText = filtered
+                        }
+                        if let value = Int(filtered) {
                             maxMileage = max(min(value, mileageRange.upperBound), minMileage)
                         }
                     }
                     .onSubmit {
                         maxText = String(maxMileage)
                     }
-                
+
                 Text("km")
             }
         }
@@ -85,6 +91,18 @@ struct MileageFilterView: View {
         .onAppear {
             minText = String(minMileage)
             maxText = String(maxMileage)
+        }
+        .onChange(of: minMileage) { newValue in
+            let value = String(newValue)
+            if minText != value {
+                minText = value
+            }
+        }
+        .onChange(of: maxMileage) { newValue in
+            let value = String(newValue)
+            if maxText != value {
+                maxText = value
+            }
         }
         Spacer()
     }

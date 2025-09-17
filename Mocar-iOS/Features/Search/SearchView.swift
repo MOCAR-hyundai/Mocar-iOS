@@ -8,19 +8,8 @@
 import SwiftUI
 
 struct SearchView: View {
-    @State private var searchText = ""
-    @State private var selectedCategory: String? = "제조사"
-    @State private var minPrice: Int = 0
-    @State private var maxPrice: Int = 10000
-    
-    @State private var minYear: Int = Calendar.current.component(.year, from: Date()) - 20
-    @State private var maxYear: Int = Calendar.current.component(.year, from: Date())
-    
-    @State private var minMileage: Int = 0
-    @State private var maxMileage: Int = 200000
-    
-    let categories = ["제조사", "가격", "연식", "주행거리", "차종", "연료", "지역"]
-    
+    @StateObject private var viewModel = SearchViewModel()
+
     var body: some View {
         NavigationStack {
             VStack(spacing: 0) {
@@ -31,8 +20,10 @@ struct SearchView: View {
                             .font(.title2)
                             .foregroundColor(.black)
                     }
-                    
-                    TextField("모델, 차량번호, 판매자를 검색해보세요", text: $searchText)
+
+                    TextField("모델, 차량번호, 판매자를 검색해보세요", text: $viewModel.searchText)
+                        .textInputAutocapitalization(.never)
+                        .disableAutocorrection(true)
                         .padding(10)
                         .background(
                             RoundedRectangle(cornerRadius: 8)
@@ -40,7 +31,7 @@ struct SearchView: View {
                         )
                 }
                 .padding(.horizontal)
-                
+
                 // 최근검색기록
                 HStack {
                     Spacer()
@@ -51,31 +42,32 @@ struct SearchView: View {
                         .foregroundColor(.gray)
                 }
                 .padding()
-                
+
                 Divider()
-                
+
                 // 메인 검색영역
                 HStack(spacing: 0) {
-                    LeftCategoryView(categories: categories, selectedCategory: $selectedCategory)
+                    LeftCategoryView(categories: viewModel.categories, selectedCategory: $viewModel.selectedCategory)
                     Divider()
-                    RightOptionView(
-                        selectedCategory: $selectedCategory,
-                        minPrice: $minPrice,
-                        maxPrice: $maxPrice,
-                        minYear: $minYear,
-                        maxYear: $maxYear,
-                        minMileage: $minMileage,
-                        maxMileage: $maxMileage,
-                    )
+                    RightOptionView(viewModel: viewModel)
                 }
-                
+
+                Divider()
+
+                // 결과 요약
+                HStack {
+                    Text("검색 결과 \(viewModel.filteredListings.count)대")
+                        .font(.subheadline)
+                        .foregroundColor(.gray)
+                    Spacer()
+                }
+                .padding(.horizontal)
+                .padding(.top, 8)
+
                 // 하단 버튼
                 HStack(spacing: 12) {
                     Button(action: {
-                        selectedCategory = "제조사"
-                        searchText = ""
-                        minPrice = 0
-                        maxPrice = 10000
+                        viewModel.resetFilters()
                     }) {
                         Text("초기화")
                             .fontWeight(.bold)
@@ -89,9 +81,9 @@ struct SearchView: View {
                                     .stroke(Color.black, lineWidth: 1)
                             )
                     }
-                    
+
                     Button(action: {}) {
-                        Text("156,973대 보기")
+                        Text("\(viewModel.filteredListings.count)대 보기")
                             .fontWeight(.bold)
                             .frame(height: 50)
                             .frame(maxWidth: .infinity)

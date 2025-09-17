@@ -1,5 +1,5 @@
 //
-//  BrandView.swift
+//  BrandFilterView.swift
 //  Mocar-iOS
 //
 //  Created by wj on 9/17/25.
@@ -8,39 +8,78 @@
 import SwiftUI
 
 struct BrandView: View {
-    
-    struct Maker: Identifiable {
-        let id = UUID()
-        let name: String
-        let count: Int
-        let imageName: String
-    }
-    
-    private let makers: [Maker] = [
-        Maker(name: "현대", count: 49355, imageName: "hyundai 1"),
-        Maker(name: "제네시스", count: 7381, imageName: "genesis"),
-        Maker(name: "기아", count: 41936, imageName: "kia"),
-        Maker(name: "르노코리아", count: 7728, imageName: "renault"),
-        Maker(name: "쉐보레", count: 8362, imageName: "chevrolet"),
-        Maker(name: "벤츠", count: 8413, imageName: "benz"),
-        Maker(name: "BMW", count: 8362, imageName: "bmw"),
-        Maker(name: "아우디", count: 8362, imageName: "audi"),
-        Maker(name: "테슬라", count: 8362, imageName: "tesla"),
-        Maker(name: "페라리", count: 8362, imageName: "ferrari"),
-    ]
-    
+    @ObservedObject var viewModel: SearchViewModel
+
     var body: some View {
         ScrollView {
             VStack(alignment: .leading, spacing: 0) {
                 Text("제조사")
                     .font(.headline)
                     .padding(.bottom, 10)
-                ForEach(makers) { maker in
-                    BrandOptionsRow(maker: maker)
+
+                ForEach(viewModel.brands) { brand in
+                    VStack(spacing: 0) {
+                        BrandOptionsRow(
+                            brand: brand,
+                            count: viewModel.count(for: brand.key),
+                            isSelected: viewModel.isBrandSelected(brand.key),
+                            isExpanded: viewModel.expandedBrandKey == brand.key,
+                            onToggleSelection: {
+                                viewModel.toggleBrandSelection(brand.key)
+                            },
+                            onToggleExpansion: {
+                                viewModel.toggleBrandExpansion(brand.key)
+                            }
+                        )
+
+                        if viewModel.expandedBrandKey == brand.key {
+                            let models = viewModel.models(for: brand.key)
+                            if models.isEmpty {
+                                Text("등록된 차종이 없습니다.")
+                                    .font(.footnote)
+                                    .foregroundColor(.gray)
+                                    .padding(.vertical, 8)
+                                    .padding(.leading, 44)
+                            } else {
+                                ForEach(models, id: \.self) { model in
+                                    BrandModelRow(
+                                        model: model,
+                                        isSelected: viewModel.isModelSelected(model, for: brand.key),
+                                        onToggle: {
+                                            viewModel.toggleModelSelection(model, for: brand.key)
+                                        }
+                                    )
+                                }
+                            }
+                        }
+
+                        Divider()
+                    }
                 }
             }
             .padding(.top, 20)
             .padding(.horizontal)
         }
+    }
+}
+
+private struct BrandModelRow: View {
+    let model: String
+    let isSelected: Bool
+    let onToggle: () -> Void
+
+    var body: some View {
+        Button(action: onToggle) {
+            HStack {
+                Image(systemName: isSelected ? "checkmark.circle.fill" : "circle")
+                    .foregroundColor(isSelected ? Color.accentColor : Color(.systemGray3))
+                Text(model)
+                    .foregroundColor(.black)
+                Spacer()
+            }
+            .frame(height: 44)
+            .padding(.leading, 32)
+        }
+        .buttonStyle(.plain)
     }
 }
