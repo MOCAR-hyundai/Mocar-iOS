@@ -1,0 +1,108 @@
+//
+//  SearchView.swift
+//  Mocar-iOS
+//
+//  Created by wj on 9/16/25.
+//
+
+import SwiftUI
+
+struct SearchView: View {
+    @State private var searchText = ""
+    @State private var selectedCategory: String? = "제조사"
+    @State private var minPrice: Int = 0
+    @State private var maxPrice: Int = 10000
+    
+    @State private var minYear: Int = Calendar.current.component(.year, from: Date()) - 20
+    @State private var maxYear: Int = Calendar.current.component(.year, from: Date())
+    
+    @State private var minMileage: Int = 0
+    @State private var maxMileage: Int = 200000
+    
+    let categories = ["제조사", "가격", "연식", "주행거리", "차종", "연료", "지역"]
+    
+    var body: some View {
+        NavigationStack {
+            VStack(spacing: 0) {
+                // 상단 검색창
+                HStack {
+                    Button(action: {}) {
+                        Image(systemName: "chevron.left")
+                            .font(.title2)
+                            .foregroundColor(.black)
+                    }
+                    
+                    TextField("모델, 차량번호, 판매자를 검색해보세요", text: $searchText)
+                        .padding(10)
+                        .background(
+                            RoundedRectangle(cornerRadius: 8)
+                                .stroke(Color.black, lineWidth: 2)
+                        )
+                }
+                .padding(.horizontal)
+                
+                // 최근검색기록
+                HStack {
+                    Spacer()
+                    Text("최근검색기록")
+                        .font(.subheadline)
+                        .foregroundColor(.gray)
+                    Image(systemName: "chevron.right")
+                        .foregroundColor(.gray)
+                }
+                .padding()
+                
+                Divider()
+                
+                // 메인 검색영역
+                HStack(spacing: 0) {
+                    LeftCategoryView(categories: categories, selectedCategory: $selectedCategory)
+                    Divider()
+                    RightOptionView(
+                        selectedCategory: $selectedCategory,
+                        minPrice: $minPrice,
+                        maxPrice: $maxPrice,
+                        minYear: $minYear,
+                        maxYear: $maxYear,
+                        minMileage: $minMileage,
+                        maxMileage: $maxMileage,
+                    )
+                }
+                
+                // 하단 버튼
+                HStack(spacing: 12) {
+                    Button(action: {
+                        selectedCategory = "제조사"
+                        searchText = ""
+                        minPrice = 0
+                        maxPrice = 10000
+                    }) {
+                        Text("초기화")
+                            .fontWeight(.bold)
+                            .frame(height: 50)
+                            .frame(maxWidth: 120)
+                            .foregroundColor(.black)
+                            .background(Color.white)
+                            .cornerRadius(8)
+                            .overlay(
+                                RoundedRectangle(cornerRadius: 8)
+                                    .stroke(Color.black, lineWidth: 1)
+                            )
+                    }
+                    
+                    Button(action: {}) {
+                        Text("156,973대 보기")
+                            .fontWeight(.bold)
+                            .frame(height: 50)
+                            .frame(maxWidth: .infinity)
+                            .foregroundColor(.white)
+                            .background(Color.black)
+                            .cornerRadius(8)
+                    }
+                }
+                .padding()
+            }
+            .background(Color.white)
+        }
+    }
+}
