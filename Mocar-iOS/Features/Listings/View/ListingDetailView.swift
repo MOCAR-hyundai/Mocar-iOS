@@ -125,7 +125,7 @@ struct ListingDetailView: View {
                             let width = geo.size.width
                             let total = maxValue - minValue
                         
-                            let xPosition: (Double) -> CGFloat = { value in
+                        let _: (Double) -> CGFloat = { value in
                                 CGFloat((value - minValue) / total * width)
                             }
                         

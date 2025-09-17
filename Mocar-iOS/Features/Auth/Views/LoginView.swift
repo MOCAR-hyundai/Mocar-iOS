@@ -92,9 +92,6 @@ struct LoginView: View {
                                 isPasswordSecured.toggle()
                             }) {
                                 ZStack {
-//                                    Image(systemName: isPasswordSecured ? "eye.slash" :"eye")
-//                                        .foregroundStyle(.black)
-//                                        .padding(.trailing)
                                     if isPasswordSecured {
                                         Image("closedeye")   // Assets에 넣은 커스텀 이미지
                                             .resizable()

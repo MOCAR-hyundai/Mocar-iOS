@@ -14,6 +14,7 @@ struct BottomBar: View {
         ZStack(alignment: .bottom) {
             // 메인 콘텐츠
             TabView(selection: $selectedTab) {
+
                 HomeView().tag(0)
                 SellCarFlowView().tag(1)
                 SearchView().tag(2)
