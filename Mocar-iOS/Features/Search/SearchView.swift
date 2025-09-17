@@ -21,25 +21,6 @@ struct SearchView: View {
     
     let categories = ["제조사", "가격", "연식", "주행거리", "차종", "연료", "지역"]
     
-    struct Maker: Identifiable {
-        let id = UUID()
-        let name: String
-        let count: Int
-        let imageName: String
-    }
-    
-    let makers: [Maker] = [
-        Maker(name: "현대", count: 49355, imageName: "car.fill"),
-        Maker(name: "제네시스", count: 7381, imageName: "car.fill"),
-        Maker(name: "기아", count: 41936, imageName: "car.fill"),
-        Maker(name: "한국GM", count: 9297, imageName: "car.fill"),
-        Maker(name: "르노코리아", count: 7728, imageName: "car.fill"),
-        Maker(name: "KG모빌리티", count: 7246, imageName: "car.fill"),
-        Maker(name: "기타", count: 178, imageName: "car.fill"),
-        Maker(name: "벤츠", count: 8413, imageName: "car.fill"),
-        Maker(name: "BMW", count: 8362, imageName: "car.fill")
-    ]
-    
     var body: some View {
         NavigationStack {
             VStack(spacing: 0) {
@@ -85,7 +66,6 @@ struct SearchView: View {
                         maxYear: $maxYear,
                         minMileage: $minMileage,
                         maxMileage: $maxMileage,
-                        makers: makers
                     )
                 }
                 

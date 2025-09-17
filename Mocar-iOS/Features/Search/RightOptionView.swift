@@ -15,16 +15,12 @@ struct RightOptionView: View {
     @Binding var maxYear: Int
     @Binding var minMileage: Int
     @Binding var maxMileage: Int
-    let makers: [SearchView.Maker]
     
     var body: some View {
         ScrollView {
             VStack {
                 if selectedCategory == "제조사" {
-                    ForEach(makers) { maker in
-                        OptionsRow(maker: maker)
-                    }
-                    .padding(.horizontal)
+                    BrandView()
                 } else if selectedCategory == "가격" {
                     PriceFilterView(minPrice: $minPrice, maxPrice: $maxPrice)
                 } else if selectedCategory == "연식" {

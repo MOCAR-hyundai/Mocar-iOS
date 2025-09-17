@@ -7,16 +7,14 @@
 
 import SwiftUI
 
-import SwiftUI
-
-struct OptionsRow: View {
-    let maker: SearchView.Maker
+struct BrandOptionsRow: View {
+    let maker: BrandView.Maker
     
     var body: some View {
         HStack {
-            Image(systemName: maker.imageName)
+            Image(maker.imageName)
                 .resizable()
-                .frame(width: 24, height: 24)
+                .frame(width: 28, height: 28)
                 .foregroundColor(.gray)
             
             Text(maker.name)
