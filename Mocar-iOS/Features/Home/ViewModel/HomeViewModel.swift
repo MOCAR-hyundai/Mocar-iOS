@@ -11,6 +11,12 @@ class HomeViewModel: ObservableObject {
     @Published var selectedBrand: String? = nil
     @Published var favorites: [Listing] = []
     
+    init() {
+        if let first = brandData.first {
+            self.selectedBrand = first.name
+        }
+    }
+    
     func selectBrand(_ brand: Brand) {
             selectedBrand = brand.name
         }

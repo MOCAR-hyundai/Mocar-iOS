@@ -11,7 +11,10 @@ let brandData: [Brand] = [
     Brand(name: "Ferrari", logo: "ferrari"),
     Brand(name: "Tesla", logo: "tesla"),
     Brand(name: "BMW", logo: "BMW"),
-    Brand(name: "Kia", logo: "kia")
+    Brand(name: "Kia", logo: "kia"),
+    Brand(name: "Hyundal", logo: "hyundai"),
+    Brand(name:"Audi",logo:"audi")
+    
 ]
 
 struct Brand : Identifiable {
@@ -28,9 +31,8 @@ struct HomeView: View {
     
     var body: some View {
         NavigationStack{
-            TopBar(style: .home)
-
             VStack {
+                TopBar(style: .home)
                 HStack{
                     //검색 창
                     ZStack(alignment: .leading){
@@ -63,7 +65,7 @@ struct HomeView: View {
                 }
                 .padding(.bottom,16)
                 
-                ScrollView(){
+                ScrollView(showsIndicators: false){
                     //찜한 목록
                     VStack(alignment: .leading, spacing: 8){
                         Text("찜한 목록")
@@ -97,7 +99,7 @@ struct HomeView: View {
                             .font(.headline)
                             .padding(.bottom,8)
                         ScrollView(.horizontal, showsIndicators: false){
-                            HStack(spacing: 40) {
+                            HStack(spacing: 20) {
                                 ForEach(brandData) { brand in
                                     BrandsIconView(
                                         brand: brand,
@@ -134,10 +136,13 @@ struct HomeView: View {
                 
             }
             .padding()
-            .background(Color(hex: "#f8f8f8"))
+            .background(Color.backgroundGray100)
         }
-        .background(Color(hex: "#f8f8f8"))
+        .navigationBarHidden(true)
+        .background(Color.backgroundGray100)
+        
     }
+   
 }
 
 
@@ -170,7 +175,7 @@ struct FavoriteCardView: View{
             RoundedRectangle(cornerRadius: 12)
                 .stroke(Color.gray, lineWidth: 0.5)
         )
-        .background(Color.white)  // 카드 내부 색 지정 (투명 여백 확인용)
+        .background(Color.white)  // 카드 내부 색 지정
         .cornerRadius(12)
 
     }
@@ -205,6 +210,7 @@ struct ListingCardView: View{
             RoundedRectangle(cornerRadius: 12)
                 .stroke(Color.gray, lineWidth: 1)
         )
+        .background(Color.white) 
         .cornerRadius(12)
         .frame(width: 170, height: 223)
         
@@ -254,12 +260,23 @@ struct BrandsIconView: View {
                 Image(brand.logo)
                     .resizable()
                     .scaledToFit()
-                    .frame(width: 55, height: 55)
-                    .clipShape(Circle())
+                    .frame(width: 40, height: 40)
+                    .padding(15) // 이미지 주변에 여백 → 원 안에 들어가게
+                    .background(
+                        Circle()
+                            .fill(Color.white) // 흰 배경 원
+                            .overlay(
+                                Circle().stroke(isSelected ? Color.keyColorBlue : Color.borderGray, lineWidth: 1)
+                            )
+                            .frame(width: 65, height: 65)
+                    )
                 Text(brand.name)
-                    .foregroundColor(Color(hex: "#7F7F7F"))
+                    .foregroundColor(Color.textGray200)
             }
         }
     }
 }
 
+#Preview{
+    HomeView()
+}

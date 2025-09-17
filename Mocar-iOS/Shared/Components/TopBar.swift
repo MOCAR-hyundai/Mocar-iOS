@@ -27,7 +27,9 @@ struct TopBar: View {
                     .resizable()
                     .scaledToFit()
                     .frame(maxWidth: 150)
+                    
                 Spacer()
+                    
                 
             case .login:
                 Image("logo")
@@ -44,7 +46,7 @@ struct TopBar: View {
                 
             }
         }
-        .padding(.horizontal, 16)   // 좌우 여백
+        //.padding(.horizontal, 16)   // 좌우 여백
     }
 }
 
