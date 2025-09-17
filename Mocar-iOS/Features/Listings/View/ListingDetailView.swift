@@ -7,7 +7,7 @@
 
 import SwiftUI
 
-struct ListingView: View {
+struct ListingDetailView: View {
     @State private var currentValue: Double = 4680
     
     var minValue: Double = 4010
@@ -17,11 +17,7 @@ struct ListingView: View {
     
     var body: some View {
         NavigationStack{
-            TopBar(
-                title: "21나4827",
-                onBack: { print("뒤로가기") },
-                onMenu: { print("메뉴 열기") }
-            )
+            TopBar(style: .listing(title: "12가1234"))
             ScrollView{
                 VStack{
                     ZStack(alignment: .topTrailing){
@@ -32,7 +28,7 @@ struct ListingView: View {
                                 .padding()
 
                             Button(action: {
-                                print("하트 눌림")
+                                print("하트")
                             }) {
                                 Image(systemName: "heart")
                                     .foregroundColor(.gray)
@@ -231,5 +227,5 @@ struct InfoRow: View{
 }
 
 #Preview {
-    ListingView()
+    ListingDetailView()
 }
