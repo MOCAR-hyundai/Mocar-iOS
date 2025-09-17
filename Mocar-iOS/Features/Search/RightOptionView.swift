@@ -27,6 +27,8 @@ struct RightOptionView: View {
                     YearFilterView(minYear: $minYear, maxYear: $maxYear)
                 } else if selectedCategory == "주행거리" {
                     MileageFilterView(minMileage: $minMileage, maxMileage: $maxMileage)
+                } else if selectedCategory == "연료" {
+                    FuelFilterView()
                 }
                 // 나머지 카테고리는 추후 구현
             }
