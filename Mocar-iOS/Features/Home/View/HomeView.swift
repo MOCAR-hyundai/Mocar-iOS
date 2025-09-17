@@ -32,6 +32,7 @@ struct HomeView: View {
 
             VStack {
                 HStack{
+                    //검색 창
                     ZStack(alignment: .leading){
                         Image("Search")
                             .padding(.leading,15)
@@ -43,6 +44,7 @@ struct HomeView: View {
                                 .stroke(Color.gray, lineWidth: 1)
                             )
                     }
+                    //검색 필터 버튼
                     Button(action:{
                         
                     }){
@@ -70,20 +72,26 @@ struct HomeView: View {
                             .foregroundColor(.gray)
                             .font(.subheadline)
                         
-                        
+                        //리스트
                         ScrollView(.horizontal, showsIndicators: false){
                             HStack(spacing: 16) {
-                                ForEach(listings) { listing in
+                                ForEach(homeViewModel.favorites,
+                                        id: \.id) { listing in
                                     NavigationLink(destination: ListingDetailView(listingId: listing.id)) {
-                                            FavoriteCardView(listing: listing, isFavorite: true)
-                                        }
-                                         .buttonStyle(PlainButtonStyle())
+                                            FavoriteCardView(
+                                                listing: listing,
+                                                onToggleFavorite:{
+                                                    homeViewModel.toggleFavorite(listing)
+                                                }
+                                            )
+                                    }
+                                     .buttonStyle(PlainButtonStyle())
                                 }
                             }
                         }
                     }
                     .padding(.bottom,16)
-                    
+                    //브랜드 스크롤
                     VStack(alignment: .leading, spacing: 8){
                         Text("Brands")
                             .font(.headline)
@@ -103,14 +111,20 @@ struct HomeView: View {
                             }
                         }
                         .padding(.bottom,16)
-                        
+                        //브랜드 필터링 리스트
                         LazyVGrid(columns: [
                             GridItem(.flexible()), // 첫 번째 열
                             GridItem(.flexible())  // 두 번째 열
                         ], spacing: 16) {
                             ForEach(homeViewModel.filteredListings) { listing in
                                 NavigationLink(destination: ListingDetailView(listingId: listing.id)){
-                                        ListingCardView(listing: listing, isFavorite: false)
+                                        ListingCardView(
+                                            listing: listing,
+                                            isFavorite: homeViewModel.favorites.contains { $0.id == listing.id },
+                                            onToggleFavorite:{
+                                                homeViewModel.toggleFavorite(listing)
+                                            }
+                                        )
                                 }
                                 .buttonStyle(PlainButtonStyle())
                             }
@@ -129,10 +143,10 @@ struct HomeView: View {
 
 struct FavoriteCardView: View{
     let listing: Listing
-    let isFavorite: Bool
+    let onToggleFavorite: () -> Void
     
     var body: some View {
-        VStack(alignment: .leading, spacing: 4) {   // spacing 0 → 4 정도 주면 자연스러움
+        VStack(alignment: .leading, spacing: 4) {
             ZStack(alignment: .topTrailing) {
                 Image("hyundai")
                     .resizable()
@@ -141,35 +155,15 @@ struct FavoriteCardView: View{
                     .clipped()                        // 잘려서 여백 없애기
 
                 Button(action: {
-                    print("하트 클릭")
+                    onToggleFavorite()
                 }) {
-                    Image(systemName: isFavorite ? "heart.fill" : "heart")
-                        .foregroundColor(isFavorite ? .red : .gray)
+                    Image(systemName: "heart.fill" )
+                        .foregroundColor(.red)
                         .padding(0)
                 }
             }
-
-            Text(listing.model)
-                .font(.system(size: 20))
-                .fontWeight(.semibold)
-                .padding(.top, 4)   // 제목 위쪽에만 padding
-
-            HStack(spacing: 4) {
-                Text("\(listing.mileage)Km")
-                    .foregroundStyle(.gray)
-                    .font(.system(size: 14))
-                Image("iconlocation")
-                    .resizable()
-                    .frame(width: 14, height: 17)
-                Text(listing.region)
-                    .foregroundStyle(.gray)
-                    .font(.system(size: 14))
-            }
-
-            Text("\(listing.price)만원")
-                .font(.system(size: 28, weight: .bold))
-                .foregroundColor(Color(hex: "#3058EF"))
-                .padding(.top, 2)
+            CarInfoView(listing: listing)
+            
         }
         .padding(24)
         .overlay(
@@ -185,6 +179,7 @@ struct FavoriteCardView: View{
 struct ListingCardView: View{
     let listing: Listing
     let isFavorite: Bool
+    let onToggleFavorite: () -> Void
     
     var body: some View {
         VStack(alignment: .leading,spacing: 4) {
@@ -193,30 +188,16 @@ struct ListingCardView: View{
                     .resizable()
                 
                 Button(action: {
-                    print("하트 클릭")
+                    onToggleFavorite()
                 }) {
                     Image(systemName: isFavorite ? "heart.fill" : "heart")
                         .foregroundColor(isFavorite ? .red : .gray)
                         .padding(8)
                 }
             }
+            CarInfoView(listing: listing)
             
-            Text(listing.model)
-                .fontWeight(.semibold)
-            HStack{
-                Text("\(listing.mileage)Km")
-                    .foregroundStyle(.gray)
-                Image("iconlocation")
-                    .resizable()
-                    .frame(width: 13, height: 15)
-                Text(listing.region)
-                    .foregroundStyle(.gray)
-            }
-            Text("\(listing.price)만원")
-                .padding(.top,4)
-                .font(.title3)
-                .fontWeight(.bold)
-                .foregroundColor(Color(hex: "#3058EF"))
+            
             
         }
         .padding(10)
@@ -227,6 +208,34 @@ struct ListingCardView: View{
         .cornerRadius(12)
         .frame(width: 170, height: 223)
         
+    }
+}
+
+struct CarInfoView: View {
+    let listing: Listing
+    var body: some View {
+        VStack(alignment: .leading,spacing: 4) {
+      
+            Text(listing.model)
+                .fontWeight(.semibold)
+                .foregroundColor(.textBlack100)
+            HStack{
+                Text("\(listing.mileage)Km")
+                    .foregroundColor(.textGray100)
+                Image("iconlocation")
+                    .resizable()
+                    .frame(width: 13, height: 15)
+                Text(listing.region)
+                    .foregroundColor(.textGray100)
+            }
+            Text("\(listing.price)만원")
+                .padding(.top,4)
+                .font(.title3)
+                .fontWeight(.bold)
+                .foregroundColor(Color.keyColorBlue)
+            
+        }
+        .padding(10)
     }
 }
 
@@ -253,8 +262,4 @@ struct BrandsIconView: View {
         }
     }
 }
-#Preview {
-    HomeView()
-    //ListingCardView()
-    //BrandsIconView(brand: brandData[0])
-}
+
