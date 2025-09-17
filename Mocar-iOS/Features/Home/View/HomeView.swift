@@ -74,11 +74,10 @@ struct HomeView: View {
                         ScrollView(.horizontal, showsIndicators: false){
                             HStack(spacing: 16) {
                                 ForEach(listings) { listing in
-//                                    NavigationLink(destination: ListingDetailView(listingId: listing.id ?? "")) {
-//                                       FavoriteCardView(listing: listing, isFavorite: true)
-//                                    }
-//                                                .buttonStyle(PlainButtonStyle()) // 카드 UI가 Button 스타일 안 먹게
-                                    FavoriteCardView(listing: listing, isFavorite: true)
+                                    NavigationLink(destination: ListingDetailView(listingId: listing.id)) {
+                                            FavoriteCardView(listing: listing, isFavorite: true)
+                                        }
+                                         .buttonStyle(PlainButtonStyle())
                                 }
                             }
                         }
@@ -110,7 +109,10 @@ struct HomeView: View {
                             GridItem(.flexible())  // 두 번째 열
                         ], spacing: 16) {
                             ForEach(homeViewModel.filteredListings) { listing in
-                                ListingCardView(listing: listing, isFavorite: false)
+                                NavigationLink(destination: ListingDetailView(listingId: listing.id)){
+                                        ListingCardView(listing: listing, isFavorite: false)
+                                }
+                                .buttonStyle(PlainButtonStyle())
                             }
                         }
                     }
