@@ -1,0 +1,29 @@
+# Xcode
+.DS_Store                # macOS가 자동 생성하는 Finder 캐시 파일, 불필요
+build/                   # 빌드 결과물(자동 생성), 추적 불필요
+DerivedData/             # Xcode 빌드시 생성되는 임시 데이터
+xcuserdata/              # Xcode 사용자별 환경 설정(개인별 다름, 충돌 원인)
+*.xcuserstate            # 작업창 열림 상태 같은 IDE 내부 파일, 불필요
+
+# Swift Package Manager
+.build/                  # SwiftPM 빌드 산출물
+
+# CocoaPods
+Pods/                    # CocoaPods 라이브러리 설치 결과물 (Podfile.lock으로 관리)
+
+# Carthage
+Carthage/Build/          # Carthage 빌드 결과물
+
+# Fastlane
+fastlane/report.xml      # 테스트/빌드 보고서 자동 생성
+fastlane/Preview.html    # 미리보기 HTML
+fastlane/screenshots     # 자동 스크린샷
+fastlane/test_output     # 테스트 출력물
+
+# 기타
+*.swp                    # vim 등 에디터 임시파일
+*.lock                   # 잠금파일 (의도치 않게 생김)
+
+*.xcuserstate
+xcuserdata/
+
