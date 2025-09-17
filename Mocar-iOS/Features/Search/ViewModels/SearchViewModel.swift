@@ -17,7 +17,9 @@ class SearchViewModel: ObservableObject {
     func loadDummyData() {
         listings = [
             Listing(
+                id: "11",
                 sellerId: "user_001",
+                plateNumber :"12가1233",
                 title: "Ferrari-FF",
                 brand: "Ferrari",
                 model: "FF",
@@ -35,7 +37,9 @@ class SearchViewModel: ObservableObject {
                 updatedAt: Date()
             ),
             Listing(
+                id: "12",
                 sellerId: "user_002",
+                plateNumber :"12가1233",
                 title: "현대 더 올 뉴 그랜저 2.5 가솔린",
                 brand: "Hyundai",
                 model: "Grandeur",
@@ -53,7 +57,9 @@ class SearchViewModel: ObservableObject {
                 updatedAt: Date()
             ),
             Listing(
+                id: "13",
                 sellerId: "user_003",
+                plateNumber :"12가1233",
                 title: "현대 더 올 뉴 그랜저 2.5 가솔린",
                 brand: "Hyundai",
                 model: "Grandeur",

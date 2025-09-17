@@ -179,11 +179,10 @@ struct SearchResultsView: View {
                       ScrollView {
                           LazyVGrid(columns: columns, spacing: 25) {
                               ForEach(viewModel.listings) { listing in
-    //                              NavigationLink(destination: SearchListingDetailView(listing: listing)) {
-                                  NavigationLink(destination: ListingDetailView()
-                                                     .navigationBarBackButtonHidden(true)) {
-                                      ListingCard(listing: listing)
-                                  }
+                                  NavigationLink(destination: ListingDetailView(listingId: listing.id)
+                                    .navigationBarBackButtonHidden(true)
+                                  ) { ListingCard(listing: listing) }
+                                      .buttonStyle(PlainButtonStyle())
                               }
                           }
                           .padding(.horizontal)
