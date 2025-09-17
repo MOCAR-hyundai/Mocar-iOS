@@ -13,10 +13,11 @@ struct ListingStats: Codable {
 }
 
 struct Listing : Identifiable, Codable{
-    var id: UUID = UUID()
+    var id: String
     var sellerId: String
+    var plateNumber: String
     var title: String
-    var brand: String
+    var brand: String   
     var model: String
     var trim: String
     var year: Int
@@ -31,13 +32,59 @@ struct Listing : Identifiable, Codable{
     //var stats: ListingStats
     var createdAt: Date
     var updatedAt: Date
+    
+    init(id: String, sellerId: String, plateNumber: String, title: String, brand: String, model: String, trim: String, year: Int, mileage: Int, fuel: String, transmission: String, price: Int, region: String, description: String, images: [String], status: String, createdAt: Date, updatedAt: Date) {
+        self.id = id
+        self.sellerId = sellerId
+        self.plateNumber = plateNumber
+        self.title = title
+        self.brand = brand
+        self.model = model
+        self.trim = trim
+        self.year = year
+        self.mileage = mileage
+        self.fuel = fuel
+        self.transmission = transmission
+        self.price = price
+        self.region = region
+        self.description = description
+        self.images = images
+        self.status = status
+        self.createdAt = createdAt
+        self.updatedAt = updatedAt
+    }
+}
+
+extension Listing {
+    static let placeholder = Listing(
+        id: "1",
+        sellerId: "",
+        plateNumber: "",
+        title: "로딩중...",
+        brand: "",
+        model: "",
+        trim: "",
+        year: 0,
+        mileage: 0,
+        fuel: "",
+        transmission: "",
+        price: 0,
+        region: "",
+        description: "",
+        images: [],
+        status: "loading",
+        createdAt: Date(),
+        updatedAt: Date()
+    )
 }
 
 //Mock
 extension Listing {
     static let listingData: [Listing] = [
         Listing(
+            id: "11",
             sellerId: "user123",
+            plateNumber :"12가1233",
             title: "Ferrari 488 GTB",
             brand: "Ferrari",
             model: "488 GTB",
@@ -55,7 +102,9 @@ extension Listing {
             updatedAt: Date()
         ),
         Listing(
+            id: "12",
             sellerId: "user456",
+            plateNumber :"13바1323",
             title: "BMW M3",
             brand: "BMW",
             model: "M3",
@@ -73,7 +122,9 @@ extension Listing {
             updatedAt: Date()
         ),
         Listing(
+            id: "13",
             sellerId: "user789",
+            plateNumber :"42카1928",
             title: "Hyundai Sonata",
             brand: "Hyundai",
             model: "Sonata",
@@ -91,7 +142,9 @@ extension Listing {
             updatedAt: Date()
         ),
         Listing(
+            id: "14",
             sellerId: "user234",
+            plateNumber :"81나1233",
             title: "Audi A6",
             brand: "Audi",
             model: "A6",
@@ -109,7 +162,9 @@ extension Listing {
             updatedAt: Date()
         ),
         Listing(
+            id: "15",
             sellerId: "user567",
+            plateNumber :"73아7213",
             title: "Tesla Model 3",
             brand: "Tesla",
             model: "Model 3",
@@ -127,7 +182,9 @@ extension Listing {
             updatedAt: Date()
         ),
         Listing(
+            id: "16",
             sellerId: "user567",
+            plateNumber :"34가1133",
             title: "Tesla Model 1",
             brand: "Tesla",
             model: "Model 3",
@@ -145,7 +202,9 @@ extension Listing {
             updatedAt: Date()
         ),
         Listing(
+            id: "17",
             sellerId: "user567",
+            plateNumber :"99가4233",
             title: "Tesla Model 3",
             brand: "Tesla",
             model: "Model 3",
