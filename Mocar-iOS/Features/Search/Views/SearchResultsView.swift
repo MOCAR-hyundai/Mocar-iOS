@@ -12,9 +12,16 @@ struct SearchResultsView: View {
     
     @State private var selectedCategory: String = "" // 선택된 카테고리 저장
 
-//    @State private var selectedOption1 = "전체"
-//    @State private var selectedOption2 = "전체"
-//    @State private var selectedOption3 = "전체"
+    @State private var showPopup: Bool = false
+    @State private var popupTitle: String = ""
+    @State private var minValue: Double = 0
+    @State private var maxValue: Double = 0
+    @State private var lowerValue: Double = 0
+    @State private var upperValue: Double = 0
+    @State private var lowerPlaceholder: String = ""
+    @State private var upperPlaceholder: String = ""
+    @State private var unit: String = ""
+    
     
     let columns = [
         GridItem(.flexible(minimum: 160, maximum: 200), spacing: 12),
@@ -23,144 +30,204 @@ struct SearchResultsView: View {
 
     
     var body: some View {
-        NavigationView {
-              VStack {
-                  HStack {
-                      Button(action: {
-                          // 뒤로가기 액션
-                      }) {
-                          Image(systemName: "chevron.left")
-                              .frame(width: 20, height: 20)
-                              .padding(12) // 아이콘 주변 여백
-                              .foregroundColor(.black)
-                              .overlay(
-                                  RoundedRectangle(cornerRadius: 50) // 충분히 큰 값이면 원처럼 둥글게
-                                      .stroke(Color(hex: "D7D7D7"), lineWidth: 1) // 테두리 색과 두께
-                              )
-                      }
-                      Text("123대")
-                          .font(.system(size: 16, weight: .bold, design: .default))
-                      
-                      Spacer()
-                      
-                      
-                      Group {
-                          Image("SortAscending")
-                          Image("MagnifyingGlass")
-                          Image("HeartStraight")
-                          Image("House")
-                      }
-                      .foregroundColor(.gray)
-                      .frame(width: 20, height: 20)
-                      .padding(1)
+            NavigationView {
+                  VStack {
+                      HStack {
+                          Button(action: {
+                              // 뒤로가기 액션
+                          }) {
+                              Image(systemName: "chevron.left")
+                                  .frame(width: 20, height: 20)
+                                  .padding(12) // 아이콘 주변 여백
+                                  .foregroundColor(.black)
+                                  .overlay(
+                                      RoundedRectangle(cornerRadius: 50) // 충분히 큰 값이면 원처럼 둥글게
+                                          .stroke(Color(hex: "D7D7D7"), lineWidth: 1) // 테두리 색과 두께
+                                  )
+                          }
+                          Text("123대")
+                              .font(.system(size: 16, weight: .bold, design: .default))
+                          
+                          Spacer()
+                          
+                          
+                          Group {
+                              Image("SortAscending")
+                              Image("MagnifyingGlass")
+                              Image("HeartStraight")
+                              Image("House")
+                          }
+                          .foregroundColor(.gray)
+                          .frame(width: 20, height: 20)
+                          .padding(1)
 
-                      
-                  }
-                  .padding(.horizontal)
-                  .padding(3)
-                  .padding(.vertical, 6)
-                  .padding(.bottom, 5)
-                  .padding(.trailing, 7)
-                  .background(Color(hex:"F8F8F8"))
-                  
-                
-                  // MARK: - 카테고리 바
-                  HStack(spacing: 16) {
-                      Menu {
-                             Button("500만원 이하") { selectedCategory = "500만원 이하" }
-                             Button("500~1000만원") { selectedCategory = "500~1000만원" }
-                             Button("1000만원 이상") { selectedCategory = "1000만원 이상" }
-                         } label: {
-                             HStack(spacing: 5) {
-                                 Text("가격")
-                                     .foregroundColor(.black)
-                                     .font(.system(size: 12))
-                                 Image(systemName: "chevron.down")
-                                     .foregroundColor(.black)
-                                     .font(.system(size: 10))
-                             }
-                         }
-                      
-                      Menu {
-                          Button("2023년") { selectedCategory = "2023년" }
-                          Button("2022년") { selectedCategory = "2022년" }
-                      } label: {
-                          HStack(spacing: 5) {
-                              Text("연식")
-                                  .foregroundColor(.black)
-                                  .font(.system(size: 12))
-                              Image(systemName: "chevron.down")
-                                  .foregroundColor(.black)
-                                  .font(.system(size: 10))
-                          }
-                      }
-                      
-                      Menu {
-                          Button("1만 km 이하") { selectedCategory = "1만 km 이하" }
-                          Button("1~3만 km") { selectedCategory = "1~3만 km" }
-                      } label: {
-                          HStack(spacing: 5) {
-                              Text("주행거리")
-                                  .foregroundColor(.black)
-                                  .font(.system(size: 12))
-                              Image(systemName: "chevron.down")
-                                  .foregroundColor(.black)
-                                  .font(.system(size: 10))
-                          }
-                      }
-                      
-                      Menu {
-                          Button("가솔린") { selectedCategory = "가솔린" }
-                          Button("디젤") { selectedCategory = "디젤" }
-                          Button("하이브리드") { selectedCategory = "하이브리드" }
-                      } label: {
-                          HStack(spacing: 5) {
-                              Text("연료")
-                                  .foregroundColor(.black)
-                                  .font(.system(size: 12))
-                              Image(systemName: "chevron.down")
-                                  .foregroundColor(.black)
-                                  .font(.system(size: 10))
-                          }
-                      }
-                      Menu {
-                          Button("경기") { selectedCategory = "경기" }
-                          Button("서울") { selectedCategory = "서울" }
-                      } label: {
-                          HStack(spacing: 5) {
-                              Text("지역")
-                                  .foregroundColor(.black)
-                                  .font(.system(size: 12))
-                              Image(systemName: "chevron.down")
-                                  .foregroundColor(.black)
-                                  .font(.system(size: 10))
-                          }
-                      }
-                      
-                      Spacer()
-                    
-                  }
-                  .padding(.horizontal)
-                  .padding(.leading,3)
-                  
-                  // MARK: - 검색 결과 그리드
-                  ScrollView {
-                      LazyVGrid(columns: columns, spacing: 25) {
-                          ForEach(viewModel.listings) { listing in
-                              NavigationLink(destination: ListingDetailView(listing: listing)) {
-                                  ListingCard(listing: listing)
-                              }
-                          }
+                          
                       }
                       .padding(.horizontal)
-                      .padding(.top, 10)
+                      .padding(3)
+                      .padding(.vertical, 6)
+                      .padding(.bottom, 5)
+                      .padding(.trailing, 7)
+                      .background(Color(hex:"F8F8F8"))
+                      
+                    
+                      // MARK: - 카테고리 바
+                      HStack(spacing: 16) {
+                          // 가격
+                             Button {
+                                 popupTitle = "가격"
+                                 minValue = 0
+                                 maxValue = 6000
+                                 lowerValue = minValue
+                                 upperValue = maxValue
+                                 lowerPlaceholder = "최소 가격"
+                                 upperPlaceholder = "최대 가격"
+                                 unit = "만원"
+                                 showPopup = true
+                             } label: {
+                                 HStack(spacing: 5) {
+                                     Text("가격")
+                                         .foregroundColor(.black)
+                                         .font(.system(size: 12))
+                                     Image(systemName: "chevron.down")
+                                         .foregroundColor(.black)
+                                         .font(.system(size: 10))
+                                 }
+                             }
+                             
+                             // 연식
+                             Button {
+                                 popupTitle = "연식"
+                                 minValue = 2020
+                                 maxValue = 2025
+                                 lowerValue = minValue
+                                 upperValue = maxValue
+                                 lowerPlaceholder = "최소 연식"
+                                 upperPlaceholder = "최대 연식"
+                                 unit = "년"
+                                 showPopup = true
+                             } label: {
+                                 HStack(spacing: 5) {
+                                     Text("연식")
+                                         .foregroundColor(.black)
+                                         .font(.system(size: 12))
+                                     Image(systemName: "chevron.down")
+                                         .foregroundColor(.black)
+                                         .font(.system(size: 10))
+                                 }
+                             }
+                             
+                             // 주행거리
+                             Button {
+                                 popupTitle = "주행거리"
+                                 minValue = 0
+                                 maxValue = 10_000
+                                 lowerValue = minValue
+                                 upperValue = maxValue
+                                 lowerPlaceholder = "최소 km"
+                                 upperPlaceholder = "최대 km"
+                                 unit = "km"
+                                 showPopup = true
+                             } label: {
+                                 HStack(spacing: 5) {
+                                     Text("주행거리")
+                                         .foregroundColor(.black)
+                                         .font(.system(size: 12))
+                                     Image(systemName: "chevron.down")
+                                         .foregroundColor(.black)
+                                         .font(.system(size: 10))
+                                 }
+                             }
+                          
+                          
+                          
+                          Menu {
+                              Button("가솔린") { selectedCategory = "가솔린" }
+                              Button("디젤") { selectedCategory = "디젤" }
+                              Button("하이브리드") { selectedCategory = "하이브리드" }
+                          } label: {
+                              HStack(spacing: 5) {
+                                  Text("연료")
+                                      .foregroundColor(.black)
+                                      .font(.system(size: 12))
+                                  Image(systemName: "chevron.down")
+                                      .foregroundColor(.black)
+                                      .font(.system(size: 10))
+                              }
+                          }
+                          Menu {
+                              Button("경기") { selectedCategory = "경기" }
+                              Button("서울") { selectedCategory = "서울" }
+                          } label: {
+                              HStack(spacing: 5) {
+                                  Text("지역")
+                                      .foregroundColor(.black)
+                                      .font(.system(size: 12))
+                                  Image(systemName: "chevron.down")
+                                      .foregroundColor(.black)
+                                      .font(.system(size: 10))
+                              }
+                          }
+                          
+                          Spacer()
+                        
+                      }
+                      .padding(.horizontal)
+                      .padding(.leading,3)
+                      
+                      // MARK: - 검색 결과 그리드
+                      ScrollView {
+                          LazyVGrid(columns: columns, spacing: 25) {
+                              ForEach(viewModel.listings) { listing in
+    //                              NavigationLink(destination: SearchListingDetailView(listing: listing)) {
+                                  NavigationLink(destination: ListingDetailView()
+                                                     .navigationBarBackButtonHidden(true)) {
+                                      ListingCard(listing: listing)
+                                  }
+                              }
+                          }
+                          .padding(.horizontal)
+                          .padding(.top, 10)
+                      }
                   }
-              }
-              .background(Color(hex:"F8F8F8"))
-            
-          }
+                // MARK: - RangeSliderPopup
+                  .background(Color(hex:"F8F8F8"))
+//                  .sheet(isPresented: $showPopup) {
+//                           RangeSliderPopup(
+//                               isPresented: $showPopup,
+//                               title: popupTitle,
+//                               minValue: minValue,
+//                               maxValue: maxValue,
+//                               lowerPlaceholder: lowerPlaceholder,
+//                               upperPlaceholder: upperPlaceholder,
+//                               unit: unit,
+//                               lowerValue: $lowerValue,
+//                               upperValue: $upperValue
+//                           )
+//                       }
+                  .overlay(
+                        Group {
+                            if showPopup {
+                                RangeSliderPopup(
+                                    isPresented: $showPopup,
+                                    title: popupTitle,
+                                    minValue: minValue,
+                                    maxValue: maxValue,
+                                    lowerPlaceholder: lowerPlaceholder,
+                                    upperPlaceholder: upperPlaceholder,
+                                    unit: unit,
+                                    lowerValue: $lowerValue,
+                                    upperValue: $upperValue
+                                )
+                            }
+                        }
+                    )
+                
+              
+        }
+        
     }
-    
+
 }
 
 struct ListingCard: View {
@@ -193,7 +260,7 @@ struct ListingCard: View {
                     
                 }) {
                     Image(systemName: isFavorite ? "heart.fill" : "heart")
-                        .foregroundColor(isFavorite ? .red : .gray)
+                        .foregroundColor(isFavorite ? .red : Color(hex:"21292B"))
                         .padding(5)
                         .background(Color.clear)
                         .clipShape(Circle())
@@ -216,7 +283,6 @@ struct ListingCard: View {
                     .lineLimit(2)          // 최대 2줄까지 허용
                     .multilineTextAlignment(.leading) // 왼쪽 정렬
  
-                    
                 
 //                Text("\(listing.price.formattedWithSeparator())원")
                 Text("1억 3,860만원")
@@ -239,7 +305,7 @@ struct ListingCard: View {
 }
 
 // MARK: - 상세 페이지
-struct ListingDetailView: View {
+struct SearchListingDetailView: View {
     let listing: Listing
     
     var body: some View {
@@ -282,25 +348,6 @@ extension Int {
         return formatter.string(from: NSNumber(value: self)) ?? "\(self)"
     }
 }
-
-
-func duplicate() {
-    print("Duplicate tapped")
-}
-
-func rename() {
-    print("Rename tapped")
-}
-
-func delete() {
-    print("Delete tapped")
-}
-
-func copy() { print("Copy tapped") }
-func copyFormatted() { print("Copy Formatted tapped") }
-func copyPath() { print("Copy Library Path tapped") }
-
-
 
 #Preview {
     SearchResultsView()

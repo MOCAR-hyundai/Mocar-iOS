@@ -17,7 +17,6 @@ class SearchViewModel: ObservableObject {
     func loadDummyData() {
         listings = [
             Listing(
-                id: "listing_001",
                 sellerId: "user_001",
                 title: "Ferrari-FF",
                 brand: "Ferrari",
@@ -36,7 +35,6 @@ class SearchViewModel: ObservableObject {
                 updatedAt: Date()
             ),
             Listing(
-                id: "listing_002",
                 sellerId: "user_002",
                 title: "현대 더 올 뉴 그랜저 2.5 가솔린",
                 brand: "Hyundai",
@@ -55,7 +53,6 @@ class SearchViewModel: ObservableObject {
                 updatedAt: Date()
             ),
             Listing(
-                id: "listing_003",
                 sellerId: "user_003",
                 title: "현대 더 올 뉴 그랜저 2.5 가솔린",
                 brand: "Hyundai",

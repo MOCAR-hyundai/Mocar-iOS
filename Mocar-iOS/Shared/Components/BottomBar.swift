@@ -15,10 +15,11 @@ struct BottomBar: View {
             // 메인 콘텐츠
             TabView(selection: $selectedTab) {
 
-                ContentView().tag(0)
+                HomeView().tag(0)
                 SellCarFlowView().tag(1)
                 ContentView().tag(2)
-                ContentView().tag(3)
+//                ContentView().tag(3)
+                SearchResultsView().tag(3)
                 MyPageView().tag(4)
             }
             

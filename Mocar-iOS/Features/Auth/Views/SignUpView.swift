@@ -109,9 +109,24 @@ struct SignUpView: View {
                             HStack {
                                 Spacer()
                                 Button(action: { isPasswordSecured.toggle() }) {
-                                    Image(systemName: isPasswordSecured ? "eye.slash" : "eye")
-                                        .foregroundColor(.gray)
-                                        .padding(.trailing, 12)
+//                                    Image(systemName: isPasswordSecured ? "eye.slash" : "eye")
+//                                        .foregroundColor(.gray)
+//                                        .padding(.trailing, 12)
+                                    
+                                    ZStack {
+                                        if isPasswordSecured {
+                                            Image("closedeye")   // Assets에 넣은 커스텀 이미지
+                                                .resizable()
+                                                .scaledToFit()
+                                                .frame(width: 20, height: 20)
+                                                .padding(.trailing)
+                                        } else {
+                                            Image(systemName: "eye")   // SF Symbols
+                                                .foregroundStyle(.black)
+                                                .frame(width: 20, height: 20)
+                                                .padding(.trailing)
+                                        }
+                                    }
                                 }
                             }
                         }
@@ -150,9 +165,20 @@ struct SignUpView: View {
                             HStack {
                                 Spacer()
                                 Button(action: { isConfirmPasswordSecured.toggle() }) {
-                                    Image(systemName: isConfirmPasswordSecured ? "eye.slash" : "eye")
-                                        .foregroundColor(.gray)
-                                        .padding(.trailing, 12)
+                                    ZStack {
+                                        if isConfirmPasswordSecured {
+                                            Image("closedeye")   // Assets에 넣은 커스텀 이미지
+                                                .resizable()
+                                                .scaledToFit()
+                                                .frame(width: 20, height: 20)
+                                                .padding(.trailing)
+                                        } else {
+                                            Image(systemName: "eye")   // SF Symbols
+                                                .foregroundStyle(.black)
+                                                .frame(width: 20, height: 20)
+                                                .padding(.trailing)
+                                        }
+                                    }
                                 }
                             }
                         }
