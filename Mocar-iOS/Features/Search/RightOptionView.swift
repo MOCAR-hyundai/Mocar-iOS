@@ -27,10 +27,13 @@ struct RightOptionView: View {
                     YearFilterView(minYear: $minYear, maxYear: $maxYear)
                 } else if selectedCategory == "주행거리" {
                     MileageFilterView(minMileage: $minMileage, maxMileage: $maxMileage)
+                } else if selectedCategory == "차종" {
+                    CarSizeFilterView()
                 } else if selectedCategory == "연료" {
                     FuelFilterView()
+                } else if selectedCategory == "지역" {
+                    AreaFilterView()
                 }
-                // 나머지 카테고리는 추후 구현
             }
             .frame(maxWidth: .infinity)
         }

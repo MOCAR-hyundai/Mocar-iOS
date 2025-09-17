@@ -35,6 +35,5 @@ struct BrandView: View {
                 BrandOptionsRow(maker: maker)
             }
         }
-        .padding(.horizontal, 16)
     }
 }
