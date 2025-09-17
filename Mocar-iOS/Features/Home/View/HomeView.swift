@@ -74,7 +74,10 @@ struct HomeView: View {
                         ScrollView(.horizontal, showsIndicators: false){
                             HStack(spacing: 16) {
                                 ForEach(listings) { listing in
-                                    FavoriteCardView(listing: listing, isFavorite: true)
+                                    NavigationLink(destination: ListingDetailView(listingId: listing.id)) {
+                                            FavoriteCardView(listing: listing, isFavorite: true)
+                                        }
+                                         .buttonStyle(PlainButtonStyle())
                                 }
                             }
                         }
@@ -106,7 +109,10 @@ struct HomeView: View {
                             GridItem(.flexible())  // 두 번째 열
                         ], spacing: 16) {
                             ForEach(homeViewModel.filteredListings) { listing in
-                                ListingCardView(listing: listing, isFavorite: false)
+                                NavigationLink(destination: ListingDetailView(listingId: listing.id)){
+                                        ListingCardView(listing: listing, isFavorite: false)
+                                }
+                                .buttonStyle(PlainButtonStyle())
                             }
                         }
                     }
@@ -165,7 +171,7 @@ struct FavoriteCardView: View{
                 .foregroundColor(Color(hex: "#3058EF"))
                 .padding(.top, 2)
         }
-        .padding(24) // ✅ 카드 안쪽 전체 여백
+        .padding(24)
         .overlay(
             RoundedRectangle(cornerRadius: 12)
                 .stroke(Color.gray, lineWidth: 0.5)
