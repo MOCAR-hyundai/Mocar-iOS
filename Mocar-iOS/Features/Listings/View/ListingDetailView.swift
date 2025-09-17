@@ -8,6 +8,9 @@
 import SwiftUI
 
 struct ListingDetailView: View {
+    let listingId: String
+    @State private var listing: Listing?
+    
     @State private var currentValue: Double = 4680
     
     var minValue: Double = 4010
@@ -17,7 +20,7 @@ struct ListingDetailView: View {
     
     var body: some View {
         NavigationStack{
-            TopBar(style: .listing(title: "12가1234"))
+            TopBar(style: .listing(title: "12가1234 "))
             ScrollView{
                 VStack{
                     ZStack(alignment: .topTrailing){
@@ -227,5 +230,5 @@ struct InfoRow: View{
 }
 
 #Preview {
-    ListingDetailView()
+    //ListingDetailView()
 }

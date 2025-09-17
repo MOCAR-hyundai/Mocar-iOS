@@ -74,6 +74,10 @@ struct HomeView: View {
                         ScrollView(.horizontal, showsIndicators: false){
                             HStack(spacing: 16) {
                                 ForEach(listings) { listing in
+//                                    NavigationLink(destination: ListingDetailView(listingId: listing.id ?? "")) {
+//                                       FavoriteCardView(listing: listing, isFavorite: true)
+//                                    }
+//                                                .buttonStyle(PlainButtonStyle()) // 카드 UI가 Button 스타일 안 먹게
                                     FavoriteCardView(listing: listing, isFavorite: true)
                                 }
                             }
@@ -165,7 +169,7 @@ struct FavoriteCardView: View{
                 .foregroundColor(Color(hex: "#3058EF"))
                 .padding(.top, 2)
         }
-        .padding(24) // ✅ 카드 안쪽 전체 여백
+        .padding(24)
         .overlay(
             RoundedRectangle(cornerRadius: 12)
                 .stroke(Color.gray, lineWidth: 0.5)

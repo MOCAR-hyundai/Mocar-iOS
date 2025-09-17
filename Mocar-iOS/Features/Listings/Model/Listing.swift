@@ -15,6 +15,7 @@ struct ListingStats: Codable {
 struct Listing : Identifiable, Codable{
     var id: UUID = UUID()
     var sellerId: String
+    var plateNumber: String
     var title: String
     var brand: String
     var model: String
@@ -38,6 +39,7 @@ extension Listing {
     static let listingData: [Listing] = [
         Listing(
             sellerId: "user123",
+            plateNumber :"12가1233",
             title: "Ferrari 488 GTB",
             brand: "Ferrari",
             model: "488 GTB",
@@ -56,6 +58,7 @@ extension Listing {
         ),
         Listing(
             sellerId: "user456",
+            plateNumber :"13바1323",
             title: "BMW M3",
             brand: "BMW",
             model: "M3",
@@ -74,6 +77,7 @@ extension Listing {
         ),
         Listing(
             sellerId: "user789",
+            plateNumber :"42카1928",
             title: "Hyundai Sonata",
             brand: "Hyundai",
             model: "Sonata",
@@ -92,6 +96,7 @@ extension Listing {
         ),
         Listing(
             sellerId: "user234",
+            plateNumber :"81나1233",
             title: "Audi A6",
             brand: "Audi",
             model: "A6",
@@ -110,6 +115,7 @@ extension Listing {
         ),
         Listing(
             sellerId: "user567",
+            plateNumber :"73아7213",
             title: "Tesla Model 3",
             brand: "Tesla",
             model: "Model 3",
@@ -128,6 +134,7 @@ extension Listing {
         ),
         Listing(
             sellerId: "user567",
+            plateNumber :"34가1133",
             title: "Tesla Model 1",
             brand: "Tesla",
             model: "Model 3",
@@ -146,6 +153,7 @@ extension Listing {
         ),
         Listing(
             sellerId: "user567",
+            plateNumber :"99가4233",
             title: "Tesla Model 3",
             brand: "Tesla",
             model: "Model 3",
