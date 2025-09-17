@@ -2,23 +2,37 @@
 //  Color.swift
 //  Mocar-iOS
 //
-//  Created by Admin on 9/15/25.
+//  Created by Admin on 9/17/25.
 //
 
+import Foundation
 import SwiftUI
 
 extension Color {
-    init(hex: String) {
-        var hexSanitized = hex.trimmingCharacters(in: .whitespacesAndNewlines)
-        hexSanitized = hexSanitized.replacingOccurrences(of: "#", with: "")
+    
+    // text
+    static let textBlack100 = Color(hex: "#000000")
+    static let textGray100 = Color(hex: "#7F7F7F")
+    static let textGray200  = Color(hex: "#454545")
+    
+    //keyColor
+    static let keyColorBlue = Color(hex: "#3058EF")
+    static let keyColorDarkGray = Color(hex: "#21292B")
+    
+    //Gray
+    static let backgroundGray100 = Color(hex: "#F8F8F8")
+    static let iconGray = Color(hex: "#767676")
+    static let lineGray = Color(hex: "#D7D7D7")
+    static let borderGray   = Color(hex: "#EDEDED")
 
-        var rgb: UInt64 = 0
-        Scanner(string: hexSanitized).scanHexInt64(&rgb)
+    // Red
+    static let likeRed   = Color(hex: "#FA3B12")
+    static let errorRed  = Color(hex: "#FF6C6C")
 
-        let r = Double((rgb >> 16) & 0xFF) / 255.0
-        let g = Double((rgb >> 8) & 0xFF) / 255.0
-        let b = Double(rgb & 0xFF) / 255.0
+    // White
+    static let pureWhite  = Color(hex: "#FFFFFF")
+    static let boxBgWhite = Color(hex: "#40FFFFFF") // 투명도 포함
 
-        self.init(red: r, green: g, blue: b)
-    }
+    // Green
+    static let priceGreen = Color(hex: "#22C55E")
 }

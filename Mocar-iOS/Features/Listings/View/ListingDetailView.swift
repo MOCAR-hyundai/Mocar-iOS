@@ -7,7 +7,10 @@
 
 import SwiftUI
 
-struct ListingView: View {
+struct ListingDetailView: View {
+    let listingId: String
+    @State private var listing: Listing = Listing.placeholder
+    
     @State private var currentValue: Double = 4680
     
     var minValue: Double = 4010
@@ -17,11 +20,7 @@ struct ListingView: View {
     
     var body: some View {
         NavigationStack{
-            TopBar(
-                title: "21나4827",
-                onBack: { print("뒤로가기") },
-                onMenu: { print("메뉴 열기") }
-            )
+            TopBar(style: .listing(title:listing.plateNumber))
             ScrollView{
                 VStack{
                     ZStack(alignment: .topTrailing){
@@ -32,7 +31,7 @@ struct ListingView: View {
                                 .padding()
 
                             Button(action: {
-                                print("하트 눌림")
+                                print("하트")
                             }) {
                                 Image(systemName: "heart")
                                     .foregroundColor(.gray)
@@ -45,17 +44,18 @@ struct ListingView: View {
                             .padding(8) // 이미지 테두리와 버튼 사이 여백
                     }
                     
-                    Text("현대 뉴 그랜저 하이브리드 2.4 캘리그래피")
+                    Text(listing.model)
+                        
                         .frame(maxWidth: .infinity, alignment: .leading)
                         .padding(.leading,8)
                         .font(.title3)
                         .fontWeight(.semibold)
-                    Text("22년 12(23년형)")
+                    Text("\(listing.year)년")
                         .frame(maxWidth: .infinity, alignment: .leading)
                         .padding(.leading,8)
                         .foregroundStyle(.gray)
                     
-                    Text("4,700만원")
+                    Text("\(listing.price)만원")
                         .frame(maxWidth: .infinity, alignment: .leading)
                         .padding(.leading,8)
                         .padding(.top,4)
@@ -90,12 +90,12 @@ struct ListingView: View {
                             .fontWeight(.semibold)
                             
 
-                        InfoRow(label: "차량 번호", value: "21나4827")
-                        InfoRow(label: "연식", value: "22년 12월")
-                        InfoRow(label: "변속기", value: "오토")
+                        InfoRow(label: "차량 번호", value: listing.plateNumber)
+                        InfoRow(label: "연식", value: "\(listing.year)")
+                        InfoRow(label: "변속기", value: listing.transmission)
                         InfoRow(label: "차종", value: "대형")
                         InfoRow(label: "배기량", value: "0cc")
-                        InfoRow(label: "연료", value: "하이브리드(가솔린)")
+                        InfoRow(label: "연료", value: listing.fuel)
                     }
                     .padding(5)
                     VStack(spacing: 0){
@@ -183,6 +183,13 @@ struct ListingView: View {
                     
                 }
                 .padding()
+                .padding(.bottom, 90)
+                .onAppear {
+                    // 목업 데이터에서 id 매칭
+                    if let found = Listing.listingData.first(where: { $0.id == listingId }) {
+                        listing = found
+                    }
+                }
             }
             HStack{
                 Button(action:{
@@ -231,5 +238,5 @@ struct InfoRow: View{
 }
 
 #Preview {
-    ListingView()
+    //ListingDetailView()
 }
