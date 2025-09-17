@@ -8,19 +8,9 @@
 import SwiftUI
 
 struct CarSizeFilterView: View {
-    @State private var fuels: [CheckableItem] = [
-        CheckableItem(name: "경차", checked: false),
-        CheckableItem(name: "소형", checked: false),
-        CheckableItem(name: "준중형", checked: false),
-        CheckableItem(name: "중형", checked: false),
-        CheckableItem(name: "대형", checked: false),
-        CheckableItem(name: "스포츠카", checked: false),
-        CheckableItem(name: "SUV", checked: false),
-        CheckableItem(name: "RV", checked: false),
-        CheckableItem(name: "승합", checked: false),
-        CheckableItem(name: "트럭", checked: false),
-        CheckableItem(name: "버스", checked: false)
-    ]
+    @Binding var options: [CheckableItem]
+    var countProvider: (String) -> Int
+    var onToggle: ((CheckableItem) -> Void)? = nil
     
     var body: some View {
         ScrollView {
@@ -28,9 +18,14 @@ struct CarSizeFilterView: View {
                 Text("차종")
                     .font(.headline)
                     .padding(.bottom, 10)
-                ForEach(fuels.indices, id: \.self) { idx in
-                    CheckOptionsRow(item: $fuels[idx])
-                    Divider()
+                ForEach(options.indices, id: \.self) { index in
+                    let optionName = options[index].name
+                    CheckOptionsRow(item: $options[index], count: countProvider(optionName), onToggle: { updated in
+                        onToggle?(updated)
+                    })
+                    if index < options.count - 1 {
+                        Divider()
+                    }
                 }
             }
             .padding(.top, 20)

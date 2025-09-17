@@ -50,8 +50,8 @@ struct YearFilterView: View {
                     .keyboardType(.numberPad)
                     .padding(10)
                     .background(RoundedRectangle(cornerRadius: 8).stroke(Color.gray))
-                    .onChange(of: minText) {
-                        minText = minText.filter { "0123456789".contains($0) }
+                    .onChange(of: minText) { newValue, _ in
+                        minText = newValue.filter { "0123456789".contains($0) }
                         if let value = Int(minText) {
                             minYear = min(max(value, yearRange.lowerBound), maxYear)
                         }
@@ -68,8 +68,8 @@ struct YearFilterView: View {
                     .keyboardType(.numberPad)
                     .padding(10)
                     .background(RoundedRectangle(cornerRadius: 8).stroke(Color.gray))
-                    .onChange(of: maxText) {
-                        maxText = maxText.filter { "0123456789".contains($0) }
+                    .onChange(of: maxText) { newValue, _ in
+                        maxText = newValue.filter { "0123456789".contains($0) }
                         if let value = Int(maxText) {
                             maxYear = max(min(value, yearRange.upperBound), minYear)
                         }

@@ -8,18 +8,11 @@
 import SwiftUI
 
 struct SearchView: View {
-    @State private var searchText = ""
+    @StateObject private var viewModel = SearchViewModel()
     @State private var selectedCategory: String? = "제조사"
-    @State private var minPrice: Int = 0
-    @State private var maxPrice: Int = 10000
+    @State private var showRecentSheet: Bool = false
     
-    @State private var minYear: Int = Calendar.current.component(.year, from: Date()) - 20
-    @State private var maxYear: Int = Calendar.current.component(.year, from: Date())
-    
-    @State private var minMileage: Int = 0
-    @State private var maxMileage: Int = 200000
-    
-    let categories = ["제조사", "가격", "연식", "주행거리", "차종", "연료", "지역"]
+    private let categories = ["제조사", "가격", "연식", "주행거리", "차종", "연료", "지역"]
     
     var body: some View {
         NavigationStack {
@@ -32,40 +25,71 @@ struct SearchView: View {
                             .foregroundColor(.black)
                     }
                     
-                    TextField("모델, 차량번호, 판매자를 검색해보세요", text: $searchText)
+                    NavigationLink(destination: SearchKeywordView(viewModel: viewModel)) {
+                        HStack {
+                            Image(systemName: "magnifyingglass")
+                                .foregroundColor(.gray)
+                            Text("모델, 차량번호, 판매자를 검색해보세요")
+                                .foregroundColor(.gray)
+                            Spacer()
+                        }
                         .padding(10)
                         .background(
                             RoundedRectangle(cornerRadius: 8)
                                 .stroke(Color.black, lineWidth: 2)
                         )
+                    }
+                    .buttonStyle(PlainButtonStyle())
                 }
                 .padding(.horizontal)
                 
-                // 최근검색기록
+                // 최근검색기록 (헤더 오른쪽에 팝업 열기 버튼)
                 HStack {
                     Spacer()
-                    Text("최근검색기록")
-                        .font(.subheadline)
-                        .foregroundColor(.gray)
-                    Image(systemName: "chevron.right")
-                        .foregroundColor(.gray)
+                    Button(action: { showRecentSheet = true }) {
+                        Text("최근검색기록")
+                            .font(.footnote)
+                            .foregroundColor(.blue)
+                        Image(systemName: "chevron.right")
+                            .font(.caption)
+                            .foregroundColor(.blue)
+                    }
                 }
                 .padding()
+                .padding(.vertical, 8)
+                .sheet(isPresented: $showRecentSheet) {
+                    NavigationStack {
+                        List {
+                            ForEach(viewModel.recentSearches, id: \.self) { item in
+                                Button(action: {
+                                    viewModel.applyRecentSearch(item)
+                                    viewModel.recentKeyword = item
+                                    showRecentSheet = false
+                                }) {
+                                    Text(item)
+                                        .lineLimit(2)
+                                }
+                                .buttonStyle(.plain)
+                            }
+                        }
+                        .navigationTitle("최근 검색")
+                        .toolbar { ToolbarItem(placement: .cancellationAction) { Button("닫기") { showRecentSheet = false } } }
+                    }
+                }
                 
                 Divider()
                 
                 // 메인 검색영역
                 HStack(spacing: 0) {
-                    LeftCategoryView(categories: categories, selectedCategory: $selectedCategory)
+                    LeftCategoryView(
+                        categories: categories,
+                        selectedCategory: $selectedCategory,
+                        hasSelection: { viewModel.hasActiveFilters(for: $0) }
+                    )
                     Divider()
                     RightOptionView(
                         selectedCategory: $selectedCategory,
-                        minPrice: $minPrice,
-                        maxPrice: $maxPrice,
-                        minYear: $minYear,
-                        maxYear: $maxYear,
-                        minMileage: $minMileage,
-                        maxMileage: $maxMileage,
+                        viewModel: viewModel
                     )
                 }
                 
@@ -73,9 +97,7 @@ struct SearchView: View {
                 HStack(spacing: 12) {
                     Button(action: {
                         selectedCategory = "제조사"
-                        searchText = ""
-                        minPrice = 0
-                        maxPrice = 10000
+                        viewModel.resetFilters()
                     }) {
                         Text("초기화")
                             .fontWeight(.bold)
@@ -90,8 +112,11 @@ struct SearchView: View {
                             )
                     }
                     
-                    Button(action: {}) {
-                        Text("156,973대 보기")
+                    Button(action: {
+                        viewModel.saveCurrentFiltersAsRecent()
+                        viewModel.debugLogAppliedFilters()
+                    }) {
+                        Text("\(formattedResultCount)대 보기")
                             .fontWeight(.bold)
                             .frame(height: 50)
                             .frame(maxWidth: .infinity)
@@ -104,5 +129,13 @@ struct SearchView: View {
             }
             .background(Color.white)
         }
+    }
+}
+
+private extension SearchView {
+    var formattedResultCount: String {
+        let formatter = NumberFormatter()
+        formatter.numberStyle = .decimal
+        return formatter.string(from: NSNumber(value: viewModel.filteredCount)) ?? "\(viewModel.filteredCount)"
     }
 }

@@ -8,13 +8,8 @@
 import SwiftUI
 
 struct FuelFilterView: View {
-    @State private var fuels: [CheckableItem] = [
-        CheckableItem(name: "가솔린(휘발유)", checked: false),
-        CheckableItem(name: "디젤(경유)", checked: false),
-        CheckableItem(name: "전기", checked: false),
-        CheckableItem(name: "LPG", checked: false),
-        CheckableItem(name: "하이브리드", checked: false)
-    ]
+    @Binding var options: [CheckableItem]
+    var countProvider: (String) -> Int
     
     var body: some View {
         ScrollView {
@@ -22,9 +17,13 @@ struct FuelFilterView: View {
                 Text("연료")
                     .font(.headline)
                     .padding(.bottom, 10)
-                ForEach(fuels.indices, id: \.self) { idx in
-                    CheckOptionsRow(item: $fuels[idx])
-                    Divider()
+                ForEach(options.indices, id: \.self) { index in
+                    let optionName = options[index].name
+                    CheckOptionsRow(item: $options[index], count: countProvider(optionName)) { updated in
+                    }
+                    if index < options.count - 1 {
+                        Divider()
+                    }
                 }
             }
             .padding(.top, 20)
