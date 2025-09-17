@@ -86,5 +86,6 @@ struct YearFilterView: View {
             minText = String(minYear)
             maxText = String(maxYear)
         }
+        Spacer()
     }
 }

@@ -86,5 +86,6 @@ struct PriceFilterView: View {
             minText = String(minPrice)
             maxText = String(maxPrice)
         }
+        Spacer()
     }
 }

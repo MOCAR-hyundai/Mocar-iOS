@@ -31,7 +31,6 @@ struct CheckOptionsRow: View {
                     .foregroundColor(.black)
                     .frame(maxWidth: .infinity, alignment: .leading)
             }
-            .padding(.horizontal)
             .frame(height: 50)
         }
     }

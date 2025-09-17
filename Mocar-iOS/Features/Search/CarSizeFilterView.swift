@@ -24,12 +24,17 @@ struct CarSizeFilterView: View {
     
     var body: some View {
         ScrollView {
-            LazyVStack(spacing: 0) {
+            VStack(alignment: .leading, spacing: 0) {
+                Text("차종")
+                    .font(.headline)
+                    .padding(.bottom, 10)
                 ForEach(fuels.indices, id: \.self) { idx in
                     CheckOptionsRow(item: $fuels[idx])
                     Divider()
                 }
             }
+            .padding(.top, 20)
+            .padding(.horizontal)
         }
     }
 }

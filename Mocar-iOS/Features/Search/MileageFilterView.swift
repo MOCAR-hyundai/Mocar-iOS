@@ -86,5 +86,6 @@ struct MileageFilterView: View {
             minText = String(minMileage)
             maxText = String(maxMileage)
         }
+        Spacer()
     }
 }

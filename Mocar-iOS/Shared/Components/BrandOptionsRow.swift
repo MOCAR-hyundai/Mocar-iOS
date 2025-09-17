@@ -29,7 +29,6 @@ struct BrandOptionsRow: View {
             Image(systemName: "chevron.right")
                 .foregroundColor(.gray)
         }
-        .padding(.horizontal)
         .frame(height: 50)
         Divider()
     }

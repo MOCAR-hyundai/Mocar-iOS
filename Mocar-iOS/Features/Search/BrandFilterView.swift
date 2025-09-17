@@ -30,10 +30,17 @@ struct BrandView: View {
     ]
     
     var body: some View {
-        VStack(spacing: 0) {
-            ForEach(makers) { maker in
-                BrandOptionsRow(maker: maker)
+        ScrollView {
+            VStack(alignment: .leading, spacing: 0) {
+                Text("제조사")
+                    .font(.headline)
+                    .padding(.bottom, 10)
+                ForEach(makers) { maker in
+                    BrandOptionsRow(maker: maker)
+                }
             }
+            .padding(.top, 20)
+            .padding(.horizontal)
         }
     }
 }
