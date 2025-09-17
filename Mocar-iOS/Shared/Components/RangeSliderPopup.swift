@@ -45,7 +45,7 @@ struct RangeSliderPopup: View {
                        
                        ZStack(alignment: .topTrailing) {
                            VStack (spacing:0){
-                               RangeSlider(
+                               CateRangeSlider(
                                    title: title,
                                    minValue: minValue,
                                    maxValue: maxValue,
