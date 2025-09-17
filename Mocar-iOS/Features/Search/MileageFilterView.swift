@@ -1,44 +1,44 @@
 //
-//  PriceFilterView.swift
+//  MileageFilterView.swift
 //  Mocar-iOS
 //
-//  Created by wj on 9/16/25.
+//  Created by wj on 9/17/25.
 //
 
 import SwiftUI
 
-struct PriceFilterView: View {
-    @Binding var minPrice: Int
-    @Binding var maxPrice: Int
+struct MileageFilterView: View {
+    @Binding var minMileage: Int
+    @Binding var maxMileage: Int
     
     @State private var minText: String = ""
     @State private var maxText: String = ""
     
-    private let priceRange: ClosedRange<Int> = 0...10000
+    private let mileageRange: ClosedRange<Int> = 0...200000
     
     var body: some View {
         VStack {
             VStack(alignment: .leading, spacing: 20) {
-                Text("가격")
+                Text("주행거리")
                     .font(.headline)
                 
                 // 슬라이더: Int ↔ Double 변환
                 RangeSlider(
                     lowerValue: Binding(
-                        get: { Double(minPrice) },
+                        get: { Double(minMileage) },
                         set: { newValue in
                             let intValue = Int(newValue.rounded())
-                            minPrice = min(max(intValue, priceRange.lowerBound), maxPrice)
-                            minText = String(minPrice)
+                            minMileage = min(max(intValue, mileageRange.lowerBound), maxMileage)
+                            minText = String(minMileage)
                         }),
                     upperValue: Binding(
-                        get: { Double(maxPrice) },
+                        get: { Double(maxMileage) },
                         set: { newValue in
                             let intValue = Int(newValue.rounded())
-                            maxPrice = max(min(intValue, priceRange.upperBound), minPrice)
-                            maxText = String(maxPrice)
+                            maxMileage = max(min(intValue, mileageRange.upperBound), minMileage)
+                            maxText = String(maxMileage)
                         }),
-                    range: Double(priceRange.lowerBound)...Double(priceRange.upperBound)
+                    range: Double(mileageRange.lowerBound)...Double(mileageRange.upperBound)
                 )
                 .frame(height: 50)
                 .padding(.horizontal, 16)
@@ -53,14 +53,14 @@ struct PriceFilterView: View {
                     .onChange(of: minText) {
                         minText = minText.filter { "0123456789".contains($0) }
                         if let value = Int(minText) {
-                            minPrice = min(max(value, priceRange.lowerBound), maxPrice)
+                            minMileage = min(max(value, mileageRange.lowerBound), maxMileage)
                         }
                     }
                     .onSubmit {
-                        minText = String(minPrice)
+                        minText = String(minMileage)
                     }
                 
-                Text("만원")
+                Text("km")
                 
                 Spacer()
                 
@@ -71,20 +71,20 @@ struct PriceFilterView: View {
                     .onChange(of: maxText) {
                         maxText = maxText.filter { "0123456789".contains($0) }
                         if let value = Int(maxText) {
-                            maxPrice = max(min(value, priceRange.upperBound), minPrice)
+                            maxMileage = max(min(value, mileageRange.upperBound), minMileage)
                         }
                     }
                     .onSubmit {
-                        maxText = String(maxPrice)
+                        maxText = String(maxMileage)
                     }
                 
-                Text("만원")
+                Text("km")
             }
         }
         .padding(.horizontal, 16)
         .onAppear {
-            minText = String(minPrice)
-            maxText = String(maxPrice)
+            minText = String(minMileage)
+            maxText = String(maxMileage)
         }
     }
 }

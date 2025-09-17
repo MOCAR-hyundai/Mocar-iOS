@@ -10,8 +10,14 @@ import SwiftUI
 struct SearchView: View {
     @State private var searchText = ""
     @State private var selectedCategory: String? = "제조사"
-    @State private var minPrice: Double = 0
-    @State private var maxPrice: Double = 10000
+    @State private var minPrice: Int = 0
+    @State private var maxPrice: Int = 10000
+    
+    @State private var minYear: Int = Calendar.current.component(.year, from: Date()) - 20
+    @State private var maxYear: Int = Calendar.current.component(.year, from: Date())
+    
+    @State private var minMileage: Int = 0
+    @State private var maxMileage: Int = 200000
     
     let categories = ["제조사", "가격", "연식", "주행거리", "차종", "연료", "지역"]
     
@@ -71,7 +77,16 @@ struct SearchView: View {
                 HStack(spacing: 0) {
                     LeftCategoryView(categories: categories, selectedCategory: $selectedCategory)
                     Divider()
-                    RightOptionView(selectedCategory: $selectedCategory, minPrice: $minPrice, maxPrice: $maxPrice, makers: makers)
+                    RightOptionView(
+                        selectedCategory: $selectedCategory,
+                        minPrice: $minPrice,
+                        maxPrice: $maxPrice,
+                        minYear: $minYear,
+                        maxYear: $maxYear,
+                        minMileage: $minMileage,
+                        maxMileage: $maxMileage,
+                        makers: makers
+                    )
                 }
                 
                 // 하단 버튼
