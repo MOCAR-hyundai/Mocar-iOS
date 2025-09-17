@@ -20,7 +20,7 @@ struct BottomBar: View {
                     .tag(1)
                 ContentView()
                     .tag(2)
-                ContentView()
+                SearchResultsView()
                     .tag(3)
                 MyPageView()
                     .tag(4)
