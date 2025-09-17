@@ -44,7 +44,7 @@ struct SearchResultsView: View {
                                   .foregroundColor(.black)
                                   .overlay(
                                       RoundedRectangle(cornerRadius: 50) // 충분히 큰 값이면 원처럼 둥글게
-                                          .stroke(Color(hex: "D7D7D7"), lineWidth: 1) // 테두리 색과 두께
+                                        .stroke(Color.lineGray, lineWidth: 1) // 테두리 색과 두께
                                   )
                           }
                           Text("123대")
@@ -70,7 +70,7 @@ struct SearchResultsView: View {
                       .padding(.vertical, 6)
                       .padding(.bottom, 5)
                       .padding(.trailing, 7)
-                      .background(Color(hex:"F8F8F8"))
+                      .background(Color.backgroundGray100)
                       
                     
                       // MARK: - 카테고리 바
@@ -192,7 +192,7 @@ struct SearchResultsView: View {
                       }
                   }
                 // MARK: - RangeSliderPopup
-                  .background(Color(hex:"F8F8F8"))
+                  .background(Color.backgroundGray100)
 //                  .sheet(isPresented: $showPopup) {
 //                           RangeSliderPopup(
 //                               isPresented: $showPopup,
@@ -240,7 +240,7 @@ struct ListingCard: View {
             
             ZStack(alignment: .topTrailing) {
                 // 이미지 배경 통일
-                  Color(hex: "F0F0F0") // 배경색
+                Color.cardBgGray // 배경색
                     .frame(maxWidth: .infinity)
                   
                   // 실제 이미지
@@ -261,7 +261,7 @@ struct ListingCard: View {
                     
                 }) {
                     Image(systemName: isFavorite ? "heart.fill" : "heart")
-                        .foregroundColor(isFavorite ? .red : Color(hex:"21292B"))
+                        .foregroundColor(isFavorite ? .red : Color.keyColorDarkGray)
                         .padding(5)
                         .background(Color.clear)
                         .clipShape(Circle())
@@ -288,7 +288,7 @@ struct ListingCard: View {
 //                Text("\(listing.price.formattedWithSeparator())원")
                 Text("1억 3,860만원")
                     .font(.system(size: 16, weight: .semibold))
-                    .foregroundColor(Color(hex: "3058EF"))
+                    .foregroundColor(Color.keyColorBlue)
             }
             .frame(height: 80)
             .padding(.bottom, 6)
@@ -300,7 +300,7 @@ struct ListingCard: View {
         .cornerRadius(12)
         .overlay(
             RoundedRectangle(cornerRadius: 12)
-                .stroke(Color(hex: "D7D7D7"), lineWidth: 1) // 회색 테두리, 두께 1
+                .stroke(Color.lineGray, lineWidth: 1) // 회색 테두리, 두께 1
         )
     }
 }

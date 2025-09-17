@@ -53,7 +53,7 @@ struct BottomBar: View {
             VStack {
                 ZStack {
                     RoundedRectangle(cornerRadius: 20) // Capsule 대신 적당한 라운드
-                        .fill(selectedTab == index ? Color(UIColor(red: 48/255, green: 88/255, blue: 239/255, alpha: 1)) : Color.clear)
+                        .fill(selectedTab == index ? Color.keyColorBlue : Color.clear)
                         .frame(width: 68, height: 60)
                     
                     VStack {

@@ -36,7 +36,7 @@ struct SignUpView: View {
                            .foregroundColor(.black)
                            .overlay(
                                RoundedRectangle(cornerRadius: 50)
-                                   .stroke(Color(red: 0.929, green: 0.929, blue: 0.929), lineWidth: 1)
+                                .stroke(Color.black, lineWidth: 1)
                            )
                 }
                 Spacer()
@@ -231,7 +231,7 @@ struct SignUpView: View {
                         .frame(maxWidth: .infinity)
                         .frame(height: 28) // 버튼 높이 설정
                         .padding()
-                        .background(Color(red: 0.129, green: 0.161, blue: 0.169))
+                        .background(Color.keyColorDarkGray)
                         .cornerRadius(62)
                 }
                 .padding(.horizontal)
