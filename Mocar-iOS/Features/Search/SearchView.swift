@@ -90,15 +90,16 @@ struct SearchView: View {
                             )
                     }
                     
-                    Button(action: {}) {
-                        Text("156,973대 보기")
-                            .fontWeight(.bold)
-                            .frame(height: 50)
-                            .frame(maxWidth: .infinity)
-                            .foregroundColor(.white)
-                            .background(Color.black)
-                            .cornerRadius(8)
-                    }
+                    NavigationLink(destination: SearchResultsView()
+                                     .navigationBarBackButtonHidden(true)) {
+                         Text("156,973대 보기")
+                             .fontWeight(.bold)
+                             .frame(height: 50)
+                             .frame(maxWidth: .infinity)
+                             .foregroundColor(.white)
+                             .background(Color.black)
+                             .cornerRadius(8)
+                     }
                 }
                 .padding()
             }

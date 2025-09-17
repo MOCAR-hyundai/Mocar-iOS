@@ -111,14 +111,14 @@ struct CateRangeSlider: View {
                             .frame(height: sliderHeight)
                         
                         Capsule()
-                            .fill(Color.yellow)
+                            .fill(Color.keyColorBlue)
                             .frame(width: upperPos - lowerPos, height: sliderHeight)
                             .offset(x: (upperPos + lowerPos)/2 - width/2)
                         
                         // Lower handle
                         Circle()
                             .fill(Color.white)
-                            .overlay(Circle().stroke(Color.yellow, lineWidth: 2))
+                            .overlay(Circle().stroke(Color.keyColorBlue, lineWidth: 2))
                             .frame(width: handleDiameter, height: handleDiameter)
                             .position(x: lowerPos, y: sliderHeight/2 + handleDiameter/2)
                             .gesture(
@@ -133,7 +133,7 @@ struct CateRangeSlider: View {
                         // Upper handle
                         Circle()
                             .fill(Color.white)
-                            .overlay(Circle().stroke(Color.yellow, lineWidth: 2))
+                            .overlay(Circle().stroke(Color.keyColorBlue, lineWidth: 2))
                             .frame(width: handleDiameter, height: handleDiameter)
                             .position(x: upperPos, y: sliderHeight/2 + handleDiameter/2)
                             .gesture(
@@ -158,7 +158,7 @@ struct CateRangeSlider: View {
                         .foregroundColor(.white)
                         .padding()
                         .frame(maxWidth: .infinity)
-                        .background(Color.yellow)
+                        .background(Color.keyColorBlue)
                         .cornerRadius(8)
                 }
             }
@@ -195,7 +195,7 @@ struct CateRangeSlider: View {
      var placeholderFont: Font = .system(size: 14)
      var placeholderColor: Color = .gray
      var borderColor: Color = .gray.opacity(0.5)
-     var focusedBorderColor: Color = .blue
+     var focusedBorderColor: Color = .keyColorBlue
 
      var body: some View {
          ZStack(alignment: .trailing) {

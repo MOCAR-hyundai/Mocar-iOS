@@ -62,7 +62,7 @@ struct RangeSliderPopup: View {
                                        isPresented = false   // ← X 버튼 누르면 팝업 닫기
                                    }
                                )
-                               .padding(.bottom, 135)
+                               .padding(.bottom, 120)
                                
                            }
                            .frame(height: popupHeight)

@@ -11,6 +11,8 @@ struct SearchResultsView: View {
     @StateObject private var viewModel = SearchViewModel()
     
     @State private var selectedCategory: String = "" // 선택된 카테고리 저장
+    
+    @Environment(\.dismiss) private var dismiss   // 현재 화면 닫기 위한 dismiss
 
     @State private var showPopup: Bool = false
     @State private var popupTitle: String = ""
@@ -34,7 +36,7 @@ struct SearchResultsView: View {
                   VStack {
                       HStack {
                           Button(action: {
-                              // 뒤로가기 액션
+                              dismiss() // 뒤로가기
                           }) {
                               Image(systemName: "chevron.left")
                                   .frame(width: 20, height: 20)
