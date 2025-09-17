@@ -25,7 +25,7 @@ struct RangeSliderPopup: View {
        var onConfirm: (() -> Void)? = nil
        
        // 팝업 높이
-       let popupHeight: CGFloat = 350
+       let popupHeight: CGFloat = 450
 
        var body: some View {
            if isPresented {
@@ -44,34 +44,32 @@ struct RangeSliderPopup: View {
                        Spacer()
                        
                        ZStack(alignment: .topTrailing) {
-                           RangeSlider(
-                               title: title,
-                               minValue: minValue,
-                               maxValue: maxValue,
-                               lowerPlaceholder: lowerPlaceholder,
-                               upperPlaceholder: upperPlaceholder,
-                               unit: unit,
-                               lowerValue: $lowerValue,
-                               upperValue: $upperValue,
-                               onConfirm: {
-                                  isPresented = false
-                                  onConfirm?()  // 외부에서 주입한 동작 실행
-                              }
-                           )
+                           VStack (spacing:0){
+                               RangeSlider(
+                                   title: title,
+                                   minValue: minValue,
+                                   maxValue: maxValue,
+                                   lowerPlaceholder: lowerPlaceholder,
+                                   upperPlaceholder: upperPlaceholder,
+                                   unit: unit,
+                                   lowerValue: $lowerValue,
+                                   upperValue: $upperValue,
+                                   onConfirm: {
+                                      isPresented = false
+                                      onConfirm?()  // 외부에서 주입한 동작 실행
+                                  },
+                                   onClose: {
+                                       isPresented = false   // ← X 버튼 누르면 팝업 닫기
+                                   }
+                               )
+                               .padding(.bottom, 135)
+                               
+                           }
                            .frame(height: popupHeight)
                            .background(Color.white)
                            .cornerRadius(16, corners: [.topLeft, .topRight])
                            .shadow(radius: 8)
                            
-                           Button(action: {
-                               withAnimation { isPresented = false }
-                           }) {
-                               Image(systemName: "xmark")
-                                   .resizable()
-                                   .frame(width: 15, height: 15)
-                                   .foregroundColor(.black)
-                                   .padding(20)
-                           }
                        }
                    }
                    .edgesIgnoringSafeArea(.bottom) // 하단에 딱 붙이기

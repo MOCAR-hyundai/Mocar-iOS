@@ -27,6 +27,8 @@ struct RangeSlider: View {
     
         // 선택 완료 동작 외부 주입
         var onConfirm: (() -> Void)? = nil
+    
+        var onClose: (() -> Void)? = nil   // ← 추가
 
        var body: some View {
            VStack(spacing: 20) {
@@ -58,12 +60,26 @@ struct RangeSlider: View {
                        .padding(6)
                        .cornerRadius(6)
                    }
+                   .padding(6)
+                   
+                   
+                   
+                   Button(action: {
+//                       withAnimation { isPresented = false }
+                       onClose?()  // ← 팝업 닫기
+                   }) {
+                       Image(systemName: "xmark")
+                           .resizable()
+                           .frame(width: 15, height: 15)
+                           .foregroundColor(.black)
+                   }
+                   
                }
-               .padding(3)
+               .padding(7)
                
                HStack {
                    UnitTextField(text: $lowerText, placeholder: lowerPlaceholder, unit: unit)
-                       .frame(width: .infinity)
+                       .frame(maxWidth: .infinity)
                        .onChange(of: lowerText) { newValue in
                            if let value = Double(newValue) {
                                lowerValue = min(max(minValue, value), upperValue)
@@ -75,7 +91,7 @@ struct RangeSlider: View {
                    Spacer()
                    
                    UnitTextField(text: $upperText, placeholder: upperPlaceholder, unit: unit)
-                       .frame(width: .infinity)
+                       .frame(maxWidth: .infinity)
                        .onChange(of: upperText) { newValue in
                            if let value = Double(newValue) {
                                upperValue = min(max(lowerValue, value), maxValue)
@@ -87,6 +103,7 @@ struct RangeSlider: View {
                    let width = geo.size.width
                    let lowerPos = CGFloat((lowerValue - minValue) / (maxValue - minValue)) * width
                    let upperPos = CGFloat((upperValue - minValue) / (maxValue - minValue)) * width
+                   
                    
                    ZStack {
                        Capsule()
