@@ -23,7 +23,7 @@ extension Color {
     static let backgroundGray100 = Color(hex: "#F8F8F8")
     static let iconGray = Color(hex: "#767676")
     static let lineGray = Color(hex: "#D7D7D7")
-    static let borderGray   = Color(hex: "#EDEDED")
+    static let gray200   = Color(hex: "#EDEDED")
 
     // Red
     static let likeRed   = Color(hex: "#FA3B12")
