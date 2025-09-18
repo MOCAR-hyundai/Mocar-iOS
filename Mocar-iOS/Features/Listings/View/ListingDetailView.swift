@@ -9,96 +9,71 @@ import SwiftUI
 
 struct ListingDetailView: View {
     let listingId: String
-    @State private var listing: Listing = Listing.placeholder
-    
-    @State private var currentValue: Double = 4680
-    
-    var minValue: Double = 4010
-    var maxValue: Double = 5525
-    var safeMin: Double = 4254
-    var safeMax: Double = 5180
+    @StateObject private var viewModel = ListingDetailViewModel()
     
     var body: some View {
         NavigationStack{
-            TopBar(style: .listing(title:listing.plateNumber))
+            TopBar(style: .listing(title:viewModel.listing.plateNumber))
+                .padding()
             ScrollView{
                 VStack{
                     ZStack(alignment: .topTrailing){
-                        Image("hyundai")
-                                .resizable()
-                                .frame(width: 300, height: 170)
-                                .scaledToFit()
-                                .padding()
-
-                            Button(action: {
-                                print("하트")
-                            }) {
-                                Image(systemName: "heart")
-                                    .foregroundColor(.gray)
-                                    .frame(width: 30, height: 30)
-                                    .background(
-                                        RoundedRectangle(cornerRadius: 50)
-                                            .stroke(Color.gray, lineWidth: 1)
-                                    )
-                            }
-                            .padding(8) // 이미지 테두리와 버튼 사이 여백
-                    }
-                    
-                    Text(listing.model)
-                        
-                        .frame(maxWidth: .infinity, alignment: .leading)
-                        .padding(.leading,8)
-                        .font(.title3)
-                        .fontWeight(.semibold)
-                    Text("\(listing.year)년")
-                        .frame(maxWidth: .infinity, alignment: .leading)
-                        .padding(.leading,8)
-                        .foregroundStyle(.gray)
-                    
-                    Text("\(listing.price)만원")
-                        .frame(maxWidth: .infinity, alignment: .leading)
-                        .padding(.leading,8)
-                        .padding(.top,4)
-                        .font(.title2)
-                        .fontWeight(.bold)
-                        .foregroundColor(Color(hex: "#3058EF"))
-                    Divider()
-                    HStack{
-                        Image("kuromi")
+                        Image("현대차-아이오닉-4-01")
                             .resizable()
                             .scaledToFit()
-                            .clipShape(Circle())
-                            .frame(width: 50, height: 50)
-                        Text("Hela Quintin")
-                        Spacer()
-                        VStack(alignment: .trailing){
-                            Text("100+Reviews")
-                            HStack{
-                                Text("5.0")
-                                Image(systemName: "star.fill")
-                                    .foregroundStyle(.yellow)
-                                    
-                            }
+                            .frame(maxWidth: .infinity, maxHeight: 600)
+                        Button(action: {
+                            print("하트")
+                        }) {
+                            Image(systemName: "heart")
+                                .foregroundColor(.gray)
+                                .frame(width: 30, height: 30)
                         }
-                        
+                        .padding(14)
                     }
+                    VStack(alignment: .leading){
+                        Text(viewModel.listing.model)
+                            .frame(maxWidth: .infinity, alignment: .leading)
+                            .padding(.leading,8)
+                            .font(.title3)
+                            .fontWeight(.semibold)
+                        Text("\(viewModel.listing.year)년")
+                            .padding(.leading,8)
+                            .foregroundStyle(.gray)
+                        
+                        Text("\(viewModel.listing.price)만원")
+                            .padding(.leading,8)
+                            .font(.title2)
+                            .fontWeight(.bold)
+                            .foregroundColor(Color(hex: "#3058EF"))
+                    }
+                    .padding(.horizontal)
                     
-                    Divider()
-                    VStack(alignment: .leading, spacing: 10) {
+                    ProfileinfoView()
+                        .padding(.horizontal)
+                    
+                    
+                    VStack(alignment: .leading){
                         Text("기본 정보")
                             .font(.title3)
                             .fontWeight(.semibold)
-                            
-
-                        InfoRow(label: "차량 번호", value: listing.plateNumber)
-                        InfoRow(label: "연식", value: "\(listing.year)")
-                        InfoRow(label: "변속기", value: listing.transmission)
-                        InfoRow(label: "차종", value: "대형")
-                        InfoRow(label: "배기량", value: "0cc")
-                        InfoRow(label: "연료", value: listing.fuel)
+                        VStack(alignment: .leading, spacing: 10){
+                            InfoRow(label: "차량 번호", value: viewModel.listing.plateNumber)
+                            InfoRow(label: "연식", value: "\(viewModel.listing.year)")
+                            InfoRow(label: "변속기", value: viewModel.listing.transmission)
+                            InfoRow(label: "차종", value: "대형")
+                            InfoRow(label: "배기량", value: "0cc")
+                            InfoRow(label: "연료", value: viewModel.listing.fuel)
+                        }
+                        .padding()
+                        .background(Color.white)
+                        .cornerRadius(12)
+                        
                     }
-                    .padding(5)
-                    VStack(spacing: 0){
+                    .padding()
+                    
+                    
+                    VStack{
                         Text("이 차의 상태")
                             .frame(maxWidth: .infinity, alignment: .leading)
                             .font(.title3)
@@ -106,107 +81,55 @@ struct ListingDetailView: View {
                             .padding(.bottom,3)
                         Text("실내외 사용감이 다수 있습니다. 조수석 뒤 휠에 경미한 흠집이 있고 조수석 도외 외부 도어캐치 부근 경미한 붓 터치 자국이 있습니다.")
                             .frame(maxWidth: .infinity, alignment: .leading)
-                            .padding(5)
+                            .padding()
+                            .background(Color.white)
+                            .cornerRadius(12)
                     }
+                    .padding()
                     
-                    Text("시세")
-                        .font(.title3)
-                        .fontWeight(.semibold)
-                        .padding(.bottom, 8)
-                        .frame(maxWidth: .infinity, alignment: .leading)
-                    Text("시세안전구간")
-                        .foregroundStyle(.gray)
-                    Text("4,245~5,180만원")
-                        .font(.title3)
-                        .fontWeight(.semibold)
-                        .padding(.bottom, 15)
-                    //슬라이더 영역
-                    GeometryReader { geo in
-                            let width = geo.size.width
-                            let total = maxValue - minValue
-                        
-                            let xPosition: (Double) -> CGFloat = { value in
-                                CGFloat((value - minValue) / total * width)
-                            }
-                        
-                            // 계산
-                            let safeStartX = (safeMin - minValue) / total * width
-                            let safeWidth = (safeMax - safeMin) / total * width
-                            let circleX = (currentValue - minValue) / total * width
+                    VStack{
+                        Text("시세")
+                            .font(.title3)
+                            .fontWeight(.semibold)
+                            .padding(.bottom, 8)
+                            .frame(maxWidth: .infinity, alignment: .leading)
+                        VStack{
+                            Text("시세안전구간")
+                                .foregroundStyle(.gray)
+                            Text("4,245~5,180만원")
+                                .font(.title3)
+                                .fontWeight(.semibold)
+                                .padding(.bottom, 15)
+                            
+                            PriceRangeView(viewModel: viewModel)
+                                .frame(height: 100)
                             
                             
-                            VStack() {
-                                ZStack(alignment: .leading) {
-                                    // 전체 바
-                                    Capsule()
-                                        .fill(Color.gray.opacity(0.2))
-                                        .frame(width: width, height: 6)
-                                    
-                                    // 안전 구간
-                                    Capsule()
-                                        .fill(Color.blue)
-                                        .frame(width: safeWidth, height: 6)
-                                        .offset(x: safeStartX)
-                                    
-                                    // 현재 값
-                                    VStack(spacing: 4) {
-                                        HStack(spacing: 4) {
-                                            Image(systemName: "car.fill")
-                                            Text("적정")
-                                        }
-                                        .font(.system(size: 12))
-                                        .padding(.horizontal, 8)
-                                        .padding(.vertical, 4)
-                                        .background(Color.blue.opacity(0.15))
-                                        .cornerRadius(6)
-                                        
-                                        Circle()
-                                            .fill(Color.blue)
-                                            .frame(width: 16, height: 16)
-                                    }
-                                    .offset(x: circleX - 8,y:-13)
-                                
-                                }
-                                HStack {
-                                    ForEach([4010, 4293, 4576, 4859, 5142, 5425], id: \.self) { value in
-                                        Text("\(value)")
-                                            .font(.system(size: 12))
-                                            .frame(maxWidth: .infinity, alignment: .center)
-                                    }
-                                }
-                                .frame(width: width)
-                                
-                            }
+                            
                         }
-                                                
-
+                        
+                    }
+                    .padding()
+                    
+                    
                     
                 }
-                .padding()
                 .padding(.bottom, 90)
                 .onAppear {
                     // 목업 데이터에서 id 매칭
                     if let found = Listing.listingData.first(where: { $0.id == listingId }) {
-                        listing = found
+                        viewModel.listing = found
                     }
                 }
+            }
+            .onAppear {
+                viewModel.loadListing(id: listingId)
             }
             HStack{
                 Button(action:{
                     
                 }){
-                    Image("chat2")
-                    
-                }
-                .frame(width: 50, height: 50)
-                .overlay(
-                    RoundedRectangle(cornerRadius: 10) // 둥근 사각형
-                        .stroke(Color.gray, lineWidth: 1) // 테두리 색과 두께
-                )
-                Button(action:{
-                    
-                }){
-                   Text("구매하기")
+                    Text("구매 문의")
                         .foregroundStyle(.white)
                         .fontWeight(.bold)
                     
@@ -221,6 +144,31 @@ struct ListingDetailView: View {
             .padding()
             
         }
+        .background(Color.backgroundGray100)
+        .navigationBarHidden(true)   // 기본 네비게이션 바 숨김
+        .navigationBarBackButtonHidden(true) // 기본 뒤로가기 숨김
+    }
+}
+
+struct ProfileinfoView: View {
+    var body: some View {
+        VStack{
+            HStack(spacing: 12){
+                Image("짱구")
+                    .resizable()
+                    .clipShape(Circle())
+                    .scaledToFill()
+                    .frame(width: 42, height: 42)
+                
+                Text("Hela Quintin")
+                Spacer()
+                
+            }
+            .padding(.vertical, 10)
+            .padding(.horizontal, 10)
+            .background(Color.white) // 배경색
+            .cornerRadius(12) // 모서리 둥글게
+        }
     }
 }
 
@@ -233,10 +181,89 @@ struct InfoRow: View{
             Text(label)
             Spacer()
             Text(value)
-       }
+        }
     }
 }
 
+struct PriceRangeView: View {
+    @ObservedObject var viewModel: ListingDetailViewModel
+    
+    var body: some View {
+        GeometryReader { geo in
+            let width = geo.size.width
+            let safeStartX = viewModel.safeStartX(width: width)
+            let safeWidth = viewModel.safeWidth(width: width)
+            let circleX = viewModel.circleX(width: width)
+            
+            let _ = print("""
+                        [DEBUG] width: \(width)
+                        safeStartX: \(safeStartX)
+                        safeWidth: \(safeWidth)
+                        circleX: \(circleX)
+                        currentValue: \(viewModel.currentValue)
+                        min: \(viewModel.minValue), max: \(viewModel.maxValue)
+                        """)
+            
+            VStack(spacing: 8) {
+                // 라벨 + 원
+                VStack(spacing: 4) {
+                    HStack(spacing: 4) {
+                        Image(systemName: "car.fill")
+                        Text("적정")
+                    }
+                    .font(.system(size: 12))
+                    .padding(.horizontal, 8)
+                    .padding(.vertical, 4)
+                    .background(Color.blue.opacity(0.15))
+                    .cornerRadius(6)
+                    
+                    Circle()
+                        .fill(Color.blue)
+                        .frame(width: 16, height: 16)
+                }
+                .offset(x: circleX - 8, y: -5) // 반지름만큼 보정
+                
+                // 막대기
+                ZStack(alignment: .leading) {
+                    Capsule()
+                        .fill(Color.gray.opacity(0.2))
+                        .frame(width: width, height: 6)
+                    
+                    Capsule()
+                        .fill(Color.blue)
+                        .frame(width: safeWidth, height: 6)
+                        .offset(x: safeStartX)
+                }
+                
+                // 눈금
+                HStack {
+                    ForEach([4010, 4293, 4576, 4859, 5142, 5425], id: \.self) { value in
+                        Text("\(value)")
+                            .font(.system(size: 12))
+                            .frame(maxWidth: .infinity, alignment: .center)
+                    }
+                }
+                .frame(width: width)
+            }
+        }
+        .frame(height: 100)
+        
+    }
+}
+
+
+
+
 #Preview {
-    //ListingDetailView()
+    
+    let previewVM = ListingDetailViewModel()
+    previewVM.listing = Listing.listingData.first ?? .placeholder
+    previewVM.currentValue = 4680 // 미리보기용 값
+    return PriceRangeView(viewModel: previewVM)
+        .frame(height: 120) // 최소 높이 지정
+        .padding()
+    
+    
+    
+    
 }
