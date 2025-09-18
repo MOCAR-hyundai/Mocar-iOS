@@ -86,7 +86,6 @@ struct ListingDetailView: View {
                             .cornerRadius(12)
                     }
                     .padding()
-                    
                     VStack{
                         Text("시세")
                             .font(.title3)
@@ -104,6 +103,7 @@ struct ListingDetailView: View {
                             PriceRangeView(viewModel: viewModel)
                                 .frame(height: 100)
                             
+
                             
                             
                         }
