@@ -7,7 +7,7 @@
 
 import SwiftUI
 
-struct FavoriteListCardView: View{
+struct FavoriteCardView: View{
     let listing: Listing
     let onToggleFavorite: () -> Void
     
@@ -43,5 +43,5 @@ struct FavoriteListCardView: View{
 }
 
 #Preview {
-    FavoriteListCardView()
+    //FavoriteListCardView()
 }

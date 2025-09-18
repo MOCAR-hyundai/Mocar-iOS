@@ -7,12 +7,36 @@
 
 import SwiftUI
 
-struct BrandIconListView: View {
+struct BrandIconView: View {
+    let brand: Brand
+    let isSelected: Bool
+    let onSelect: () -> Void
+    
     var body: some View {
-        Text(/*@START_MENU_TOKEN@*/"Hello, World!"/*@END_MENU_TOKEN@*/)
+        Button(action:{
+            onSelect()
+        }){
+            VStack{
+                Image(brand.logo)
+                    .resizable()
+                    .scaledToFit()
+                    .frame(width: 40, height: 40)
+                    .padding(15) // 이미지 주변에 여백 → 원 안에 들어가게
+                    .background(
+                        Circle()
+                            .fill(Color.white) // 흰 배경 원
+                            .overlay(
+                                Circle().stroke(isSelected ? Color.keyColorBlue : Color.borderGray, lineWidth: 1)
+                            )
+                            .frame(width: 65, height: 65)
+                    )
+                Text(brand.name)
+                    .foregroundColor(Color.textGray200)
+            }
+        }
     }
 }
 
 #Preview {
-    BrandIconListView()
+    //BrandIconListView()
 }
