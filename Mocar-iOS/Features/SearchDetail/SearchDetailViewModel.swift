@@ -19,6 +19,7 @@ final class SearchDetailViewModel: ObservableObject {
     @Published var selectedModel: String?
     @Published var recentKeyword: String = ""
     @Published var recentSearches: [String] = []
+    @Published var recentKeywords: [String] = []
     @Published var minPrice: Int
     @Published var maxPrice: Int
     @Published var minYear: Int
@@ -270,11 +271,34 @@ final class SearchDetailViewModel: ObservableObject {
         }
     }
 
+    func addRecentKeyword(_ keyword: String) {
+        let trimmed = keyword.trimmingCharacters(in: .whitespacesAndNewlines)
+        guard !trimmed.isEmpty else { return }
+        recentKeywords.removeAll { $0 == trimmed }
+        recentKeywords.insert(trimmed, at: 0)
+        if recentKeywords.count > 10 {
+            recentKeywords = Array(recentKeywords.prefix(10))
+        }
+    }
+
+    func removeRecentSearch(_ summary: String) {
+        recentSearches.removeAll { $0 == summary }
+    }
+
+    func removeRecentKeyword(_ keyword: String) {
+        recentKeywords.removeAll { $0 == keyword }
+    }
+
+    func clearRecentSearches() {
+        recentSearches.removeAll()
+    }
+
+    func clearRecentKeywords() {
+        recentKeywords.removeAll()
+    }
+
     func saveCurrentFiltersAsRecent() {
         var parts: [String] = []
-        if !recentKeyword.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty {
-            parts.append(recentKeyword)
-        }
         if let maker = selectedMaker {
             if let model = selectedModel {
                 parts.append("제조사: \(maker) / 모델: \(model)")
@@ -305,6 +329,8 @@ final class SearchDetailViewModel: ObservableObject {
     }
 
     func applyRecentSearch(_ summary: String) {
+        resetFilters()
+
         let parts = summary.components(separatedBy: " | ")
         for part in parts {
             if part.hasPrefix("차종:") {
@@ -352,8 +378,6 @@ final class SearchDetailViewModel: ObservableObject {
                 fuelOptions = fuelOptions.map { item in
                     CheckableItem(name: item.name, checked: fuels.contains(item.name))
                 }
-            } else {
-                recentKeyword = summary
             }
         }
     }

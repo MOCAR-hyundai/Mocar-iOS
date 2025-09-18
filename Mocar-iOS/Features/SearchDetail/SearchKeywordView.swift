@@ -27,6 +27,10 @@ struct SearchKeywordView: View {
             searchField
                 .padding(.top, 16)
                 .padding(.horizontal)
+            if !viewModel.recentKeywords.isEmpty {
+                recentKeywordsSection
+                    .padding(.horizontal)
+            }
             
             if query.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty {
                 Spacer()
@@ -42,8 +46,9 @@ struct SearchKeywordView: View {
                 } else {
                     List(results) { car in
                         Button(action: {
-                            viewModel.addRecentSearch("모델: \(car.model)")
+                            viewModel.addRecentKeyword(car.model)
                             viewModel.recentKeyword = car.model
+                            query = car.model
                             dismiss()
                         }) {
                             VStack(alignment: .leading, spacing: 4) {
@@ -113,4 +118,85 @@ struct SearchKeywordView: View {
         private func formattedMileage(_ value: Int) -> String {
             NumberFormatter.decimal.string(from: NSNumber(value: value)) ?? "\(value)"
         }
+
+        private var recentKeywordsSection: some View {
+            VStack(alignment: .leading, spacing: 12) {
+                if !viewModel.recentKeywords.isEmpty {
+                    HStack {
+                        Text("최근 검색 키워드")
+                            .font(.subheadline)
+                            .fontWeight(.semibold)
+                            .foregroundColor(.black)
+                        Spacer()
+                        Button("전체 삭제") {
+                            viewModel.clearRecentKeywords()
+                        }
+                        .font(.footnote)
+                        .foregroundColor(.red)
+                        .buttonStyle(.plain)
+                    }
+                    FlexibleKeywordChips(
+                        keywords: viewModel.recentKeywords,
+                        onTap: { keyword in
+                            query = keyword
+                            viewModel.recentKeyword = keyword
+                        },
+                        onDelete: { keyword in
+                            viewModel.removeRecentKeyword(keyword)
+                        }
+                    )
+                }
+            }
+        }
+}
+
+private struct FlexibleKeywordChips: View {
+    let keywords: [String]
+    var onTap: (String) -> Void
+    var onDelete: (String) -> Void
+    
+    var body: some View {
+        ScrollView(.horizontal, showsIndicators: false) {
+            HStack(spacing: 8) {
+                ForEach(keywords, id: \.self) { keyword in
+                    KeywordChip(
+                        keyword: keyword,
+                        onTap: { onTap(keyword) },
+                        onDelete: { onDelete(keyword) }
+                    )
+                }
+            }
+            .padding(.vertical, 4)
+        }
+    }
+}
+
+private struct KeywordChip: View {
+    let keyword: String
+    var onTap: () -> Void
+    var onDelete: () -> Void
+    
+    var body: some View {
+        HStack(spacing: 6) {
+            Text(keyword)
+                .font(.footnote)
+                .foregroundColor(.black)
+            Button(action: onDelete) {
+                Image(systemName: "xmark.circle.fill")
+                    .font(.caption2)
+                    .foregroundColor(.gray)
+            }
+            .buttonStyle(.plain)
+        }
+        .padding(.vertical, 5)
+        .padding(.horizontal, 10)
+        .background(
+            Capsule()
+                .fill(Color(UIColor.systemGray6))
+        )
+        .contentShape(Rectangle())
+        .onTapGesture {
+            onTap()
+        }
+    }
 }

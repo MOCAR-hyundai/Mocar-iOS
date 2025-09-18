@@ -22,11 +22,7 @@ struct RightOptionView: View {
             } else if selectedCategory == "주행거리" {
                 MileageFilterView(minMileage: $viewModel.minMileage, maxMileage: $viewModel.maxMileage)
             } else if selectedCategory == "차종" {
-                CarSizeFilterView(options: $viewModel.carTypeOptions, countProvider: viewModel.countForCarType) { updated in
-                    if updated.checked {
-                        viewModel.addRecentSearch("차종: \(updated.name)")
-                    }
-                }
+                CarSizeFilterView(options: $viewModel.carTypeOptions, countProvider: viewModel.countForCarType)
             } else if selectedCategory == "연료" {
                 FuelFilterView(options: $viewModel.fuelOptions, countProvider: viewModel.countForFuel)
             } else if selectedCategory == "지역" {

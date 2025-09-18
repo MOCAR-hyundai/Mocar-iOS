@@ -60,16 +60,38 @@ struct SearchView: View {
                 .sheet(isPresented: $showRecentSheet) {
                     NavigationStack {
                         List {
-                            ForEach(viewModel.recentSearches, id: \.self) { item in
-                                Button(action: {
-                                    viewModel.applyRecentSearch(item)
-                                    viewModel.recentKeyword = item
-                                    showRecentSheet = false
-                                }) {
-                                    Text(item)
-                                        .lineLimit(2)
+                            if viewModel.recentSearches.isEmpty {
+                                Text("저장된 검색 필터가 없습니다.")
+                                    .foregroundColor(.gray)
+                                    .padding(.vertical, 24)
+                            } else {
+                                Section(
+                                    header: HStack {
+                                        Text("최근 검색 기록")
+                                            .font(.headline)
+                                        Spacer()
+                                        Button("전체 삭제") {
+                                            viewModel.clearRecentSearches()
+                                        }
+                                        .font(.footnote)
+                                        .foregroundColor(.red)
+                                        .buttonStyle(.plain)
+                                    }
+                                ) {
+                                    ForEach(viewModel.recentSearches, id: \.self) { item in
+                                        RecentSearchRow(
+                                            summary: item,
+                                            onApply: {
+                                                viewModel.applyRecentSearch(item)
+                                                showRecentSheet = false
+                                            },
+                                            onDelete: {
+                                                viewModel.removeRecentSearch(item)
+                                            }
+                                        )
+                                        .listRowInsets(EdgeInsets(top: 8, leading: 0, bottom: 8, trailing: 0))
+                                    }
                                 }
-                                .buttonStyle(.plain)
                             }
                         }
                         .navigationTitle("최근 검색")
@@ -137,5 +159,45 @@ private extension SearchView {
         let formatter = NumberFormatter()
         formatter.numberStyle = .decimal
         return formatter.string(from: NSNumber(value: viewModel.filteredCount)) ?? "\(viewModel.filteredCount)"
+    }
+}
+
+private struct RecentSearchRow: View {
+    let summary: String
+    var onApply: () -> Void
+    var onDelete: () -> Void
+    
+    private var components: [String] {
+        summary.components(separatedBy: " | ")
+    }
+    
+    var body: some View {
+        HStack(alignment: .top, spacing: 12) {
+            VStack(alignment: .leading, spacing: 6) {
+                ForEach(Array(components.enumerated()), id: \.offset) { _, part in
+                    Text(part)
+                        .font(.subheadline)
+                        .foregroundColor(.black)
+                        .lineLimit(2)
+                        .multilineTextAlignment(.leading)
+                }
+            }
+            Spacer()
+            Button(action: onDelete) {
+                Image(systemName: "xmark.circle.fill")
+                    .foregroundColor(.gray)
+                    .font(.title3)
+            }
+            .buttonStyle(.plain)
+        }
+        .padding(16)
+        .background(
+            RoundedRectangle(cornerRadius: 12)
+                .fill(Color(UIColor.systemGray6))
+        )
+        .contentShape(Rectangle())
+        .onTapGesture {
+            onApply()
+        }
     }
 }
