@@ -9,29 +9,28 @@ import SwiftUI
 
 struct RightOptionView: View {
     @Binding var selectedCategory: String?
-    @Binding var minPrice: Int
-    @Binding var maxPrice: Int
-    @Binding var minYear: Int
-    @Binding var maxYear: Int
-    @Binding var minMileage: Int
-    @Binding var maxMileage: Int
+    @ObservedObject var viewModel: SearchDetailViewModel
     
     var body: some View {
         VStack {
             if selectedCategory == "제조사" {
-                BrandView()
+                BrandView(viewModel: viewModel)
             } else if selectedCategory == "가격" {
-                PriceFilterView(minPrice: $minPrice, maxPrice: $maxPrice)
+                PriceFilterView(minPrice: $viewModel.minPrice, maxPrice: $viewModel.maxPrice)
             } else if selectedCategory == "연식" {
-                YearFilterView(minYear: $minYear, maxYear: $maxYear)
+                YearFilterView(minYear: $viewModel.minYear, maxYear: $viewModel.maxYear)
             } else if selectedCategory == "주행거리" {
-                MileageFilterView(minMileage: $minMileage, maxMileage: $maxMileage)
+                MileageFilterView(minMileage: $viewModel.minMileage, maxMileage: $viewModel.maxMileage)
             } else if selectedCategory == "차종" {
-                CarSizeFilterView()
+                CarSizeFilterView(options: $viewModel.carTypeOptions, countProvider: viewModel.countForCarType) { updated in
+                    if updated.checked {
+                        viewModel.addRecentSearch("차종: \(updated.name)")
+                    }
+                }
             } else if selectedCategory == "연료" {
-                FuelFilterView()
+                FuelFilterView(options: $viewModel.fuelOptions, countProvider: viewModel.countForFuel)
             } else if selectedCategory == "지역" {
-                AreaFilterView()
+                AreaFilterView(options: $viewModel.areaOptions, countProvider: viewModel.countForArea)
             }
         }
         .frame(maxWidth: .infinity)

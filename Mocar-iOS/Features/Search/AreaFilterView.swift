@@ -8,25 +8,8 @@
 import SwiftUI
 
 struct AreaFilterView: View {
-    @State private var fuels: [CheckableItem] = [
-        CheckableItem(name: "서울", checked: false),
-        CheckableItem(name: "인천", checked: false),
-        CheckableItem(name: "대전", checked: false),
-        CheckableItem(name: "대구", checked: false),
-        CheckableItem(name: "광주", checked: false),
-        CheckableItem(name: "부산", checked: false),
-        CheckableItem(name: "울산", checked: false),
-        CheckableItem(name: "세종", checked: false),
-        CheckableItem(name: "경기", checked: false),
-        CheckableItem(name: "강원", checked: false),
-        CheckableItem(name: "경남", checked: false),
-        CheckableItem(name: "경북", checked: false),
-        CheckableItem(name: "전남", checked: false),
-        CheckableItem(name: "전북", checked: false),
-        CheckableItem(name: "충남", checked: false),
-        CheckableItem(name: "충북", checked: false),
-        CheckableItem(name: "제주", checked: false),
-    ]
+    @Binding var options: [CheckableItem]
+    var countProvider: (String) -> Int
     
     var body: some View {
         ScrollView {
@@ -34,9 +17,13 @@ struct AreaFilterView: View {
                 Text("지역")
                     .font(.headline)
                     .padding(.bottom, 10)
-                ForEach(fuels.indices, id: \.self) { idx in
-                    CheckOptionsRow(item: $fuels[idx])
-                    Divider()
+                ForEach(options.indices, id: \.self) { index in
+                    let optionName = options[index].name
+                    CheckOptionsRow(item: $options[index], count: countProvider(optionName)) { updated in
+                    }
+                    if index < options.count - 1 {
+                        Divider()
+                    }
                 }
             }
             .padding(.top, 20)
