@@ -36,19 +36,16 @@ struct BrandView: View {
     }
     
     var body: some View {
-        VStack(spacing: 0) {
+        VStack(alignment: .leading, spacing: 0) {
             if shouldHideMakerList {
                 selectionPanel
-                    .padding(.top, 16)
-                    .padding(.horizontal)
                 Spacer()
             } else {
                 ScrollView {
                     VStack(alignment: .leading, spacing: 0) {
                         Text("제조사")
-                            .font(.headline)
-                            .padding(.bottom, 12)
-                        VStack(spacing: 0) {
+                            .font(.footnote)
+                            .fontWeight(.semibold)
                                 ForEach(makers) { maker in
                                     let isDisabled = maker.count == 0
                                     Button(action: {
@@ -61,13 +58,12 @@ struct BrandView: View {
                                     .buttonStyle(.plain)
                                     .disabled(isDisabled)
                             }
-                        }
                     }
-                    .padding(.horizontal)
-                    .padding(.top, 16)
                 }
             }
         }
+        .padding(.horizontal)
+        .padding(.top, 20)
         .sheet(isPresented: $isMakerSheetPresented) {
             MakerSelectionView(
                 makers: makers,
@@ -93,7 +89,6 @@ struct BrandView: View {
                 onTap: { isMakerSheetPresented = true }
             )
             Divider()
-                .padding(.leading, 16)
             selectionRow(
                 title: "모델",
                 value: viewModel.selectedModel,
@@ -110,12 +105,6 @@ struct BrandView: View {
                 }
             )
         }
-        .background(Color.white)
-        .clipShape(RoundedRectangle(cornerRadius: 12))
-        .overlay(
-            RoundedRectangle(cornerRadius: 12)
-                .stroke(Color(UIColor.systemGray5), lineWidth: 1)
-        )
     }
 
     private func selectionRow(
@@ -126,9 +115,9 @@ struct BrandView: View {
         onTap: @escaping () -> Void
     ) -> some View {
         HStack(spacing: 16) {
-            Text(title)
-                .font(.subheadline)
-                .foregroundColor(.black)
+                Text(title)
+                    .font(.subheadline)
+                    .foregroundColor(.black)
             Spacer()
             if let value = value {
                 selectionChip(text: value, onClear: onClear)
@@ -140,11 +129,15 @@ struct BrandView: View {
             Image(systemName: "chevron.right")
                 .foregroundColor(.gray)
         }
+        .frame(maxWidth: .infinity, minHeight: 50)
         .padding(.horizontal, 16)
-        .padding(.vertical, 18)
         .contentShape(Rectangle())
         .onTapGesture {
-            onTap()
+            if title == "제조사" && value != nil {
+                onClear()
+            } else {
+                onTap()
+            }
         }
     }
 

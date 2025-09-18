@@ -20,7 +20,8 @@ struct PriceFilterView: View {
         VStack {
             VStack(alignment: .leading, spacing: 20) {
                 Text("가격")
-                    .font(.headline)
+                    .font(.footnote)
+                    .fontWeight(.semibold)
                 
                 // 슬라이더: Int ↔ Double 변환
                 RangeSlider(
@@ -62,6 +63,8 @@ struct PriceFilterView: View {
                 
                 Text("만원")
                 
+                Spacer()
+                Text("~")
                 Spacer()
                 
                 TextField("최대", text: $maxText)

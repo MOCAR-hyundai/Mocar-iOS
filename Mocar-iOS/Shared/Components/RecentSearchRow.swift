@@ -37,7 +37,7 @@ public struct RecentSearchRow: View {
         .padding(16)
         .background(
             RoundedRectangle(cornerRadius: 12)
-                .fill(Color(UIColor.systemGray6))
+                .fill(Color(UIColor.white))
         )
         .contentShape(Rectangle())
         .onTapGesture {

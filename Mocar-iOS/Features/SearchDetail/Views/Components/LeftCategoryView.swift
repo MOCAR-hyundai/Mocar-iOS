@@ -26,9 +26,12 @@ struct LeftCategoryView: View {
                         HStack {
                             Spacer(minLength: 4)
                             if hasSelection(category) {
-                                Image(systemName: "checkmark.circle.fill")
-                                    .font(.footnote)
-                                    .foregroundColor(.accentColor)
+                                        Image(systemName: "circle.fill")
+                                            .resizable()
+                                            .frame(width: 8, height: 8)
+                                            .font(.footnote)
+                                            .foregroundColor(.red)
+                                            .offset(x: -10, y: -10)
                             }
                         }
                     }

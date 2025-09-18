@@ -224,9 +224,10 @@ struct SearchResultsView: View {
                         }
                     )
                 
-              
+
         }
-        
+            .navigationBarBackButtonHidden(true)
+
     }
 
 }

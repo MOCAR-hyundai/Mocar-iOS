@@ -8,6 +8,7 @@
 import SwiftUI
 
 struct SearchView: View {
+    @Environment(\.dismiss) private var dismiss
     @StateObject private var viewModel = SearchDetailViewModel()
     @State private var selectedCategory: String? = "제조사"
     @State private var showRecentSheet: Bool = false
@@ -41,6 +42,7 @@ struct SearchView: View {
                     }
                     .buttonStyle(PlainButtonStyle())
                 }
+                .padding(.top, 16)
                 .padding(.horizontal)
                 
                 // 최근검색기록 (헤더 오른쪽에 팝업 열기 버튼)
@@ -48,36 +50,46 @@ struct SearchView: View {
                     Spacer()
                     Button(action: { showRecentSheet = true }) {
                         Text("최근검색기록")
-                            .font(.footnote)
-                            .foregroundColor(.blue)
                         Image(systemName: "chevron.right")
-                            .font(.caption)
-                            .foregroundColor(.blue)
                     }
+                    .font(.caption)
+                    .foregroundColor(.gray)
+                    
                 }
                 .padding()
-                .padding(.vertical, 8)
                 .sheet(isPresented: $showRecentSheet) {
-                    NavigationStack {
-                        List {
-                            if viewModel.recentSearches.isEmpty {
-                                Text("저장된 검색 필터가 없습니다.")
-                                    .foregroundColor(.gray)
-                                    .padding(.vertical, 24)
-                            } else {
-                                Section(
-                                    header: HStack {
-                                        Text("최근 검색 기록")
-                                            .font(.headline)
-                                        Spacer()
-                                        Button("전체 삭제") {
-                                            viewModel.clearRecentSearches()
-                                        }
-                                        .font(.footnote)
-                                        .foregroundColor(.red)
-                                        .buttonStyle(.plain)
-                                    }
-                                ) {
+                    VStack(spacing: 0) {
+                        // 상단 커스텀 헤더
+                        HStack {
+                            Text("최근 검색")
+                                .font(.headline)
+                                .foregroundColor(.black)
+                            Spacer()
+                            Button(action: {
+                                viewModel.clearRecentSearches()
+                            }) {
+                                Text("전체 삭제")
+                                    .font(.footnote)
+                                    .foregroundColor(.red)
+                            }
+                            .buttonStyle(.plain)
+                        }
+                        .padding()
+                        .background(Color.white)
+                        .shadow(color: Color.black.opacity(0.05), radius: 2, x: 0, y: 2)
+
+                        Divider()
+
+                        // 리스트 영역
+                        if viewModel.recentSearches.isEmpty {
+                            Spacer()
+                            Text("저장된 검색 필터가 없습니다.")
+                                .foregroundColor(.gray)
+                                .padding(.vertical, 24)
+                            Spacer()
+                        } else {
+                            ScrollView {
+                                LazyVStack(spacing: 0) {
                                     ForEach(viewModel.recentSearches, id: \.self) { item in
                                         RecentSearchRow(
                                             summary: item,
@@ -89,15 +101,29 @@ struct SearchView: View {
                                                 viewModel.removeRecentSearch(item)
                                             }
                                         )
-                                        .listRowInsets(EdgeInsets(top: 8, leading: 0, bottom: 8, trailing: 0))
+                                        .padding(.vertical, 8)
+                                        Divider()
                                     }
                                 }
+                                .padding(.horizontal)
                             }
                         }
-                        .navigationTitle("최근 검색")
-                        .toolbar { ToolbarItem(placement: .cancellationAction) { Button("닫기") { showRecentSheet = false } } }
+
+                        // 닫기 버튼
+                        Button(action: {
+                            showRecentSheet = false
+                        }) {
+                            Text("닫기")
+                                .font(.body)
+                                .foregroundColor(.black)
+                                .frame(maxWidth: .infinity)
+                                .frame(height: 50)
+                                .background(Color(UIColor.systemGray6))
+                                .cornerRadius(8)
+                                .padding()
+                        }
                     }
-                }
+                    .background(Color.white)                }
                 
                 Divider()
                 

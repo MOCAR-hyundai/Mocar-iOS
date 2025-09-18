@@ -15,7 +15,8 @@ struct FuelFilterView: View {
         ScrollView {
             VStack(alignment: .leading, spacing: 0) {
                 Text("연료")
-                    .font(.headline)
+                    .font(.footnote)
+                    .fontWeight(.semibold)
                     .padding(.bottom, 10)
                 ForEach(options.indices, id: \.self) { index in
                     let optionName = options[index].name

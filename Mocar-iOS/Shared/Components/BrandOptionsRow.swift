@@ -31,10 +31,8 @@ struct BrandOptionsRow: View {
                 Image(systemName: "chevron.right")
                     .foregroundColor(.gray)
             }
-            .padding(.horizontal, 16)
-            .frame(maxWidth: .infinity, minHeight: 56)
+            .frame(maxWidth: .infinity, minHeight: 50)
             Divider()
-                .padding(.leading, 16)
         }
         .contentShape(Rectangle())
     }
