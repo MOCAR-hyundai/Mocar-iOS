@@ -27,7 +27,7 @@ struct MyPageView: View {
                             .foregroundColor(.black)
                             .overlay(
                                 RoundedRectangle(cornerRadius: 50) // 충분히 큰 값이면 원처럼 둥글게
-                                    .stroke(Color.black, lineWidth: 1) // 테두리 색과 두께
+                                    .stroke(Color.lineGray, lineWidth: 1) // 테두리 색과 두께
                             )
                     }
                     Spacer()
@@ -45,7 +45,7 @@ struct MyPageView: View {
                             .padding(12) // 아이콘 주변 여백
                             .overlay(
                                 RoundedRectangle(cornerRadius: 50) // 충분히 큰 값이면 원처럼 둥글게
-                                    .stroke(Color.black, lineWidth: 1) // 테두리 색과 두께
+                                    .stroke(Color.lineGray, lineWidth: 1) // 테두리 색과 두께
                             )
                     }
                 }

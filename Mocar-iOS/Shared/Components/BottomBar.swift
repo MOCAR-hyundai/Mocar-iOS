@@ -10,6 +10,8 @@ import SwiftUI
 struct BottomBar: View {
     @State private var selectedTab: Int = 0
     
+    @StateObject var session = UserSession()
+    
     var body: some View {
         ZStack(alignment: .bottom) {
             // 메인 콘텐츠
@@ -18,7 +20,18 @@ struct BottomBar: View {
                 HomeView().tag(0)
                 SellCarFlowView().tag(1)
                 SearchView().tag(2)
-                ContentView().tag(3)
+//                ChatListView().tag(3)
+                
+               // ChatListView에 currentUserId 전달
+               if let user = session.user {
+                   ChatListView(currentUserId: user.id ?? "")
+                       .tag(3)
+               } else {
+                   Text("로그인 필요")
+                       .tag(3)
+               }
+                
+                
                 MyPageView().tag(4)
             }
             
