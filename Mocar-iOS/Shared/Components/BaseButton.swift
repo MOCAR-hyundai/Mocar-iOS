@@ -8,11 +8,27 @@
 import SwiftUI
 
 struct BaseButton: View {
+    let title:String
+    let backgroundColor:Color
+    let textColor: Color
+    let fontWeight: Font.Weight
+    let action: () -> Void
+    
     var body: some View {
-        Text(/*@START_MENU_TOKEN@*/"Hello, World!"/*@END_MENU_TOKEN@*/)
+        Button(action:action){
+            Text(title)
+                .foregroundColor(textColor)
+                .font(.system(size: 18))
+                .fontWeight(fontWeight)
+                .frame(maxWidth: .infinity)
+                .frame(height: 50)
+                .background(backgroundColor)
+                .cornerRadius(10)
+        }
     }
 }
-
 #Preview {
-    BaseButton()
+    
 }
+
+
