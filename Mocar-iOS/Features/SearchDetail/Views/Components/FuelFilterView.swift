@@ -19,8 +19,7 @@ struct FuelFilterView: View {
                     .padding(.bottom, 10)
                 ForEach(options.indices, id: \.self) { index in
                     let optionName = options[index].name
-                    CheckOptionsRow(item: $options[index], count: countProvider(optionName)) { updated in
-                    }
+                    CheckOptionsRow(item: $options[index], count: countProvider(optionName))
                     if index < options.count - 1 {
                         Divider()
                     }

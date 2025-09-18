@@ -135,7 +135,7 @@ struct SearchKeywordView: View {
                         .foregroundColor(.red)
                         .buttonStyle(.plain)
                     }
-                    FlexibleKeywordChips(
+                    SearchKeywordChipsView(
                         keywords: viewModel.recentKeywords,
                         onTap: { keyword in
                             query = keyword
@@ -148,55 +148,4 @@ struct SearchKeywordView: View {
                 }
             }
         }
-}
-
-private struct FlexibleKeywordChips: View {
-    let keywords: [String]
-    var onTap: (String) -> Void
-    var onDelete: (String) -> Void
-    
-    var body: some View {
-        ScrollView(.horizontal, showsIndicators: false) {
-            HStack(spacing: 8) {
-                ForEach(keywords, id: \.self) { keyword in
-                    KeywordChip(
-                        keyword: keyword,
-                        onTap: { onTap(keyword) },
-                        onDelete: { onDelete(keyword) }
-                    )
-                }
-            }
-            .padding(.vertical, 4)
-        }
-    }
-}
-
-private struct KeywordChip: View {
-    let keyword: String
-    var onTap: () -> Void
-    var onDelete: () -> Void
-    
-    var body: some View {
-        HStack(spacing: 6) {
-            Text(keyword)
-                .font(.footnote)
-                .foregroundColor(.black)
-            Button(action: onDelete) {
-                Image(systemName: "xmark.circle.fill")
-                    .font(.caption2)
-                    .foregroundColor(.gray)
-            }
-            .buttonStyle(.plain)
-        }
-        .padding(.vertical, 5)
-        .padding(.horizontal, 10)
-        .background(
-            Capsule()
-                .fill(Color(UIColor.systemGray6))
-        )
-        .contentShape(Rectangle())
-        .onTapGesture {
-            onTap()
-        }
-    }
 }
