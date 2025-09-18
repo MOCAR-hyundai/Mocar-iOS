@@ -8,7 +8,7 @@
 import SwiftUI
 
 struct SearchView: View {
-    @StateObject private var viewModel = SearchViewModel()
+    @StateObject private var viewModel = SearchDetailViewModel()
     @State private var selectedCategory: String? = "제조사"
     @State private var showRecentSheet: Bool = false
     

@@ -9,7 +9,7 @@ import SwiftUI
 
 struct RightOptionView: View {
     @Binding var selectedCategory: String?
-    @ObservedObject var viewModel: SearchViewModel
+    @ObservedObject var viewModel: SearchDetailViewModel
     
     var body: some View {
         VStack {

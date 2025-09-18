@@ -2,17 +2,17 @@
 //  ModelSelectionView.swift
 //  Mocar-iOS
 //
-//  Created by Codex on 9/19/25.
+//  Created by wj on 9/19/25.
 //
 
 import SwiftUI
 
 struct ModelSelectionView: View {
     @Environment(\.dismiss) private var dismiss
-    @ObservedObject var viewModel: SearchViewModel
+    @ObservedObject var viewModel: SearchDetailViewModel
     let maker: BrandView.Maker
     
-    private var models: [SearchViewModel.ModelSummary] {
+    private var models: [SearchDetailViewModel.ModelSummary] {
         viewModel.models(for: maker.name)
     }
     
@@ -94,7 +94,7 @@ struct ModelSelectionView: View {
             )
     }
     
-    private func modelSection(title: String, models: [SearchViewModel.ModelSummary]) -> some View {
+    private func modelSection(title: String, models: [SearchDetailViewModel.ModelSummary]) -> some View {
         VStack(alignment: .leading, spacing: 16) {
             sectionHeader(title)
             if models.isEmpty {

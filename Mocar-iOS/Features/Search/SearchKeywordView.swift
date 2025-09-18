@@ -2,14 +2,14 @@
 //  SearchKeywordView.swift
 //  Mocar-iOS
 //
-//  Created by Codex on 9/19/25.
+//  Created by wj on 9/19/25.
 //
 
 import SwiftUI
 
 struct SearchKeywordView: View {
     @Environment(\.dismiss) private var dismiss
-    @ObservedObject var viewModel: SearchViewModel
+    @ObservedObject var viewModel: SearchDetailViewModel
     @State private var query: String = ""
     @FocusState private var isSearchFieldFocused: Bool
     

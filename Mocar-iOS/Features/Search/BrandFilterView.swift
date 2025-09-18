@@ -14,7 +14,7 @@ struct BrandView: View {
         let count: Int
         let imageName: String
 
-        init(summary: SearchViewModel.MakerSummary) {
+        init(summary: SearchDetailViewModel.MakerSummary) {
             id = summary.id
             name = summary.name
             count = summary.count
@@ -22,7 +22,7 @@ struct BrandView: View {
         }
     }
 
-    @ObservedObject var viewModel: SearchViewModel
+    @ObservedObject var viewModel: SearchDetailViewModel
     @State private var presentingMaker: Maker?
     @State private var isModelSheetPresented = false
     @State private var isMakerSheetPresented = false

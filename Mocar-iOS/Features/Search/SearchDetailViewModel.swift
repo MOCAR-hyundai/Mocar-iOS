@@ -1,7 +1,7 @@
 import Foundation
 import SwiftUI
 
-final class SearchViewModel: ObservableObject {
+final class SearchDetailViewModel: ObservableObject {
     struct MakerSummary: Identifiable {
         let id = UUID()
         let name: String
