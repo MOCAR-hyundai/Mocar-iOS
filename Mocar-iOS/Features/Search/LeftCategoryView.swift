@@ -10,6 +10,7 @@ import SwiftUI
 struct LeftCategoryView: View {
     let categories: [String]
     @Binding var selectedCategory: String?
+    var hasSelection: (String) -> Bool = { _ in false }
     
     var body: some View {
         VStack(spacing: 0) {
@@ -17,13 +18,24 @@ struct LeftCategoryView: View {
                 Button(action: {
                     selectedCategory = category
                 }) {
-                    Text(category)
-                        .fontWeight(selectedCategory == category ? .bold : .regular)
-                        .foregroundColor(selectedCategory == category ? .black : .gray)
-                        .frame(maxWidth: .infinity, minHeight: 50)
-                        .background(
-                            selectedCategory == category ? Color.white : Color(UIColor.systemGray6)
-                        )
+                    ZStack {
+                        Text(category)
+                            .fontWeight(selectedCategory == category ? .bold : .regular)
+                            .foregroundColor(selectedCategory == category ? .black : .gray)
+                            .frame(maxWidth: .infinity)
+                        HStack {
+                            Spacer(minLength: 4)
+                            if hasSelection(category) {
+                                Image(systemName: "checkmark.circle.fill")
+                                    .font(.footnote)
+                                    .foregroundColor(.accentColor)
+                            }
+                        }
+                    }
+                    .frame(maxWidth: .infinity, minHeight: 50)
+                    .background(
+                        selectedCategory == category ? Color.white : Color(UIColor.systemGray6)
+                    )
                 }
                 .contentShape(Rectangle())
             }
@@ -33,4 +45,3 @@ struct LeftCategoryView: View {
         .background(Color(UIColor.systemGray6))
     }
 }
-
