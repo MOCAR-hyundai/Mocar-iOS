@@ -11,10 +11,21 @@ struct SearchKeywordView: View {
     @Environment(\.dismiss) private var dismiss
     @ObservedObject var viewModel: SearchDetailViewModel
     @State private var query: String = ""
+    @State private var debouncedQuery: String = ""
     @FocusState private var isSearchFieldFocused: Bool
     
+    // 디바운스 태스크
+    @State private var debounceTask: Task<Void, Never>? = nil
+    
+    // 검색 결과 (2글자 이상 + 디바운스 적용)
     private var results: [SearchCar] {
-        viewModel.searchCars(keyword: query)
+        guard debouncedQuery.count >= 2 else { return [] }
+        return viewModel.searchCars(keyword: debouncedQuery)
+    }
+    
+    // title별 그룹핑
+    private var groupedResults: [String: [SearchCar]] {
+        Dictionary(grouping: results, by: { $0.title })
     }
     
     private var categories: [String] {
@@ -26,9 +37,10 @@ struct SearchKeywordView: View {
         NavigationStack {
             VStack(spacing: 16) {
                 HStack {
-                    Button(action: {
+                    Button {
                         dismiss()
-                    }) {
+                        query = ""
+                    } label: {
                         Image(systemName: "chevron.left")
                             .font(.title2)
                             .foregroundColor(.black)
@@ -37,12 +49,11 @@ struct SearchKeywordView: View {
                 }
                 .padding(.top, 16)
                 .padding(.horizontal)
+                
                 if !viewModel.recentKeywords.isEmpty {
                     recentKeywordsSection
                         .padding(.horizontal)
                 }
-                
-                
                 
                 if query.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty {
                     Spacer()
@@ -56,53 +67,60 @@ struct SearchKeywordView: View {
                             .foregroundColor(.gray)
                         Spacer()
                     } else {
-                        List(results) { car in
-//                            Button(action: {
-//                                viewModel.addRecentKeyword(car.model)
-//                                viewModel.recentKeyword = car.model
-//                                query = car.model
-//                                })
-                            
-                            NavigationLink(
-                                destination: SearchResultsView(
-//                                    query: car.model,
-//                                    viewModel: viewModel
-                                )
-                            )
-                            {
-                                VStack(alignment: .leading, spacing: 4) {
-                                    Text("\(car.maker) \(car.model)")
-                                        .font(.headline)
-                                    HStack(spacing: 12) {
-                                        Text("연식 \(car.year)년")
-                                            .font(.subheadline)
-                                            .foregroundColor(.gray)
-                                        Text("가격 \(formattedPrice(car.price))만원")
-                                            .font(.subheadline)
-                                            .foregroundColor(.gray)
-                                        Text("주행 \(formattedMileage(car.mileage))km")
-                                            .font(.subheadline)
-                                            .foregroundColor(.gray)
+                        // title별로 중복 제거하고 리스트
+                        List(groupedResults.keys.sorted(), id: \.self) { title in
+                            if let cars = groupedResults[title], let car = cars.first {
+                                NavigationLink(destination: SearchResultsView()) {
+                                    VStack(alignment: .leading, spacing: 4) {
+                                        HStack {
+                                            Text("\(title)")
+                                                .font(.headline)
+                                            Spacer()
+                                            Text("\(cars.count)대")
+                                        }
+                                        HStack(spacing: 12) {
+                                            Text("연식 \(car.year)년")
+                                                .font(.subheadline)
+                                                .foregroundColor(.gray)
+                                            Text("가격 \(formattedPrice(car.price))만원")
+                                                .font(.subheadline)
+                                                .foregroundColor(.gray)
+                                            Text("주행 \(formattedMileage(car.mileage))km")
+                                                .font(.subheadline)
+                                                .foregroundColor(.gray)
+                                        }
                                     }
+                                    .padding(.vertical, 8)
                                 }
-                                .padding(.vertical, 8)
+                                .simultaneousGesture(TapGesture().onEnded {
+                                    viewModel.addRecentKeyword(title)
+                                    viewModel.recentKeyword = ""
+                                    query = ""
+                                })
+                                .buttonStyle(.plain)
                             }
-                            .buttonStyle(.plain)
                         }
                         .listStyle(.plain)
                     }
                 }
             }
-            
             .navigationBarBackButtonHidden(true)
             .onAppear {
                 query = viewModel.recentKeyword
+                debouncedQuery = query
                 DispatchQueue.main.asyncAfter(deadline: .now() + 0.1) {
                     isSearchFieldFocused = true
                 }
             }
-            .onChange(of: query) { newValue, _ in
-                viewModel.recentKeyword = newValue
+            // 디바운스 적용
+            .onChange(of: query) { newValue in
+                debounceTask?.cancel()
+                debounceTask = Task {
+                    try? await Task.sleep(nanoseconds: 300_000_000) // 0.3초 딜레이
+                    if !Task.isCancelled {
+                        debouncedQuery = newValue
+                    }
+                }
             }
         }
     }
@@ -118,7 +136,9 @@ struct SearchKeywordView: View {
                 .focused($isSearchFieldFocused)
             
             if !query.isEmpty {
-                Button(action: { query = "" }) {
+                Button {
+                    query = ""
+                } label: {
                     Image(systemName: "xmark.circle.fill")
                         .foregroundColor(.gray)
                 }

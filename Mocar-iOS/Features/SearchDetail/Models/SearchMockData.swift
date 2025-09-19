@@ -1,9 +1,18 @@
+//
+//  AreaFilterView.swift
+//  Mocar-iOS
+//
+//  Created by wj on 9/18/25.
+//
+
 import Foundation
 
 struct SearchCar: Identifiable, Hashable {
     let id = UUID()
+    let title: String
     let maker: String
     let model: String
+    let trim: String
     let category: String
     let fuel: String
     let area: String
@@ -81,18 +90,18 @@ enum SearchMockData {
                 let area = areas[areaIndex % areas.count]
                 areaIndex += 1
                 let fuel = seed.fuels[offset % seed.fuels.count]
-                entries.append(
-                    SearchCar(
-                        maker: seed.maker,
-                        model: seed.model,
-                        category: seed.category,
-                        fuel: fuel,
-                        area: area,
-                        year: year,
-                        price: price,
-                        mileage: mileage
-                    )
-                )
+//                entries.append(
+//                    SearchCar(
+//                        maker: seed.maker,
+//                        model: seed.model,
+//                        category: seed.category,
+//                        fuel: fuel,
+//                        area: area,
+//                        year: year,
+//                        price: price,
+//                        mileage: mileage
+//                    )
+//                )
             }
         }
         return entries

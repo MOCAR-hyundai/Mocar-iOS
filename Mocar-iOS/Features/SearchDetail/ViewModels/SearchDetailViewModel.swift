@@ -1,6 +1,14 @@
+//
+//  AreaFilterView.swift
+//  Mocar-iOS
+//
+//  Created by wj on 9/17/25.
+//
+
 import Foundation
 import SwiftUI
 
+@MainActor
 final class SearchDetailViewModel: ObservableObject {
     struct MakerSummary: Identifiable {
         let id = UUID()
@@ -29,6 +37,8 @@ final class SearchDetailViewModel: ObservableObject {
     @Published var fuelOptions: [CheckableItem]
     @Published var areaOptions: [CheckableItem]
     @Published var carTypeOptions: [CheckableItem]
+    @Published var isLoading: Bool = false
+    @Published var loadErrorMessage: String?
     
     let priceRange: ClosedRange<Int> = 0...10000
     let mileageRange: ClosedRange<Int> = 0...200000
@@ -36,19 +46,29 @@ final class SearchDetailViewModel: ObservableObject {
     
     private let makerImages: [String: String] = [
         "현대": "hyundai 1",
+        "hyundai": "hyundai 1",
         "제네시스": "genesis",
+        "genesis": "genesis",
         "기아": "kia",
+        "kia": "kia",
         "르노코리아": "renault",
+        "renault": "renault",
         "쉐보레": "chevrolet",
+        "chevrolet": "chevrolet",
         "벤츠": "benz",
-        "BMW": "BMW",
+        "mercedes-benz": "benz",
+        "bmw": "BMW",
         "아우디": "audi",
+        "audi": "audi",
         "테슬라": "tesla",
-        "페라리": "ferrari"
+        "tesla": "tesla",
+        "페라리": "ferrari",
+        "ferrari": "ferrari"
     ]
     
     private(set) var allCars: [SearchCar]
-    private let makerToModels: [String: [String]]
+    private var makerToModels: [String: [String]]
+    private let repository = SearchListingRepository()
     
     private enum FilterDimension: Hashable {
         case carType
@@ -57,12 +77,9 @@ final class SearchDetailViewModel: ObservableObject {
     }
     
     init() {
-        allCars = SearchMockData.cars
-        var grouped: [String: Set<String>] = [:]
-        for car in allCars {
-            grouped[car.maker, default: []].insert(car.model)
-        }
-        makerToModels = grouped.mapValues { Array($0).sorted() }
+        let fallbackCars = SearchMockData.cars
+        allCars = fallbackCars
+        makerToModels = Self.groupModels(from: fallbackCars)
         let currentYear = Calendar.current.component(.year, from: Date())
         let lowerYear = max(currentYear - 20, 2006)
         yearRange = lowerYear...currentYear
@@ -72,45 +89,11 @@ final class SearchDetailViewModel: ObservableObject {
         maxYear = yearRange.upperBound
         minMileage = mileageRange.lowerBound
         maxMileage = mileageRange.upperBound
-        fuelOptions = [
-            CheckableItem(name: "가솔린(휘발유)", checked: false),
-            CheckableItem(name: "디젤(경유)", checked: false),
-            CheckableItem(name: "전기", checked: false),
-            CheckableItem(name: "LPG", checked: false),
-            CheckableItem(name: "하이브리드", checked: false)
-        ]
-        areaOptions = [
-            CheckableItem(name: "서울", checked: false),
-            CheckableItem(name: "인천", checked: false),
-            CheckableItem(name: "대전", checked: false),
-            CheckableItem(name: "대구", checked: false),
-            CheckableItem(name: "광주", checked: false),
-            CheckableItem(name: "부산", checked: false),
-            CheckableItem(name: "울산", checked: false),
-            CheckableItem(name: "세종", checked: false),
-            CheckableItem(name: "경기", checked: false),
-            CheckableItem(name: "강원", checked: false),
-            CheckableItem(name: "경남", checked: false),
-            CheckableItem(name: "경북", checked: false),
-            CheckableItem(name: "전남", checked: false),
-            CheckableItem(name: "전북", checked: false),
-            CheckableItem(name: "충남", checked: false),
-            CheckableItem(name: "충북", checked: false),
-            CheckableItem(name: "제주", checked: false)
-        ]
-        carTypeOptions = [
-            CheckableItem(name: "경차", checked: false),
-            CheckableItem(name: "소형", checked: false),
-            CheckableItem(name: "준중형", checked: false),
-            CheckableItem(name: "중형", checked: false),
-            CheckableItem(name: "대형", checked: false),
-            CheckableItem(name: "스포츠카", checked: false),
-            CheckableItem(name: "SUV", checked: false),
-            CheckableItem(name: "RV", checked: false),
-            CheckableItem(name: "승합", checked: false),
-            CheckableItem(name: "트럭", checked: false),
-            CheckableItem(name: "버스", checked: false)
-        ]
+        fuelOptions = Self.buildOptions(from: fallbackCars.map { $0.fuel })
+        areaOptions = Self.buildOptions(from: fallbackCars.map { $0.area })
+        carTypeOptions = Self.buildOptions(from: fallbackCars.map { $0.category })
+        
+        Task { await loadListings() }
     }
     
     var filteredCars: [SearchCar] {
@@ -126,7 +109,7 @@ final class SearchDetailViewModel: ObservableObject {
         }
         let makers = makerToModels.keys.sorted()
         return makers.map { maker in
-            MakerSummary(name: maker, count: counts[maker] ?? 0, imageName: makerImages[maker] ?? "hyundai 1")
+            MakerSummary(name: maker, count: counts[maker] ?? 0, imageName: imageName(for: maker))
         }
         .sorted { left, right in
             if left.count == right.count {
@@ -245,10 +228,10 @@ final class SearchDetailViewModel: ObservableObject {
         let fuels = Array(selectedFuels).sorted()
         let areas = Array(selectedAreas).sorted()
         let carTypes = Array(selectedCarTypes).sorted()
-        let searchKeyword = recentKeyword.isEmpty ? "없음" : recentKeyword
+//        let searchKeyword = recentKeyword.isEmpty ? "없음" : recentKeyword
 
         print("===== 검색 필터 =====")
-        print("검색어: \(searchKeyword)")
+//        print("검색어: \(searchKeyword)")
         print("제조사: \(maker)")
         print("모델: \(model)")
         print("가격: \(minPrice)만원 ~ \(maxPrice)만원")
@@ -417,10 +400,96 @@ final class SearchDetailViewModel: ObservableObject {
 
     func searchCars(keyword: String) -> [SearchCar] {
         let trimmed = keyword.trimmingCharacters(in: .whitespacesAndNewlines)
-        guard trimmed.isEmpty == false else { return [] }
         let lowered = trimmed.lowercased()
-        return allCars.filter { car in
-            car.model.lowercased().contains(lowered)
+        let filtered = allCars.filter { car in
+            car.title.lowercased().contains(lowered)
         }
+        
+        // title 기준 중복 제거
+        var seenTitles = Set<String>()
+        let uniqueTitle = filtered.filter { car in
+            if seenTitles.contains(car.title) {
+                return false
+            } else {
+                seenTitles.insert(car.title)
+                return true
+            }
+        }
+        return uniqueTitle
+    }
+    
+    private func loadListings() async {
+        isLoading = true
+        loadErrorMessage = nil
+        do {
+            let remoteCars = try await repository.fetchAvailableListings()
+            applyDataset(remoteCars)
+        } catch {
+            loadErrorMessage = error.localizedDescription
+            print("⚠️ 검색 목록 로드 실패: \(error.localizedDescription)")
+        }
+        isLoading = false
+    }
+    
+    private func applyDataset(_ cars: [SearchCar]) {
+        guard !cars.isEmpty else { return }
+        allCars = cars
+        makerToModels = Self.groupModels(from: cars)
+        configureFilterOptions(with: cars)
+        normalizeSelectionBounds()
+    }
+    
+    private func configureFilterOptions(with cars: [SearchCar]) {
+        let selectedFuelSet = selectedFuels
+        let selectedAreaSet = selectedAreas
+        let selectedCarTypeSet = selectedCarTypes
+        
+        fuelOptions = Self.buildOptions(from: cars.map { $0.fuel }, selected: selectedFuelSet)
+        areaOptions = Self.buildOptions(from: cars.map { $0.area }, selected: selectedAreaSet)
+        carTypeOptions = Self.buildOptions(from: cars.map { $0.category }, selected: selectedCarTypeSet)
+    }
+    
+    private func normalizeSelectionBounds() {
+        let years = allCars.map { $0.year }
+        if let minYearAvailable = years.min(), let maxYearAvailable = years.max() {
+            minYear = max(minYear, minYearAvailable)
+            maxYear = min(maxYear, maxYearAvailable)
+        }
+        let prices = allCars.map { $0.price }
+        if let minPriceAvailable = prices.min(), let maxPriceAvailable = prices.max() {
+            minPrice = max(minPrice, minPriceAvailable)
+            maxPrice = min(maxPrice, maxPriceAvailable)
+        }
+        let mileages = allCars.map { $0.mileage }
+        if let minMileageAvailable = mileages.min(), let maxMileageAvailable = mileages.max() {
+            minMileage = max(minMileage, minMileageAvailable)
+            maxMileage = min(maxMileage, maxMileageAvailable)
+        }
+    }
+    
+    private static func buildOptions(from names: [String], selected: Set<String> = []) -> [CheckableItem] {
+        let uniqueNames = Array(Set(names)).sorted()
+        return uniqueNames.map { name in
+            CheckableItem(name: name, checked: selected.contains(name))
+        }
+    }
+    
+    private static func groupModels(from cars: [SearchCar]) -> [String: [String]] {
+        var grouped: [String: Set<String>] = [:]
+        for car in cars {
+            grouped[car.maker, default: []].insert(car.model)
+        }
+        return grouped.mapValues { Array($0).sorted() }
+    }
+
+    private func imageName(for maker: String) -> String {
+        if let direct = makerImages[maker] {
+            return direct
+        }
+        let lowercased = maker.lowercased()
+        if let normalized = makerImages[lowercased] {
+            return normalized
+        }
+        return "hyundai 1"
     }
 }
