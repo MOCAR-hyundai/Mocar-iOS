@@ -20,18 +20,8 @@ struct ListingDetailView: View {
                     ScrollView{
                         VStack{
                             ZStack(alignment: .topTrailing){
-                                Image("현대차-아이오닉-4-01")
-                                    .resizable()
-                                    .scaledToFit()
-                                    .frame(maxWidth: .infinity, maxHeight: 600)
-                                Button(action: {
-                                    viewModel.toggleFavorite(listing)
-                                }) {
-                                    Image(systemName: viewModel.favorites.contains(where: {$0.id == listing.id}) ? "heart.fill" : "heart")
-                                        .foregroundColor(.red)
-                                        .frame(width: 30, height: 30)
-                                }
-                                .padding(14)
+                                CarImageTabView(images: listing.images)
+                                FavoriteButton(isFavorite: viewModel.favorites.contains(where: {$0.id == listing.id}), action: {viewModel.toggleFavorite(listing)})
                             }
                             
                             //차량 기본 정보
@@ -49,7 +39,7 @@ struct ListingDetailView: View {
                                     .padding(.leading,8)
                                     .font(.title2)
                                     .fontWeight(.bold)
-                                    .foregroundColor(Color(hex: "#3058EF"))
+                                    .foregroundColor(Color.keyColorBlue)
                             }
                             .padding(.horizontal)
                             
@@ -66,11 +56,11 @@ struct ListingDetailView: View {
                                     InfoRow(label: "연식", value: "\(listing.year)")
                                     InfoRow(label: "변속기", value: listing.transmission ?? "0cc")
                                     InfoRow(label: "차종", value: listing.carType ?? "-")
-                                    InfoRow(label: "배기량", value: listing.description)
+                                    InfoRow(label: "주행거리", value: "\(listing.mileage)km")
                                     InfoRow(label: "연료", value: listing.fuel)
                                 }
                                 .padding()
-                                .background(Color.white)
+                                .background(Color.pureWhite)
                                 .cornerRadius(12)
                                 
                             }
@@ -83,7 +73,7 @@ struct ListingDetailView: View {
                                     .font(.title3)
                                     .fontWeight(.semibold)
                                     .padding(.bottom,3)
-                                Text("실내외 사용감이 다수 있습니다. 조수석 뒤 휠에 경미한 흠집이 있고 조수석 도외 외부 도어캐치 부근 경미한 붓 터치 자국이 있습니다.")
+                                Text(listing.description)
                                     .frame(maxWidth: .infinity, alignment: .leading)
                                     .padding()
                                     .background(Color.white)

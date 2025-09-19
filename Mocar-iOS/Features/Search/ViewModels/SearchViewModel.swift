@@ -11,11 +11,11 @@ class SearchViewModel: ObservableObject {
     @Published var listings: [Listing] = []
     
     init() {
-        //loadDummyData()
+        loadDummyData()
     }
     
-//    func loadDummyData() {
-//        listings = [
+    func loadDummyData() {
+        listings = [
 //            Listing(
 //                id: "11",
 //                sellerId: "user_001",
@@ -32,9 +32,9 @@ class SearchViewModel: ObservableObject {
 //                region: "경기",
 //                description: "23년식, 하이브리드, 무사고 차량",
 //                images: ["Carresult2"],
-//                status: "on_sale",
-//                createdAt: Date(),
-//                updatedAt: Date()
+//                //status: "on_sale",
+//                //createdAt: Date(),
+//                //updatedAt: Date()
 //            ),
 //            Listing(
 //                id: "12",
@@ -76,6 +76,6 @@ class SearchViewModel: ObservableObject {
 //                createdAt: Date(),
 //                updatedAt: Date()
 //            )
-//        ]
-//    }
+        ]
+    }
 }
