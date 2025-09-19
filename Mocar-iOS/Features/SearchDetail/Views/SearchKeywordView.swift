@@ -55,7 +55,7 @@ struct SearchKeywordView: View {
                         .padding(.horizontal)
                 }
                 
-                if query.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty {
+                if query.trimmingCharacters(in: .whitespacesAndNewlines).count < 2 {
                     Spacer()
                     Text("모델명을 입력해 차량을 검색하세요.")
                         .foregroundColor(.gray)

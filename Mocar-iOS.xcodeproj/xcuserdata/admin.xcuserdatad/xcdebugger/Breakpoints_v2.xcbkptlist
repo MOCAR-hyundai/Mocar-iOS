@@ -14,8 +14,8 @@
             filePath = "Mocar-iOS/Features/SearchDetail/ViewModels/SearchDetailViewModel.swift"
             startingColumnNumber = "9223372036854775807"
             endingColumnNumber = "9223372036854775807"
-            startingLineNumber = "403"
-            endingLineNumber = "403"
+            startingLineNumber = "401"
+            endingLineNumber = "401"
             landmarkName = "searchCars(keyword:)"
             landmarkType = "7">
          </BreakpointContent>
@@ -30,8 +30,8 @@
             filePath = "Mocar-iOS/Features/SearchDetail/ViewModels/SearchDetailViewModel.swift"
             startingColumnNumber = "9223372036854775807"
             endingColumnNumber = "9223372036854775807"
-            startingLineNumber = "426"
-            endingLineNumber = "426"
+            startingLineNumber = "424"
+            endingLineNumber = "424"
             landmarkName = "loadListings()"
             landmarkType = "7">
          </BreakpointContent>

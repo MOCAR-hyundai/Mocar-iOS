@@ -77,9 +77,9 @@ final class SearchDetailViewModel: ObservableObject {
     }
     
     init() {
-        let fallbackCars = SearchMockData.cars
-        allCars = fallbackCars
-        makerToModels = Self.groupModels(from: fallbackCars)
+        // Initialize empty datasets; real data will be loaded from Firestore via repository
+        allCars = []
+        makerToModels = [:]
         let currentYear = Calendar.current.component(.year, from: Date())
         let lowerYear = max(currentYear - 20, 2006)
         yearRange = lowerYear...currentYear
@@ -89,10 +89,11 @@ final class SearchDetailViewModel: ObservableObject {
         maxYear = yearRange.upperBound
         minMileage = mileageRange.lowerBound
         maxMileage = mileageRange.upperBound
-        fuelOptions = Self.buildOptions(from: fallbackCars.map { $0.fuel })
-        areaOptions = Self.buildOptions(from: fallbackCars.map { $0.area })
-        carTypeOptions = Self.buildOptions(from: fallbackCars.map { $0.category })
-        
+        fuelOptions = []
+        areaOptions = []
+        carTypeOptions = []
+
+        // Trigger loading from Firestore
         Task { await loadListings() }
     }
     
@@ -228,10 +229,8 @@ final class SearchDetailViewModel: ObservableObject {
         let fuels = Array(selectedFuels).sorted()
         let areas = Array(selectedAreas).sorted()
         let carTypes = Array(selectedCarTypes).sorted()
-//        let searchKeyword = recentKeyword.isEmpty ? "없음" : recentKeyword
 
         print("===== 검색 필터 =====")
-//        print("검색어: \(searchKeyword)")
         print("제조사: \(maker)")
         print("모델: \(model)")
         print("가격: \(minPrice)만원 ~ \(maxPrice)만원")
@@ -426,7 +425,7 @@ final class SearchDetailViewModel: ObservableObject {
             applyDataset(remoteCars)
         } catch {
             loadErrorMessage = error.localizedDescription
-            print("⚠️ 검색 목록 로드 실패: \(error.localizedDescription)")
+            print("검색 목록 로드 실패: \(error.localizedDescription)")
         }
         isLoading = false
     }

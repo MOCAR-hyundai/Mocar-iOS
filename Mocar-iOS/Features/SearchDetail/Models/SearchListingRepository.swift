@@ -1,5 +1,28 @@
+//
+//  AreaFilterView.swift
+//  Mocar-iOS
+//
+//  Created by wj on 9/17/25.
+//
+
 import Foundation
 import FirebaseFirestore
+
+import Foundation
+
+struct SearchCar: Identifiable, Hashable {
+    let id = UUID()
+    let title: String
+    let maker: String
+    let model: String
+    let trim: String
+    let category: String
+    let fuel: String
+    let area: String
+    let year: Int
+    let price: Int
+    let mileage: Int
+}
 
 struct ListingEntity: Codable {
     let listingId: String?
