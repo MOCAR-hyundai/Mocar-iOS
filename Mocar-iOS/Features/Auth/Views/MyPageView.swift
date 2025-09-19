@@ -35,6 +35,7 @@ struct MyPageView: View {
                         .font(.system(size: 18, weight: .bold, design: .default))
                     
                     
+                    
                     Spacer()
                     
                     Button(action: {
@@ -122,20 +123,20 @@ struct MyPageView: View {
                     
                     Spacer()
                     
-                    Button(action: {
-                        // Edit profile action
-                    }) {
-                        VStack{
-                             Image("edit")
-                                 .resizable()           // 이미지 크기 조절 가능하게
-                                 .scaledToFit()         // 비율 유지
-                                 .frame(width: 18, height: 18) // 원하는 크기
-
-                             Text("Edit profile")
-                                 .font(.footnote)
-                                 .foregroundColor(.gray)
-                         }
-                    }
+//                    Button(action: {
+//                        // Edit profile action
+//                    }) {
+//                        VStack{
+//                             Image("edit")
+//                                 .resizable()           // 이미지 크기 조절 가능하게
+//                                 .scaledToFit()         // 비율 유지
+//                                 .frame(width: 18, height: 18) // 원하는 크기
+//
+//                             Text("Edit profile")
+//                                 .font(.footnote)
+//                                 .foregroundColor(.gray)
+//                         }
+//                    }
                 }
                 .padding(.horizontal)
                 .padding(.vertical,4)
@@ -165,11 +166,15 @@ struct MyPageView: View {
                     .padding(.horizontal)
                 
                 VStack(spacing: 0) {
-                    ProfileRow(icon: "gearshape", title: "Settings")
+                    ProfileRow(icon: "gearshape", title: "회원 정보 수정")
                     ProfileRow(icon: "arrow.right.square", title: "Log out")
                     .onTapGesture {
                         viewModel.logout()
                     }
+                    
+                    ProfileRow(icon: "person.fill.xmark", title: "회원 탈퇴")
+                    ProfileRow(icon: "person.badge.minus", title: "회원 탈퇴")
+                    
                 }
                 .padding(.horizontal)
                 .padding(.bottom, 4)
@@ -207,8 +212,9 @@ struct ProfileRow: View {
                 .foregroundColor(Color.textGray300)
             
             Spacer()
-            Image(systemName: "chevron.right")
+            Image(systemName: "chevron.right")//person.badge.minus
                 .foregroundColor(.gray)
+            
         }
         .padding(.bottom, 16)
     }

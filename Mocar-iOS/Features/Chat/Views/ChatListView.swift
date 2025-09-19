@@ -11,6 +11,8 @@ struct ChatListView: View {
     @StateObject private var vm = ChatListViewModel()
     @StateObject private var userStore = UserStore()
     @Environment(\.dismiss) private var dismiss
+    
+    @State private var showSearchBar = false  // 검색창 표시 여부
 
     let currentUserId: String   // 로그인한 사용자 UID
     @State private var searchText: String = "" // 검색 기능용
@@ -26,6 +28,7 @@ struct ChatListView: View {
         NavigationView {
             VStack {
                 HStack {
+                    // 탑 바
                     Button(action: {
                         // 뒤로가기 액션
                         dismiss()
@@ -39,12 +42,31 @@ struct ChatListView: View {
                                     .stroke(Color.lineGray, lineWidth: 1) // 테두리 색과 두께
                             )
                     }
-                    Spacer()
+                    
+                    // 현재 유저의 프로필 이미지 실제 이미지 불러와 지는 지  db에 값 올리고 확인
+                    AsyncImage(url: URL(string: userStore.users[currentUserId]?.photoUrl ?? "")) { image in
+                        image.resizable()
+                    } placeholder: {
+                        Circle().fill(Color.gray.opacity(0.3))
+                    }
+                    .frame(width: 45, height: 45)
+                    .clipShape(Circle())
+                    
                     Text("Chats")
                         .font(.system(size: 18, weight: .bold, design: .default))
                     
-                    
                     Spacer()
+                    
+                    // 🔍 버튼
+                   Button {
+                       withAnimation {
+                           showSearchBar.toggle()
+                       }
+                   } label: {
+                       Image("Search")
+                           .foregroundColor(.gray)
+                           .padding(8)
+                   }
                     
                     Button(action: {
                         // 점 세개 액션
@@ -64,25 +86,100 @@ struct ChatListView: View {
                 .padding(.bottom, 5)
                 .background(Color.backgroundGray100) // <- F8F8F8 배경
                 
-                // 검색 바
-                TextField("Search your dream car...", text: $searchText)
-                    .padding(10)
-                    .background(Color.gray.opacity(0.2))
-                    .cornerRadius(10)
-                    .padding(.horizontal)
+                Divider()
+                    .padding(.leading, 20)
+                    .padding(.trailing, 20)
+                
+                // 검색 바 (조건부 표시)
+              if showSearchBar {
+                  HStack {
+                      Image("Search")
+                          .foregroundColor(.gray)
+                          .padding(.leading, 15)
+
+                      TextField("Search your dream car...", text: .constant(""))
+                          .padding(.vertical, 10)
+                  }
+                  .frame(height: 48)
+                  .background(
+                      RoundedRectangle(cornerRadius: 8)
+                          .stroke(Color.gray, lineWidth: 1)
+                          .background(Color.white.cornerRadius(8))
+                  )
+                  .padding(.horizontal)
+                  .padding(.top, 10)
+                  .transition(.move(edge: .top).combined(with: .opacity)) // 애니메이션 효과
+              }
+
 
                 // 채팅방 리스트
+//                List {
+//                    ForEach(filteredChats) { chat in
+//                        ChatRow(chat: chat,
+//                                currentUserId: currentUserId,
+//                                userStore: userStore,
+//                                vm: vm)
+//                    }
+//                }
+//                .listStyle(PlainListStyle())
+                
                 List {
                     ForEach(filteredChats) { chat in
-                        ChatRow(chat: chat,
+                        ZStack {
+                            // 커스텀 리스트 요소
+                            ChatRow(
+                                chat: chat,
                                 currentUserId: currentUserId,
                                 userStore: userStore,
-                                vm: vm)
+                                vm: vm
+                            )
+                            
+                            // 실제 NavigationLink는 숨김
+                            NavigationLink(
+                                destination: ChatDetailView(
+                                    chat: chat,
+                                    currentUserId: currentUserId,
+                                    userStore: userStore
+                                )
+                            ) {
+                                EmptyView()
+                            }
+                            .opacity(0) // 꺽새 포함 전체를 투명화
+                        }
                     }
                 }
                 .listStyle(PlainListStyle())
+                .padding(.top, 10)
+
+
+                
+                
+//                List {
+//                    ForEach(filteredChats) { chat in
+//                        NavigationLink(
+//                            destination: ChatDetailView(
+//                                chat: chat,
+//                                currentUserId: currentUserId,
+//                                userStore: userStore
+//                            )
+//                        ) {
+//                            ChatRow(
+//                                chat: chat,
+//                                currentUserId: currentUserId,
+//                                userStore: userStore,
+//                                vm: vm
+//                            )
+//                        }
+//                        .buttonStyle(PlainButtonStyle())
+//                    }
+//                }
+//                .listStyle(PlainListStyle())
+//                .padding(.top, 10)
+
+                
             }
-            .onAppear {
+            .background(Color.backgroundGray100)
+            .onAppear {                               // 나중에 살려야 한다!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
                 vm.fetchChats(for: currentUserId)
             }
         }
@@ -115,60 +212,137 @@ struct ChatRow: View {
 
     var body: some View {
         HStack {
-            // 실제 이미지 불러올 경우 다시 살림
+            // MARK: -프로필
+            // 프로필 이미지
+            // 실제 이미지 불러와 지는 지  db에 값 올리고 확인
             AsyncImage(url: URL(string: userStore.users[otherUserId]?.photoUrl ?? "")) { image in
-                image.resizable()
+                image
+                .resizable()
+                .scaledToFill()
+                .clipShape(Circle())
+                .frame(width: 45, height: 45)
             } placeholder: {
-                Circle().fill(Color.gray.opacity(0.3))
+                Circle()
+                    .fill(Color.gray.opacity(0.3))
+                    .frame(width: 45, height: 45)
             }
-            .frame(width: 50, height: 50)
-            .clipShape(Circle())
+            .background(Color.clear) // 배경 투명
+            .padding(.trailing, 3)
             
-            // 테스트 용 이미지
-//            Image("user2sample")
-//                .resizable()
-//                .scaledToFit()
-//                .frame(width: 50, height: 50)
-//                .clipShape(Circle())
+//            VStack(alignment: .leading) {
+//                Text(userStore.users[otherUserId]?.name ?? "Unknown")
+//                    .font(.headline)
+//                Text(chat.lastMessage ?? "")
+//                    .font(.subheadline)
+//                    .foregroundColor(.gray)
+//                    .lineLimit(1)
+//            }
+            VStack(alignment: .leading, spacing: 4) {
+                
+               // 이름 + 차량 타이틀
+               HStack {
+                   Text(userStore.users[otherUserId]?.name ?? "Unknown")
+                       .font(.headline)
+                       .lineLimit(1)
+                   Spacer()
+                   
+                   // listing 제목
+                   Text(chat.listingTitle)
+                       .font(.subheadline)
+                       .foregroundColor(.gray)
+                       .lineLimit(1)                   // 한 줄로 제한
+                       .allowsTightening(true)         // 글자 단위로 줄이기
+                       .truncationMode(.tail)          // 공간 부족하면 끝에서 ... 표시
+//                       .frame(maxWidth: .infinity, alignment: .trailing)  // 오른쪽 끝 고정
+               }
+                
+                
 
+               // 마지막 메시지
+               Text(chat.lastMessage ?? "")
+                   .font(.subheadline)
+                   .foregroundColor(.gray)
+                   .lineLimit(1)
+           }
             
-            VStack(alignment: .leading) {
-                Text(userStore.users[otherUserId]?.name ?? "Unknown")
-                    .font(.headline)
-                Text(chat.lastMessage ?? "")
-                    .font(.subheadline)
-                    .foregroundColor(.gray)
-                    .lineLimit(1)
-            }
+            
 
-            Spacer()
+//            Spacer()
+//
+//            VStack(alignment: .trailing) {
+//                Text(chat.lastAt, style: .time)
+//                    .font(.caption)
+//                    .foregroundColor(.gray)
+//
+//                if let unread = vm.unreadCounts[chat.id ?? ""], unread > 0 {
+//                    Text("\(unread)")
+//                        .font(.caption2)
+//                        .padding(6)
+//                        .background(Circle().fill(Color.blue))
+//                        .foregroundColor(.white)
+//                }
+//            }
 
-            VStack(alignment: .trailing) {
-                Text(chat.lastAt, style: .time)
-                    .font(.caption)
-                    .foregroundColor(.gray)
+            // 시간 + 안 읽은 메시지
+             VStack(alignment: .trailing, spacing: 4) {
+                 Text(formattedDate(chat.lastAt))
+                     .font(.caption)
+                     .foregroundColor(.gray)
 
-                if let unread = vm.unreadCounts[chat.id ?? ""], unread > 0 {
-                    Text("\(unread)")
-                        .font(.caption2)
-                        .padding(6)
-                        .background(Circle().fill(Color.blue))
-                        .foregroundColor(.white)
-                }
-            }
+                 if let unread = vm.unreadCounts[chat.id ?? ""], unread > 0 {
+                     Text("\(unread)")
+                         .font(.caption2)
+                         .padding(6)
+                         .background(Circle().fill(Color.blue))
+                         .foregroundColor(.white)
+                 }
+             }
+             .fixedSize() // ❗ 오른쪽 공간 최소화
+            
+//            VStack(alignment: .trailing, spacing: 4) {
+//                Text(formattedDate(chat.lastAt))
+//                    .font(.caption)
+//                    .foregroundColor(.gray)
+//
+//                if let unread = vm.unreadCounts[chat.id ?? ""], unread > 0 {
+//                    Text("\(unread)")
+//                        .font(.caption2)
+//                        .padding(6)
+//                        .background(Circle().fill(Color.blue))
+//                        .foregroundColor(.white)
+//                } else {
+//                    // 빈 공간 확보 (안 읽은 메시지 없을 때도 위치 유지)
+//                    Color.clear
+//                        .frame(height: 20)
+//                }
+//            }
+
         }
         .padding(.vertical, 8)
-        .onAppear {
-            userStore.fetchUser(userId: otherUserId)
+        .onAppear {                                             // ui 디자인 용
+            userStore.fetchUser(userId: otherUserId)            // 활성화 하면 프리뷰는 안나오게 됨   -> 실제 앱에선 꼭 사용!!!!!!!!!!
         }
     }
 }
 
+// lastAt 날짜 포맷
+func formattedDate(_ date: Date) -> String {
+    let calendar = Calendar.current
+    let formatter = DateFormatter()
+    
+    if calendar.isDateInToday(date) {
+        formatter.dateFormat = "HH:mm"
+    } else if calendar.isDate(date, equalTo: Date(), toGranularity: .year) {
+        formatter.dateFormat = "M월 d일"
+    } else {
+        formatter.dateFormat = "yyyy년"
+    }
+    return formatter.string(from: date)
+}
+
+
 
 // MARK: - 목업 프리뷰
-
-
-
 struct ChatListView_Previews: PreviewProvider {
     static var previews: some View {
         // 1️⃣ ChatListViewModel 목업
@@ -180,6 +354,7 @@ struct ChatListView_Previews: PreviewProvider {
                 sellerId: "user_002",
                 listingId: "listing_abc",
                 lastMessage: "안녕하세요!",
+                listingTitle: "현대 더 뉴 그랜저 2.5 가솔린",
                 lastAt: Date()
             ),
             Chat(
@@ -188,6 +363,7 @@ struct ChatListView_Previews: PreviewProvider {
                 sellerId: "user_003",
                 listingId: "listing_xyz",
                 lastMessage: "구매 가능한가요?",
+                listingTitle: "현대 팰리세이드 2.2 디젤 7인승 익스클루시브",
                 lastAt: Date().addingTimeInterval(-3600)
             )
         ]
@@ -243,4 +419,3 @@ struct ChatListView_Previews: PreviewProvider {
         )
     }
 }
-

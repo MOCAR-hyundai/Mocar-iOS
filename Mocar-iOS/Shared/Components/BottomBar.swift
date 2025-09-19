@@ -24,7 +24,7 @@ struct BottomBar: View {
                 
                // ChatListView에 currentUserId 전달
                if let user = session.user {
-                   ChatListView(currentUserId: user.id ?? "")
+                   ChatListView(currentUserId: user.id ?? " ")
                        .tag(3)
                } else {
                    Text("로그인 필요")

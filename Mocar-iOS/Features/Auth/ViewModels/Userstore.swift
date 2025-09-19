@@ -27,7 +27,7 @@ class UserStore: ObservableObject {
             }
         }
     }
-
+    
     func getUser(userId: String) -> User? {
         return users[userId]
     }

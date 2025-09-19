@@ -14,5 +14,6 @@ struct Chat: Codable, Identifiable {
     var sellerId: String
     var listingId: String
     var lastMessage: String?
+    var listingTitle: String
     var lastAt: Date
 }

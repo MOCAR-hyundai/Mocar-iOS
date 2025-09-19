@@ -40,7 +40,7 @@ final class SearchDetailViewModel: ObservableObject {
         "르노코리아": "renault",
         "쉐보레": "chevrolet",
         "벤츠": "benz",
-        "BMW": "bmw",
+        "BMW": "BMW",
         "아우디": "audi",
         "테슬라": "tesla",
         "페라리": "ferrari"

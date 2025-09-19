@@ -5,7 +5,7 @@
 //  Created by Admin on 9/18/25.
 //
 
-import SwiftUI
+import Foundation
 import FirebaseFirestore
 
 struct Message: Codable, Identifiable {
