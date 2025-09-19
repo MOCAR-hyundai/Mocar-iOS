@@ -13,6 +13,8 @@ struct ChatDetailView: View {
     let currentUserId: String
     @ObservedObject var userStore: UserStore
     
+    @Environment(\.dismiss) private var dismiss
+    
     @State private var messages: [Message] = []
     @State private var messageText: String = ""
     
@@ -23,12 +25,90 @@ struct ChatDetailView: View {
         chat.buyerId == currentUserId ? chat.sellerId : chat.buyerId
     }
     
+    // ✅ 프리뷰용 init
+      init(chat: Chat, currentUserId: String, userStore: UserStore, previewMessages: [Message] = []) {
+          self.chat = chat
+          self.currentUserId = currentUserId
+          self.userStore = userStore
+          _messages = State(initialValue: previewMessages)
+      }
+    
     var body: some View {
         VStack {
+            HStack {
+                // 탑 바
+                Button(action: {
+                    // 뒤로가기 액션
+                    dismiss()
+                }) {
+                    Image(systemName: "chevron.left")
+                        .frame(width: 20, height: 20)
+                        .padding(12) // 아이콘 주변 여백
+                        .foregroundColor(.black)
+                        .overlay(
+                            RoundedRectangle(cornerRadius: 50) // 충분히 큰 값이면 원처럼 둥글게
+                                .stroke(Color.lineGray, lineWidth: 1) // 테두리 색과 두께
+                        )
+                }
+                
+                // 현재 유저의 프로필 이미지 실제 이미지 불러와 지는 지  db에 값 올리고 확인
+                AsyncImage(url: URL(string: userStore.users[otherUserId]?.photoUrl ?? "")) { image in
+                    image.resizable()
+                } placeholder: {
+                    Circle().fill(Color.gray.opacity(0.3))
+                }
+                .frame(width: 45, height: 45)
+                .clipShape(Circle())
+                
+//                            Text("Chats")
+                Text(userStore.users[otherUserId]?.name ?? "Unknown")
+                    .font(.system(size: 18, weight: .bold, design: .default))
+                
+                Spacer()
+                
+                Image(systemName: "phone")
+                        .resizable()               // 이미지 크기 조절 가능하게
+                        .aspectRatio(contentMode: .fit)
+                        .frame(width: 20, height: 20) // 원하는 크기로 설정
+                        .foregroundColor(.iconGray)
+                
+                
+                Button(action: {
+                    // 점 세개 액션
+                }) {
+                    Image("3Dot")
+                        .renderingMode(.template)        // 색 변경 가능하게
+                        .frame(width: 20, height: 20)
+                        .rotationEffect(.degrees(90)) // 90도 회전
+                        .padding(12) // 아이콘 주변 여백
+                        .foregroundColor(.iconGray)
+                }
+            }
+            .padding(.horizontal)
+            .padding(3)
+            .padding(.vertical, 6)
+            .padding(.bottom, 10)
+            .background(Color.backgroundGray100) // <- F8F8F8 배경
+            
+            
             ScrollViewReader { scrollProxy in
                 ScrollView {
                     VStack(spacing: 8) {
-                        ForEach(messages) { message in
+                        
+//                        ForEach(messages) { message in
+                        ForEach(messages.indices, id: \.self) { index in
+                                     let message = messages[index]
+                                     let previousMessage: Message? = index > 0 ? messages[index - 1] : nil
+                                     
+                                     // 날짜가 바뀌면 Separator 표시
+                                     if let prev = previousMessage {
+                                         if !isSameDay(prev.createdAt, message.createdAt) {
+                                             DateSeparator(date: message.createdAt)
+                                         }
+                                     } else {
+                                         // 첫 메시지일 때도 날짜 표시
+                                         DateSeparator(date: message.createdAt)
+                                     }
                             HStack(alignment: .bottom) {
                                 if message.senderId == currentUserId {
                                     Spacer()
@@ -73,8 +153,10 @@ struct ChatDetailView: View {
             }
             .padding()
         }
-        .navigationTitle(userStore.users[otherUserId]?.name ?? "Unknown")
-        .navigationBarTitleDisplayMode(.inline)
+        .navigationBarBackButtonHidden(true)
+//        .navigationTitle(userStore.users[otherUserId]?.name ?? "Unknown")
+//        .navigationBarTitleDisplayMode(.inline)
+        
         .onAppear {
             userStore.fetchUser(userId: otherUserId)
 //            fetchMessages()
@@ -231,28 +313,70 @@ struct MessageBubble: View {
     let message: Message
     let isCurrentUser: Bool
     
+//    @ObservedObject var userStore: UserStore
+    
     var body: some View {
         VStack(alignment: isCurrentUser ? .trailing : .leading, spacing: 4) {
-            // 텍스트 또는 이미지
-            if let text = message.text {
-                Text(text)
-                    .padding(10)
-                    .background(isCurrentUser ? Color.blue : Color.gray.opacity(0.2))
-                    .foregroundColor(isCurrentUser ? .white : .black)
-                    .cornerRadius(12)
-                    .frame(maxWidth: UIScreen.main.bounds.width * 0.7, alignment: isCurrentUser ? .trailing : .leading)
-            } else if let imageUrl = message.imageUrl,
-                      let url = URL(string: imageUrl) {
-                AsyncImage(url: url) { image in
-                    image.resizable()
-                        .scaledToFit()
-                        .frame(maxWidth: UIScreen.main.bounds.width * 0.7)
-                        .cornerRadius(12)
-                } placeholder: {
-                    ProgressView()
-                        .frame(width: 100, height: 100)
+            // 텍스트 또는 이미지 + 시간
+                HStack(alignment: .bottom, spacing: 1) {
+                    if isCurrentUser {
+                        Spacer()
+                        // 내 메시지: 시간 왼쪽
+                        Text(message.createdAt, style: .time) // Date를 바로 표시
+                            .font(.caption2)
+                            .foregroundColor(.gray)
+                            .padding(.trailing, 2)
+
+                        if let text = message.text {
+                            Text(text)
+                                .padding(10)
+                                .background(Color.keyColorBlue)
+                                .foregroundColor(.white)
+                                .cornerRadius(12)
+                        } else if let imageUrl = message.imageUrl,
+                                  let url = URL(string: imageUrl) {
+                            AsyncImage(url: url) { image in
+                                image.resizable()
+                                    .scaledToFit()
+                                    .frame(maxWidth: UIScreen.main.bounds.width * 0.7)
+                                    .cornerRadius(12)
+                            } placeholder: {
+                                ProgressView()
+                                    .frame(width: 100, height: 100)
+                            }
+                        }
+                        
+                    } else {
+
+                        if let text = message.text {
+                            Text(text)
+                                .padding(10)
+                                .background(Color.gray.opacity(0.2))
+                                .foregroundColor(.black)
+                                .cornerRadius(12)
+                        } else if let imageUrl = message.imageUrl,
+                                  let url = URL(string: imageUrl) {
+                            AsyncImage(url: url) { image in
+                                image.resizable()
+                                    .scaledToFit()
+                                    .frame(maxWidth: UIScreen.main.bounds.width * 0.7)
+                                    .cornerRadius(12)
+                            } placeholder: {
+                                ProgressView()
+                                    .frame(width: 100, height: 100)
+                            }
+                        }
+
+                        // 상대방 메시지: 시간 오른쪽
+                        Text(message.createdAt, style: .time)
+                            .font(.caption2)
+                            .foregroundColor(.gray)
+                            .padding(.leading, 2)
+                        
+                        Spacer()
+                        
+                    }
                 }
-            }
             
             // 읽음 표시
             if isCurrentUser {
@@ -265,6 +389,130 @@ struct MessageBubble: View {
                 .frame(maxWidth: .infinity, alignment: .trailing)
             }
         }
+        
+        
     }
+}
+
+
+
+
+
+
+
+
+// MARK: - Preview Mock Data
+struct MockData {
+    static let sampleChat = Chat(
+        id: "chat_1",
+        buyerId: "user_1",
+        sellerId: "user_2",
+        listingId: "listing_1",
+        lastMessage: "안녕하세요!",
+        listingTitle: "현대 아이오닉 5",
+        lastAt: Date()
+    )
+
+    static let sampleMessages: [Message] = [
+        Message(
+            id: "msg_1",
+            senderId: "user_1",
+            text: "안녕하세요 👋",
+            imageUrl: nil,
+            createdAt: Date().addingTimeInterval(-120),
+            readBy: ["user_1"]
+        ),
+        Message(
+            id: "msg_2",
+            senderId: "user_2",
+            text: "네, 반갑습니다 😀",
+            imageUrl: nil,
+            createdAt: Date().addingTimeInterval(-60),
+            readBy: ["user_1", "user_2"]
+        ),
+        Message(
+            id: "msg_3",
+            senderId: "user_1",
+            text: "혹시 내일 시간 되시나요?",
+            imageUrl: nil,
+            createdAt: Date(),
+            readBy: ["user_1"]
+        )
+    ]
+}
+
+// MARK: - Mock UserStore
+class MockUserStore: UserStore {
+    override init() {
+        super.init()
+        // 프리뷰용 더미 유저 등록
+        self.users["user_1"] = User(id: "user_1", name: "나 (현아)")
+        self.users["user_2"] = User(id: "user_2", name: "상대방")
+    }
+
+    override func fetchUser(userId: String) {
+        // 프리뷰라서 Firestore 호출 안 함
+    }
+}
+
+// MARK: - Preview Wrapper
+struct ChatDetailView_PreviewWrapper: View {
+    @StateObject private var mockUserStore = MockUserStore()
+    @State private var messages = MockData.sampleMessages
+
+    var body: some View {
+        ChatDetailView(
+            chat: MockData.sampleChat,
+            currentUserId: "user_1",
+            userStore: mockUserStore
+        )
+        .onAppear {
+            // 프리뷰용 메시지 강제로 세팅
+            // Firestore 리스너 대신
+            DispatchQueue.main.async {
+                // messages를 ChatDetailView 내부로 전달
+                // 여기서는 messages를 @State로 바인딩하려면 View 자체를 수정해야 함
+                // 또는 ChatDetailView를 preview 전용으로 messages를 받는 init 추가
+            }
+        }
+    }
+}
+
+// MARK: - Preview
+struct ChatDetailView_Previews: PreviewProvider {
+    static var previews: some View {
+        NavigationView {
+            ChatDetailView_PreviewWrapper()
+        }
+    }
+}
+
+//MARK: -날짜 구분선
+struct DateSeparator: View {
+    let date: Date
+    
+    var body: some View {
+        Text(date, formatter: dateFormatter)
+            .font(.system(size: 14, weight: .semibold)) // 날짜 크기 조금 키움
+            .foregroundColor(.gray)
+            .padding(.vertical, 8)
+            .frame(maxWidth: .infinity)
+            // 배경 투명으로 변경
+            //.background(Color.gray.opacity(0.2))
+            //.cornerRadius(8)
+    }
+    
+    private var dateFormatter: DateFormatter {
+        let formatter = DateFormatter()
+        formatter.locale = Locale(identifier: "ko_KR") // 한국어
+        formatter.dateFormat = "yyyy년 M월 d일" // 2025년 9월 19일
+        return formatter
+    }
+}
+
+// Helper: 같은 날인지 비교
+private func isSameDay(_ date1: Date, _ date2: Date) -> Bool {
+    let calendar = Calendar.current
+    return calendar.isDate(date1, inSameDayAs: date2)
 }
 
