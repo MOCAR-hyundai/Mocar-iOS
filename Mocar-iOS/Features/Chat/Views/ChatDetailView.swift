@@ -7,19 +7,26 @@
 
 import SwiftUI
 import FirebaseFirestore
+import FirebaseStorage
 
 struct ChatDetailView: View {
     let chat: Chat
     let currentUserId: String
     @ObservedObject var userStore: UserStore
     
+    
     @Environment(\.dismiss) private var dismiss
     
     @State private var messages: [Message] = []
     @State private var messageText: String = ""
     
+    
+    @State private var isImagePickerPresented = false
+    @State private var selectedImages: [UIImage] = []
+
+    
     private let db = Firestore.firestore()
-    @State private var messagesListener: ListenerRegistration? // 🔥 리스너 저장
+    @State private var messagesListener: ListenerRegistration? // 리스너 저장
     
     var otherUserId: String {
         chat.buyerId == currentUserId ? chat.sellerId : chat.buyerId
@@ -35,8 +42,8 @@ struct ChatDetailView: View {
     
     var body: some View {
         VStack {
+            // 탑 바
             HStack {
-                // 탑 바
                 Button(action: {
                     // 뒤로가기 액션
                     dismiss()
@@ -89,6 +96,8 @@ struct ChatDetailView: View {
             .padding(.vertical, 6)
             .padding(.bottom, 10)
             .background(Color.backgroundGray100) // <- F8F8F8 배경
+
+
             
             
             ScrollViewReader { scrollProxy in
@@ -135,37 +144,101 @@ struct ChatDetailView: View {
             }
             
             // 입력 영역
-            HStack {
-                TextField("메시지를 입력하세요...", text: $messageText)
-                    .padding(10)
-                    .background(Color.gray.opacity(0.2))
-                    .cornerRadius(10)
-                
-                Button(action: sendMessage) {
-                    Text("전송")
-                        .bold()
-                        .padding(.horizontal, 12)
-                        .padding(.vertical, 8)
-                        .background(Color.blue)
-                        .foregroundColor(.white)
-                        .cornerRadius(8)
+            
+            // 선택 이미지 미리보기
+                if !selectedImages.isEmpty {
+                    ScrollView(.horizontal, showsIndicators: false) {
+                        HStack(spacing: 8) {
+                            ForEach(selectedImages.indices, id: \.self) { index in
+                                ZStack(alignment: .topTrailing) {
+                                    Image(uiImage: selectedImages[index])
+                                        .resizable()
+                                        .scaledToFit()
+                                        .frame(width: 100, height: 100)
+                                        .cornerRadius(8)
+
+                                    Button(action: {
+                                        selectedImages.remove(at: index)
+                                    }) {
+                                        Image(systemName: "xmark.circle.fill")
+                                            .foregroundColor(.white)
+                                            .background(Color.black.opacity(0.6))
+                                            .clipShape(Circle())
+                                    }
+                                    .offset(x: 5, y: -5)
+                                }
+                            }
+                        }
+                        .padding(.horizontal)
+                    }
                 }
-            }
-            .padding()
+            
+            // 입력 바
+               HStack(spacing: 8) {
+                   Button(action: { isImagePickerPresented = true }) {
+                       Image(systemName: "photo")
+                           .resizable()
+                           .frame(width: 28, height: 28)
+                           .foregroundColor(.blue)
+                   }
+                   .sheet(isPresented: $isImagePickerPresented) {
+                       PhotoPicker(images: $selectedImages) { images in
+                           selectedImages.append(contentsOf: images)
+                       }
+                   }
+                   
+                   TextField("메시지를 입력하세요...", text: $messageText)
+                       .padding(10)
+                       .background(Color.gray.opacity(0.2))
+                       .cornerRadius(10)
+
+                   
+                   Button(action: {
+                       if !messageText.trimmingCharacters(in: .whitespaces).isEmpty {
+                              sendMessage(text: messageText)
+                          }
+
+                       for img in selectedImages {
+                           sendImageMessage(img)
+                       }
+                       selectedImages.removeAll()
+                   }) {
+                       Text("전송")
+                           .bold()
+                           .padding(.horizontal, 12)
+                           .padding(.vertical, 8)
+                           .background(Color.blue)
+                           .foregroundColor(.white)
+                           .cornerRadius(8)
+                   }
+       
+                   
+//                   Button(action: sendCombinedMessage) {
+//                       Text("전송")
+//                           .bold()
+//                           .padding(.horizontal, 12)
+//                           .padding(.vertical, 8)
+//                           .background(Color.blue)
+//                           .foregroundColor(.white)
+//                           .cornerRadius(8)
+//                   }
+               }
+               .padding()
+            
+            
         }
         .navigationBarBackButtonHidden(true)
-//        .navigationTitle(userStore.users[otherUserId]?.name ?? "Unknown")
-//        .navigationBarTitleDisplayMode(.inline)
-        
         .onAppear {
             userStore.fetchUser(userId: otherUserId)
-//            fetchMessages()
             startListeningMessages()   // ✅ 리스너 시작
-
+            
+            // chat의 listingId로 리스팅 불러오기
+//            listingVM.fetchListing(by: chat.listingId)
         }
         .onDisappear {
             stopListeningMessages()    // ✅ 리스너 해제
         }
+        
     }
     
     // MARK: - 메시지 리스너
@@ -191,7 +264,94 @@ struct ChatDetailView: View {
          messagesListener?.remove()
          messagesListener = nil
      }
+
+    // MARK: - Firestore 메시지 전송
+    private func sendMessage(text: String? = nil, imageUrl: String? = nil) {
+        guard let chatId = chat.id else { return }
+
+        let newMessage = Message(
+            id: nil,
+            senderId: currentUserId,
+            text: text ?? messageText,
+            imageUrl: imageUrl,
+            createdAt: Date(),
+            readBy: [currentUserId]
+        )
+
+        let messageTextToSave = newMessage.text ?? ""
+
+        do {
+            _ = try db.collection("chats")
+                .document(chatId)
+                .collection("messages")
+                .addDocument(from: newMessage) { error in
+                    if error == nil {
+                        // Chat 마지막 메시지 업데이트
+                        db.collection("chats").document(chatId).updateData([
+                            "lastMessage": messageTextToSave,
+                            "lastAt": newMessage.createdAt
+                        ])
+                    }
+                }
+
+            messageText = ""
+        } catch {
+            print("메시지 전송 실패: \(error.localizedDescription)")
+        }
+    }
+
+    // MARK: - 이미지 업로드 (Firebase Storage 예시)
+    private func uploadImage(_ image: UIImage, completion: @escaping (String) -> Void) {
+        let storageRef = Storage.storage().reference()
+        let imageName = UUID().uuidString + ".jpg"
+        let imageRef = storageRef.child("chatImages/\(imageName)")
+        guard let imageData = image.jpegData(compressionQuality: 0.7) else { return }
+
+        imageRef.putData(imageData, metadata: nil) { _, error in
+            if let error = error {
+                print("이미지 업로드 실패: \(error.localizedDescription)")
+                return
+            }
+            imageRef.downloadURL { url, error in
+                if let url = url {
+                    completion(url.absoluteString)
+                }
+            }
+        }
+    }
     
+    // 이미지 전송
+    private func sendImageMessage(_ image: UIImage) {
+        guard let chatId = chat.id else { return }
+
+        uploadImage(image) { imageUrl in
+            let newMessage = Message(
+                id: nil,
+                senderId: currentUserId,
+                text: nil,
+                imageUrl: imageUrl,
+                createdAt: Date(),
+                readBy: [currentUserId]
+            )
+
+            do {
+                _ = try db.collection("chats")
+                    .document(chatId)
+                    .collection("messages")
+                    .addDocument(from: newMessage) { error in
+                        if error == nil {
+                            // lastMessage는 빈 문자열 처리
+                            db.collection("chats").document(chatId).updateData([
+                                "lastMessage": "",
+                                "lastAt": newMessage.createdAt
+                            ])
+                        }
+                    }
+            } catch {
+                print("이미지 전송 실패: \(error.localizedDescription)")
+            }
+        }
+    }
     // MARK: - Firebase 메시지 불러오기
     private func fetchMessages() {
         guard let chatId = chat.id else { return }
@@ -212,36 +372,7 @@ struct ChatDetailView: View {
     private func sendMessage() {
         guard !messageText.trimmingCharacters(in: .whitespaces).isEmpty,
               let chatId = chat.id else { return }
-        
-//        // 1️⃣ 메시지 문서 ID 생성
-//           let newMessageRef = db.collection("chats")
-//               .document(chatId)
-//               .collection("messages")
-//               .document()
-//           
-//           let now = Date()
-//           
-//           let newMessage = Message(
-//               id: newMessageRef.documentID,
-//               senderId: currentUserId,
-//               text: messageText,
-//               imageUrl: nil,
-//               createdAt: now,
-//               readBy: [currentUserId] // 전송한 사람은 이미 읽음
-//           )
-//        
-//            let messageTextToSave = newMessage.text ?? ""
-//           
-//           do {
-//               // 2️⃣ Firestore 저장
-//               try newMessageRef.setData(from: newMessage)
-//               messageText = ""
-//               
-//               // 3️⃣ Chat 마지막 메시지 업데이트
-//               db.collection("chats").document(chatId).updateData([
-//                   "lastMessage": messageTextToSave,
-//                   "lastAt": now
-//               ])
+
         
         let newMessage = Message(
             id: nil,
@@ -294,15 +425,6 @@ struct ChatDetailView: View {
                     .updateData([
                         "readBy": FieldValue.arrayUnion([currentUserId])
                     ])
-
-//                let messageRef = db.collection("chats")
-//                    .document(chatId)
-//                    .collection("messages")
-//                    .document(messageId)
-//                
-//                messageRef.updateData([
-//                    "readBy": FieldValue.arrayUnion([currentUserId])
-//                ])
             }
         }
     }
@@ -312,8 +434,6 @@ struct ChatDetailView: View {
 struct MessageBubble: View {
     let message: Message
     let isCurrentUser: Bool
-    
-//    @ObservedObject var userStore: UserStore
     
     var body: some View {
         VStack(alignment: isCurrentUser ? .trailing : .leading, spacing: 4) {
@@ -389,9 +509,37 @@ struct MessageBubble: View {
                 .frame(maxWidth: .infinity, alignment: .trailing)
             }
         }
-        
-        
     }
+}
+
+
+//MARK: -날짜 구분선
+struct DateSeparator: View {
+    let date: Date
+    
+    var body: some View {
+        Text(date, formatter: dateFormatter)
+            .font(.system(size: 14, weight: .semibold)) // 날짜 크기 조금 키움
+            .foregroundColor(.gray)
+            .padding(.vertical, 8)
+            .frame(maxWidth: .infinity)
+            // 배경 투명으로 변경
+            //.background(Color.gray.opacity(0.2))
+            //.cornerRadius(8)
+    }
+    
+    private var dateFormatter: DateFormatter {
+        let formatter = DateFormatter()
+        formatter.locale = Locale(identifier: "ko_KR") // 한국어
+        formatter.dateFormat = "yyyy년 M월 d일" // 2025년 9월 19일
+        return formatter
+    }
+}
+
+// Helper: 같은 날인지 비교
+private func isSameDay(_ date1: Date, _ date2: Date) -> Bool {
+    let calendar = Calendar.current
+    return calendar.isDate(date1, inSameDayAs: date2)
 }
 
 
@@ -399,8 +547,7 @@ struct MessageBubble: View {
 
 
 
-
-
+/***
 // MARK: - Preview Mock Data
 struct MockData {
     static let sampleChat = Chat(
@@ -487,32 +634,4 @@ struct ChatDetailView_Previews: PreviewProvider {
     }
 }
 
-//MARK: -날짜 구분선
-struct DateSeparator: View {
-    let date: Date
-    
-    var body: some View {
-        Text(date, formatter: dateFormatter)
-            .font(.system(size: 14, weight: .semibold)) // 날짜 크기 조금 키움
-            .foregroundColor(.gray)
-            .padding(.vertical, 8)
-            .frame(maxWidth: .infinity)
-            // 배경 투명으로 변경
-            //.background(Color.gray.opacity(0.2))
-            //.cornerRadius(8)
-    }
-    
-    private var dateFormatter: DateFormatter {
-        let formatter = DateFormatter()
-        formatter.locale = Locale(identifier: "ko_KR") // 한국어
-        formatter.dateFormat = "yyyy년 M월 d일" // 2025년 9월 19일
-        return formatter
-    }
-}
-
-// Helper: 같은 날인지 비교
-private func isSameDay(_ date1: Date, _ date2: Date) -> Bool {
-    let calendar = Calendar.current
-    return calendar.isDate(date1, inSameDayAs: date2)
-}
-
+ */
