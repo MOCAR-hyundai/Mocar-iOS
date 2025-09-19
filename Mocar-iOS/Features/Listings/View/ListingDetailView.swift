@@ -96,13 +96,12 @@ struct ListingDetailView: View {
                         VStack{
                             Text("시세안전구간")
                                 .foregroundStyle(.gray)
-                            Text("4,245~5,180만원")
+                            Text("\(Int(viewModel.safeMin))~\(Int(viewModel.safeMax))만원")
                                 .font(.title3)
                                 .fontWeight(.semibold)
                                 .padding(.bottom, 15)
                             
                             PriceRangeView(viewModel: viewModel)
-                                .frame(height: 100)
                             
                         }
                         
@@ -163,10 +162,5 @@ struct InfoRow: View{
 
 
 #Preview {
-    
-
-    
-    
-    
     
 }
