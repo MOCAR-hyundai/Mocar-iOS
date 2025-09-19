@@ -84,10 +84,5 @@ struct PriceRangeView: View {
 }
 
 #Preview {
-    let previewVM = ListingDetailViewModel()
-    previewVM.listing = Listing.listingData.first ?? .placeholder
-    previewVM.currentValue = 4680 // 미리보기용 값
-    return PriceRangeView(viewModel: previewVM)
-        .frame(height: 120) // 최소 높이 지정
-        .padding()
+
 }
