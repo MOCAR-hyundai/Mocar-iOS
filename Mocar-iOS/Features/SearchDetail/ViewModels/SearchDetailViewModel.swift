@@ -1,10 +1,3 @@
-//
-//  AreaFilterView.swift
-//  Mocar-iOS
-//
-//  Created by wj on 9/17/25.
-//
-
 import Foundation
 import SwiftUI
 
@@ -23,8 +16,16 @@ final class SearchDetailViewModel: ObservableObject {
         let count: Int
     }
     
+    struct TrimSummary: Identifiable {
+        let id = UUID()
+        let name: String
+        let count: Int
+    }
+
     @Published var selectedMaker: String?
     @Published var selectedModel: String?
+    @Published var selectedTrim: String?
+    @Published var selectedTrims: Set<String> = []
     @Published var recentKeyword: String = ""
     @Published var recentSearches: [String] = []
     @Published var recentKeywords: [String] = []
@@ -68,6 +69,7 @@ final class SearchDetailViewModel: ObservableObject {
     
     private(set) var allCars: [SearchCar]
     private var makerToModels: [String: [String]]
+    private var makerModelToTrims: [String: [String: [String]]]
     private let repository = SearchListingRepository()
     
     private enum FilterDimension: Hashable {
@@ -77,9 +79,9 @@ final class SearchDetailViewModel: ObservableObject {
     }
     
     init() {
-        // Initialize empty datasets; real data will be loaded from Firestore via repository
         allCars = []
         makerToModels = [:]
+        makerModelToTrims = [:]
         let currentYear = Calendar.current.component(.year, from: Date())
         let lowerYear = max(currentYear - 20, 2006)
         yearRange = lowerYear...currentYear
@@ -93,7 +95,6 @@ final class SearchDetailViewModel: ObservableObject {
         areaOptions = []
         carTypeOptions = []
 
-        // Trigger loading from Firestore
         Task { await loadListings() }
     }
     
@@ -134,6 +135,11 @@ final class SearchDetailViewModel: ObservableObject {
         return summaries.sorted { $0.name < $1.name }
     }
     
+    // 제조사 + 모델에 해당하는 트림 목록 반환
+    func trims(for maker: String, model: String) -> [String] {
+        return makerModelToTrims[maker]?[model] ?? []
+    }
+    
     func countForCarType(_ name: String) -> Int {
         allCars.filter { $0.category == name && matches($0, ignoring: [.carType]) }.count
     }
@@ -158,22 +164,79 @@ final class SearchDetailViewModel: ObservableObject {
         if selectedMaker != maker {
             selectedMaker = maker
             selectedModel = model
+            selectedTrim = nil
+            selectedTrims.removeAll()
             return
         }
         if selectedModel == model {
             selectedModel = nil
+            selectedTrim = nil
+            selectedTrims.removeAll()
         } else {
             selectedModel = model
+            selectedTrim = nil
+            selectedTrims.removeAll()
         }
+    }
+    
+    // 단일 트림 선택 유지용
+    func selectTrim(_ model: String, for maker: String, for trim: String) {
+        if selectedMaker != maker {
+            selectedMaker = maker
+            selectedModel = model
+            selectedTrim = trim
+            selectedTrims = [trim]
+            return
+        }
+        if selectedTrim == trim {
+            selectedTrim = nil
+            selectedTrims.remove(trim)
+        } else {
+            selectedTrim = trim
+            selectedTrims = [trim]
+        }
+    }
+    
+    // 트림 다중 선택 토글 (ModelSelectonView에서 사용)
+    func toggleTrim(_ trim: String, for maker: String, model: String) {
+        if selectedMaker != maker || selectedModel != model {
+            selectedMaker = maker
+            selectedModel = model
+            selectedTrim = trim
+            selectedTrims = [trim]
+            return
+        }
+        if selectedTrims.contains(trim) {
+            selectedTrims.remove(trim)
+        } else {
+            selectedTrims.insert(trim)
+        }
+    }
+    
+    func clearTrims() {
+        selectedTrims.removeAll()
+        selectedTrim = nil
+    }
+        
+    func countForTrim(maker: String, model: String, trim: String) -> Int {
+        allCars.filter {
+            $0.maker == maker && $0.model == model && ($0.trim ?? "") == trim
+        }.count
     }
     
     func clearMaker() {
         selectedMaker = nil
         selectedModel = nil
+        selectedTrim = nil
     }
     
     func clearModel() {
         selectedModel = nil
+        selectedTrim = nil
+    }
+    
+    func clearTrim() {
+        selectedTrim = nil
     }
     
     func hasActiveFilters(for category: String) -> Bool {
@@ -433,7 +496,9 @@ final class SearchDetailViewModel: ObservableObject {
     private func applyDataset(_ cars: [SearchCar]) {
         guard !cars.isEmpty else { return }
         allCars = cars
-        makerToModels = Self.groupModels(from: cars)
+        let (modelsMap, trimsMap) = Self.groupModelsAndTrims(from: cars)
+        makerToModels = modelsMap
+        makerModelToTrims = trimsMap
         configureFilterOptions(with: cars)
         normalizeSelectionBounds()
     }
@@ -473,13 +538,32 @@ final class SearchDetailViewModel: ObservableObject {
         }
     }
     
-    private static func groupModels(from cars: [SearchCar]) -> [String: [String]] {
-        var grouped: [String: Set<String>] = [:]
-        for car in cars {
-            grouped[car.maker, default: []].insert(car.model)
+    // 제조사 -> 모델 목록, 제조사 -> 모델 -> 트림 목록 생성
+    private static func groupModelsAndTrims(from cars: [SearchCar]) -> ([String: [String]], [String: [String: [String]]]) {
+    var modelsMap: [String: Set<String>] = [:]
+    var trimsMap: [String: [String: Set<String>]] = [:]
+    
+    for car in cars {
+                modelsMap[car.maker, default: []].insert(car.model)
+                let trimName = (car.trim ?? "").trimmingCharacters(in: .whitespacesAndNewlines)
+                if !trimName.isEmpty {
+                    var modelDict = trimsMap[car.maker] ?? [:]
+                    modelDict[car.model, default: []].insert(trimName)
+                    trimsMap[car.maker] = modelDict
+                }
+            }
+    
+            let modelsFinal = modelsMap.mapValues { Array($0).sorted() }
+            var trimsFinal: [String: [String: [String]]] = [:]
+            for (maker, modelDict) in trimsMap {
+                var inner: [String: [String]] = [:]
+                for (model, trimsSet) in modelDict {
+                    inner[model] = Array(trimsSet).sorted()
+                }
+                trimsFinal[maker] = inner
+            }
+        return (modelsFinal, trimsFinal)
         }
-        return grouped.mapValues { Array($0).sorted() }
-    }
 
     private func imageName(for maker: String) -> String {
         if let direct = makerImages[maker] {

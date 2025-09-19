@@ -23,87 +23,98 @@ struct BrandView: View {
     }
 
     @ObservedObject var viewModel: SearchDetailViewModel
-    @State private var presentingMaker: Maker?
-    @State private var isModelSheetPresented = false
-    @State private var isMakerSheetPresented = false
     
     private var makers: [Maker] {
         viewModel.makerSummaries.map(Maker.init)
     }
 
-    private var shouldHideMakerList: Bool {
-        viewModel.selectedMaker != nil || viewModel.selectedModel != nil
-    }
-    
     var body: some View {
-        VStack(alignment: .leading, spacing: 0) {
-            if shouldHideMakerList {
-                selectionPanel
-                Spacer()
-            } else {
-                ScrollView {
-                    VStack(alignment: .leading, spacing: 0) {
-                        Text("제조사")
-                            .font(.footnote)
-                            .fontWeight(.semibold)
-                                ForEach(makers) { maker in
-                                    let isDisabled = maker.count == 0
-                                    Button(action: {
-                                        if isDisabled { return }
-                                        handleMakerSelection(maker)
-                                    }) {
-                                        BrandOptionsRow(maker: maker)
-                                            .opacity(isDisabled ? 0.5 : 1.0)
-                                    }
-                                    .buttonStyle(.plain)
-                                    .disabled(isDisabled)
+        NavigationStack {
+            VStack(alignment: .leading, spacing: 0) {
+                if viewModel.selectedMaker != nil || viewModel.selectedModel != nil {
+                    selectionPanel
+                    Spacer()
+                } else {
+                    ScrollView {
+                        VStack(alignment: .leading, spacing: 0) {
+                            Text("제조사")
+                                .font(.footnote)
+                                .fontWeight(.semibold)
+                            ForEach(makers) { maker in
+                                let isDisabled = maker.count == 0
+                                NavigationLink {
+                                    ModelSelectionView(viewModel: viewModel, maker: maker)
+                                } label: {
+                                    BrandOptionsRow(maker: maker)
+                                        .opacity(isDisabled ? 0.5 : 1.0)
+                                }
+                                .disabled(isDisabled)
                             }
+                        }
                     }
                 }
             }
-        }
-        .padding(.horizontal)
-        .padding(.top, 20)
-        .sheet(isPresented: $isMakerSheetPresented) {
-            MakerSelectionView(
-                makers: makers,
-                onSelect: { maker in
-                    handleMakerSelection(maker)
-                }
-            )
-        }
-        .sheet(isPresented: $isModelSheetPresented) {
-            if let maker = presentingMaker {
-                ModelSelectionView(viewModel: viewModel, maker: maker)
-            }
+            .padding(.horizontal)
+            .padding(.top, 20)
+            .navigationBarBackButtonHidden(true)
         }
     }
 
     private var selectionPanel: some View {
         VStack(spacing: 0) {
+            // 제조사
             selectionRow(
                 title: "제조사",
                 value: viewModel.selectedMaker,
                 placeholder: "선택해 주세요.",
-                onClear: viewModel.clearMaker,
-                onTap: { isMakerSheetPresented = true }
+                onClear: viewModel.clearMaker
             )
+
             Divider()
-            selectionRow(
-                title: "모델",
-                value: viewModel.selectedModel,
-                placeholder: viewModel.selectedMaker == nil ? "제조사를 먼저 선택해 주세요." : "선택해 주세요.",
-                onClear: viewModel.clearModel,
-                onTap: {
-                    guard let makerName = viewModel.selectedMaker,
-                          let maker = makers.first(where: { $0.name == makerName }) else {
-                        isMakerSheetPresented = true
-                        return
-                    }
-                    presentingMaker = maker
-                    isModelSheetPresented = true
+
+            // 모델
+            NavigationLink {
+                if let makerName = viewModel.selectedMaker {
+                    ModelSelectionView(
+                        viewModel: viewModel,
+                        maker: makers.first { $0.name == makerName }!
+                    )
                 }
-            )
+            } label: {
+                selectionRow(
+                    title: "모델",
+                    value: viewModel.selectedModel,
+                    placeholder: viewModel.selectedMaker == nil
+                        ? "제조사를 먼저 선택해 주세요."
+                        : "선택해 주세요.",
+                    onClear: viewModel.clearModel
+                )
+            }
+            .disabled(viewModel.selectedMaker == nil)
+
+            Divider()
+
+            // 세부 모델 (트림)
+            NavigationLink {
+                if let makerName = viewModel.selectedMaker,
+                   let modelName = viewModel.selectedModel {
+                    TrimSelectionView(
+                        viewModel: viewModel,
+                        makerName: makerName,
+                        modelName: modelName
+                    )
+                }
+            } label: {
+                selectionRow(
+                    title: "세부 모델",
+                    value: viewModel.selectedTrim,
+                    placeholder: viewModel.selectedMaker == nil
+                        ? "제조사를 먼저 선택해 주세요."
+                        : "선택해 주세요.",
+                    onClear: viewModel.clearTrim
+                )
+            }
+            .disabled(viewModel.selectedModel == nil)
         }
     }
 
@@ -111,13 +122,12 @@ struct BrandView: View {
         title: String,
         value: String?,
         placeholder: String,
-        onClear: @escaping () -> Void,
-        onTap: @escaping () -> Void
+        onClear: @escaping () -> Void
     ) -> some View {
         HStack(spacing: 16) {
-                Text(title)
-                    .font(.subheadline)
-                    .foregroundColor(.black)
+            Text(title)
+                .font(.subheadline)
+                .foregroundColor(.black)
             Spacer()
             if let value = value {
                 selectionChip(text: value, onClear: onClear)
@@ -132,13 +142,6 @@ struct BrandView: View {
         .frame(maxWidth: .infinity, minHeight: 50)
         .padding(.horizontal, 16)
         .contentShape(Rectangle())
-        .onTapGesture {
-            if title == "제조사" && value != nil {
-                onClear()
-            } else {
-                onTap()
-            }
-        }
     }
 
     private func selectionChip(text: String, onClear: @escaping () -> Void) -> some View {
@@ -160,76 +163,5 @@ struct BrandView: View {
             )
         }
         .buttonStyle(.plain)
-    }
-
-    private func handleMakerSelection(_ maker: Maker) {
-        viewModel.selectMaker(maker.name)
-        presentingMaker = maker
-        isMakerSheetPresented = false
-        DispatchQueue.main.async {
-            isModelSheetPresented = true
-        }
-    }
-}
-
-struct MakerSelectionView: View {
-    @Environment(\.dismiss) private var dismiss
-    let makers: [BrandView.Maker]
-    let onSelect: (BrandView.Maker) -> Void
-    
-    var body: some View {
-        NavigationStack {
-            ScrollView {
-                VStack(alignment: .leading, spacing: 16) {
-                    Text("제조사")
-                        .font(.headline)
-                        .padding(.top, 8)
-                    VStack(spacing: 0) {
-                        ForEach(makers) { maker in
-                            let isDisabled = maker.count == 0
-                            Button(action: {
-                                if isDisabled { return }
-                                onSelect(maker)
-                                dismiss()
-                            }) {
-                                BrandOptionsRow(maker: maker)
-                                    .opacity(isDisabled ? 0.5 : 1.0)
-                            }
-                            .buttonStyle(.plain)
-                            .disabled(isDisabled)
-                        }
-                    }
-                    .background(
-                        RoundedRectangle(cornerRadius: 12)
-                            .fill(Color.white)
-                    )
-                    .overlay(
-                        RoundedRectangle(cornerRadius: 12)
-                            .stroke(Color(UIColor.systemGray5), lineWidth: 1)
-                    )
-                }
-                .padding(.horizontal)
-                .padding(.vertical, 20)
-            }
-            .navigationBarTitleDisplayMode(.inline)
-            .toolbar {
-                ToolbarItem(placement: .topBarLeading) {
-                    Button(action: { dismiss() }) {
-                        Image(systemName: "chevron.left")
-                            .foregroundColor(.black)
-                    }
-                }
-                ToolbarItem(placement: .principal) {
-                    Text("제조사 선택")
-                        .font(.headline)
-                }
-                ToolbarItem(placement: .topBarTrailing) {
-                    Button(action: { dismiss() }) {
-                        Image(systemName: "xmark")
-                            .foregroundColor(.black)
-                    }
-                }
-            }
-        }
     }
 }
