@@ -97,7 +97,7 @@ struct ChatListView: View {
                           .foregroundColor(.gray)
                           .padding(.leading, 15)
 
-                      TextField("Search your dream car...", text: .constant(""))
+                      TextField("Search your dream car...", text: $searchText)
                           .padding(.vertical, 10)
                   }
                   .frame(height: 48)
@@ -193,7 +193,10 @@ struct ChatListView: View {
             return vm.chats.filter { chat in
                 let otherId = chat.buyerId == currentUserId ? chat.sellerId : chat.buyerId
                 let otherName = userStore.users[otherId]?.name ?? ""
-                return otherName.lowercased().contains(searchText.lowercased())
+                let listingTitle = chat.listingTitle.lowercased()
+                let query = searchText.lowercased()
+
+                return otherName.lowercased().contains(query) || listingTitle.contains(query)
             }
         }
     }
