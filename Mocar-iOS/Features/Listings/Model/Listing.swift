@@ -300,6 +300,26 @@ extension Listing {
             status: "판매중",
             createdAt: Date(),
             updatedAt: Date()
+        ),
+        Listing(
+            id: "listing_38302495",
+            sellerId: "user_043",
+            plateNumber :"56자2345",
+            title: "기아 올 뉴 K7 하이브리드 노블레스 스페셜",
+            brand: "Kia",
+            model: "488 GTB",
+            trim: "올 뉴 K7 하이브리드",
+            year: 2019,
+            mileage: 49631,
+            fuel: "Gasoline",
+            transmission: "Automatic",
+            price: 4600,
+            region: "서울",
+            description: "연식 대비 상태 양호, 성능 보증 검사 완료 -",
+            images: ["ferrari1.jpg", "ferrari2.jpg"],
+            status: "판매중",
+            createdAt: Date(),
+            updatedAt: Date()
         )
         
     ]

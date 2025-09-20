@@ -10,7 +10,8 @@ import FirebaseFirestore
 import FirebaseStorage
 
 struct ChatDetailView: View {
-    let chat: Chat
+//    let chat: Chat
+    @State var chat: Chat   // ✅ let → @State 로 변경
     let currentUserId: String
     @ObservedObject var userStore: UserStore
     
@@ -266,39 +267,104 @@ struct ChatDetailView: View {
      }
 
     // MARK: - Firestore 메시지 전송
+//    private func sendMessage(text: String? = nil, imageUrl: String? = nil) {
+//        guard let chatId = chat.id else { return }
+//
+//        let newMessage = Message(
+//            id: nil,
+//            senderId: currentUserId,
+//            text: text ?? messageText,
+//            imageUrl: imageUrl,
+//            createdAt: Date(),
+//            readBy: [currentUserId]
+//        )
+//
+//        let messageTextToSave = newMessage.text ?? ""
+//
+//        do {
+//            _ = try db.collection("chats")
+//                .document(chatId)
+//                .collection("messages")
+//                .addDocument(from: newMessage) { error in
+//                    if error == nil {
+//                        // Chat 마지막 메시지 업데이트
+//                        db.collection("chats").document(chatId).updateData([
+//                            "lastMessage": messageTextToSave,
+//                            "lastAt": newMessage.createdAt
+//                        ])
+//                    }
+//                }
+//
+//            messageText = ""
+//        } catch {
+//            print("메시지 전송 실패: \(error.localizedDescription)")
+//        }
+//    }
+    
     private func sendMessage(text: String? = nil, imageUrl: String? = nil) {
-        guard let chatId = chat.id else { return }
+        let db = Firestore.firestore()
+        
+        // 메시지 내용 없으면 return
+        let content = text ?? messageText
+        guard !content.trimmingCharacters(in: .whitespaces).isEmpty || imageUrl != nil else { return }
+        
+        if let chatId = chat.id {
+            // ✅ 기존 채팅방 있으면 그대로 메시지 전송
+            saveMessage(chatId: chatId, text: content, imageUrl: imageUrl)
+        } else {
+            // ✅ 채팅방 없으면 새로 생성 후 첫 메시지 전송
+            let chatRef = db.collection("chats").document()
+            chat.id = chatRef.documentID   // @State라서 이제 업데이트 가능
 
+            do {
+                try chatRef.setData(from: chat)
+                // ✅ 새 채팅방 만들자마자 리스너 시작
+//                startListeningMessages()
+            } catch {
+                print("채팅방 생성 실패: \(error.localizedDescription)")
+                return
+            }
+            
+            saveMessage(chatId: chatRef.documentID, text: content, imageUrl: imageUrl)
+        }
+        
+        messageText = ""
+    }
+
+    private func saveMessage(chatId: String, text: String?, imageUrl: String?) {
+        let db = Firestore.firestore()
+        
         let newMessage = Message(
             id: nil,
             senderId: currentUserId,
-            text: text ?? messageText,
+            text: text,
             imageUrl: imageUrl,
             createdAt: Date(),
             readBy: [currentUserId]
         )
-
         let messageTextToSave = newMessage.text ?? ""
-
+        
         do {
             _ = try db.collection("chats")
                 .document(chatId)
                 .collection("messages")
                 .addDocument(from: newMessage) { error in
                     if error == nil {
-                        // Chat 마지막 메시지 업데이트
                         db.collection("chats").document(chatId).updateData([
                             "lastMessage": messageTextToSave,
                             "lastAt": newMessage.createdAt
                         ])
                     }
                 }
-
-            messageText = ""
+            // ✅ 로컬에서도 바로 반영
+            DispatchQueue.main.async {
+                self.messages.append(newMessage)
+            }
         } catch {
-            print("메시지 전송 실패: \(error.localizedDescription)")
+            print("메시지 저장 실패: \(error.localizedDescription)")
         }
     }
+
 
     // MARK: - 이미지 업로드 (Firebase Storage 예시)
     private func uploadImage(_ image: UIImage, completion: @escaping (String) -> Void) {
@@ -369,6 +435,7 @@ struct ChatDetailView: View {
     }
     
     // MARK: - 메시지 전송
+    /***
     private func sendMessage() {
         guard !messageText.trimmingCharacters(in: .whitespaces).isEmpty,
               let chatId = chat.id else { return }
@@ -407,7 +474,7 @@ struct ChatDetailView: View {
             print("메시지 전송 실패: \(error.localizedDescription)")
         }
     }
-    
+    */
     // MARK: - 상대방 메세지 읽음 처리
     private func markMessagesAsRead() {
         guard let chatId = chat.id else { return }
