@@ -263,6 +263,7 @@ final class SearchDetailViewModel: ObservableObject {
     func resetFilters() {
         selectedMaker = nil
         selectedModel = nil
+        selectedTrims = []
         minPrice = priceRange.lowerBound
         maxPrice = priceRange.upperBound
         minYear = yearRange.lowerBound
@@ -344,13 +345,17 @@ final class SearchDetailViewModel: ObservableObject {
 
     func saveCurrentFiltersAsRecent() {
         var parts: [String] = []
-        if let maker = selectedMaker {
-            if let model = selectedModel {
-                parts.append("제조사: \(maker) / 모델: \(model)")
-            } else {
-                parts.append("제조사: \(maker)")
-            }
+
+        // 우선순위: 세부모델 > 모델 > 제조사
+        if !selectedTrims.isEmpty {
+            let trimsString = selectedTrims.joined(separator: "\n")
+            parts.append("\(trimsString)")
+        } else if let model = selectedModel, let maker = selectedMaker {
+            parts.append("\(maker) \(model)")
+        } else if let maker = selectedMaker {
+            parts.append("\(maker)")
         }
+
         if minPrice > priceRange.lowerBound || maxPrice < priceRange.upperBound {
             parts.append("가격: \(minPrice)-\(maxPrice)")
         }
@@ -360,10 +365,12 @@ final class SearchDetailViewModel: ObservableObject {
         if minMileage > mileageRange.lowerBound || maxMileage < mileageRange.upperBound {
             parts.append("주행: \(minMileage)-\(maxMileage)km")
         }
+
         let carTypes = Array(selectedCarTypes).sorted()
         if !carTypes.isEmpty {
             parts.append("차종: \(carTypes.joined(separator: ", "))")
         }
+
         let fuels = Array(selectedFuels).sorted()
         if !fuels.isEmpty {
             parts.append("연료: \(fuels.joined(separator: ", "))")
@@ -384,6 +391,10 @@ final class SearchDetailViewModel: ObservableObject {
                 carTypeOptions = carTypeOptions.map { item in
                     CheckableItem(name: item.name, checked: names.contains(item.name))
                 }
+            } else if part.hasPrefix("세부모델:") {
+                let rest = part.replacingOccurrences(of: "세부모델:", with: "").trimmingCharacters(in: .whitespaces)
+                let trims = rest.split(separator: ",").map { $0.trimmingCharacters(in: .whitespaces) }
+                selectedTrims = Set(trims)
             } else if part.hasPrefix("제조사:") {
                 let rest = part.replacingOccurrences(of: "제조사:", with: "").trimmingCharacters(in: .whitespaces)
                 if rest.contains("/ 모델:") {

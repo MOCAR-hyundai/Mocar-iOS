@@ -50,6 +50,7 @@ struct SearchView: View {
                     Spacer()
                     Button(action: { showRecentSheet = true }) {
                         Text("최근검색기록")
+                        Text("\(viewModel.recentSearches.count)")
                         Image(systemName: "chevron.right")
                     }
                     .font(.caption)
