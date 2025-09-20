@@ -10,7 +10,7 @@ import SwiftUI
 struct ModelSelectionView: View {
     @Environment(\.dismiss) private var dismiss
     @ObservedObject var viewModel: SearchDetailViewModel
-    let maker: BrandView.Maker
+    let maker: BrandFilterView.Maker
 
     private var models: [SearchDetailViewModel.ModelSummary] {
         viewModel.models(for: maker.name)

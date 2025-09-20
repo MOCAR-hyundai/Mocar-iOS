@@ -227,16 +227,16 @@ final class SearchDetailViewModel: ObservableObject {
     func clearMaker() {
         selectedMaker = nil
         selectedModel = nil
-        selectedTrim = nil
+        selectedTrims = []
     }
     
     func clearModel() {
         selectedModel = nil
-        selectedTrim = nil
+        selectedTrims = []
     }
     
     func clearTrim() {
-        selectedTrim = nil
+        selectedTrims = []
     }
     
     func hasActiveFilters(for category: String) -> Bool {
@@ -460,6 +460,10 @@ final class SearchDetailViewModel: ObservableObject {
         return true
     }
 
+    func searchCarsTrim(maker: String, model: String) -> [SearchCar] {
+        allCars.filter { $0.maker == maker && $0.model == model }
+    }
+    
     func searchCars(keyword: String) -> [SearchCar] {
         let trimmed = keyword.trimmingCharacters(in: .whitespacesAndNewlines)
         let lowered = trimmed.lowercased()

@@ -1,5 +1,5 @@
 //
-//  BrandView.swift
+//  BrandFilterView.swift
 //  Mocar-iOS
 //
 //  Created by wj on 9/17/25.
@@ -7,7 +7,7 @@
 
 import SwiftUI
 
-struct BrandView: View {
+struct BrandFilterView: View {
     struct Maker: Identifiable {
         let id: UUID
         let name: String
@@ -69,9 +69,9 @@ struct BrandView: View {
                 placeholder: "선택해 주세요.",
                 onClear: viewModel.clearMaker
             )
-
+            
             Divider()
-
+            
             // 모델
             NavigationLink {
                 if let makerName = viewModel.selectedMaker {
@@ -85,15 +85,15 @@ struct BrandView: View {
                     title: "모델",
                     value: viewModel.selectedModel,
                     placeholder: viewModel.selectedMaker == nil
-                        ? "제조사를 먼저 선택해 주세요."
-                        : "선택해 주세요.",
+                    ? "제조사를 먼저 선택해 주세요."
+                    : "선택해 주세요.",
                     onClear: viewModel.clearModel
                 )
             }
             .disabled(viewModel.selectedMaker == nil)
-
+            
             Divider()
-
+            
             // 세부 모델 (트림)
             NavigationLink {
                 if let makerName = viewModel.selectedMaker,
@@ -105,14 +105,34 @@ struct BrandView: View {
                     )
                 }
             } label: {
-                selectionRow(
-                    title: "세부 모델",
-                    value: viewModel.selectedTrim,
-                    placeholder: viewModel.selectedMaker == nil
-                        ? "제조사를 먼저 선택해 주세요."
-                        : "선택해 주세요.",
-                    onClear: viewModel.clearTrim
-                )
+                HStack(spacing: 8) {
+                    Text("세부 모델")
+                        .font(.subheadline)
+                        .foregroundColor(.black)
+                    Spacer()
+                    
+                    if viewModel.selectedTrims.isEmpty {
+                        Text(viewModel.selectedMaker == nil
+                             ? "제조사를 먼저 선택해 주세요."
+                             : "선택해 주세요.")
+                        .font(.subheadline)
+                        .foregroundColor(.gray)
+                    } else {
+                            VStack (spacing: 4) {
+                                ForEach(Array(viewModel.selectedTrims), id: \.self) { trim in
+                                    selectionChip(text: trim) {
+                                        viewModel.toggleTrim(trim, for: viewModel.selectedMaker!, model: viewModel.selectedModel!)
+                                }
+                            }
+                        }
+                    }
+                    
+                    Image(systemName: "chevron.right")
+                        .foregroundColor(.gray)
+                }
+                .frame(maxWidth: .infinity, minHeight: 50)
+                .padding(.horizontal, 16)
+                .contentShape(Rectangle())
             }
             .disabled(viewModel.selectedModel == nil)
         }

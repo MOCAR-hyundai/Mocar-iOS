@@ -8,7 +8,7 @@
 import SwiftUI
 
 struct BrandOptionsRow: View {
-    let maker: BrandView.Maker
+    let maker: BrandFilterView.Maker
     
     var body: some View {
         VStack(spacing: 0) {

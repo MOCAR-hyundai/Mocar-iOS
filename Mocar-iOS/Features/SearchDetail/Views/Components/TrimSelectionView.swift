@@ -13,11 +13,15 @@ struct TrimSelectionView: View {
     let makerName: String
     let modelName: String
     
-    private var trims: [String] {
-        viewModel.trims(for: makerName, model: modelName)
+    private var results: [SearchCar] {
+        viewModel.searchCarsTrim(maker: makerName, model: modelName)
     }
     
-    @State private var tempSelectedTrim: String? = nil
+    private var groupedResults: [String: [SearchCar]] {
+        Dictionary(grouping: results, by: { $0.title })
+    }
+    
+    @State private var tempSelectedTrims: Set<String> = []
     
     var body: some View {
         VStack(spacing: 0) {
@@ -38,46 +42,50 @@ struct TrimSelectionView: View {
             
             ScrollView {
                 VStack(spacing: 0) {
-                    if trims.isEmpty {
+                    if results.isEmpty {
                         Text("등록된 트림이 없습니다.")
                             .foregroundColor(.gray)
                             .frame(maxWidth: .infinity, alignment: .center)
                             .padding()
                     } else {
-                        ForEach(trims, id: \.self) { trim in
-                            Button(action: {
-                                tempSelectedTrim = (tempSelectedTrim == trim ? nil : trim)
-                            }) {
-                                HStack {
-                                    if tempSelectedTrim == trim || viewModel.selectedTrim == trim {
-                                        Image(systemName: "checkmark")
-                                            .foregroundColor(.accentColor)
+                        ForEach(groupedResults.keys.sorted(), id: \.self) { title in
+                            if let cars = groupedResults[title], let car = cars.first {
+                                Button(action: {
+                                    if tempSelectedTrims.contains(title) {
+                                        tempSelectedTrims.remove(title)
                                     } else {
-                                        Image(systemName: "checkmark")
-                                            .opacity(0)
+                                        tempSelectedTrims.insert(title)
                                     }
-                                    
-                                    Text(trim)
-                                        .foregroundColor(.black)
-                                    
-                                    Spacer()
-                                    
-                                    Text("\(viewModel.countForTrim(maker: makerName, model: modelName, trim: trim))")
-                                        .foregroundColor(.gray)
+                                }) {
+                                    HStack {
+                                        Image(systemName: tempSelectedTrims.contains(title) ? "checkmark.square.fill" : "square")
+                                            .foregroundColor(tempSelectedTrims.contains(title) ? .blue : .gray)
+                                        VStack(alignment: .leading , spacing: 4) {
+                                            Text(title)
+                                                .foregroundColor(.black)
+                                            
+                                            Text("연식 \(car.year)년")
+                                                .font(.caption)
+                                                .foregroundColor(.gray)
+                                        }
+                                        Spacer()
+                                        Text("\(cars.count)대")
+                                        
+                                    }
+                                    .padding(.vertical, 12)
+                                    .padding(.horizontal)
+                                    .contentShape(Rectangle())
                                 }
-                                .padding(.vertical, 12)
-                                .padding(.horizontal)
-                                .contentShape(Rectangle())
+                                .buttonStyle(.plain)
+                                Divider()
                             }
-                            .buttonStyle(.plain)
-                            Divider()
                         }
                     }
                 }
             }
             
             Button(action: {
-                viewModel.selectedTrim = tempSelectedTrim
+                viewModel.selectedTrims = tempSelectedTrims
                 dismiss()
             }) {
                 Text("선택 완료")
@@ -96,7 +104,7 @@ struct TrimSelectionView: View {
                 viewModel.selectModel(modelName, for: makerName)
                 viewModel.clearTrims()
             }
-            tempSelectedTrim = viewModel.selectedTrim
+            tempSelectedTrims = Set(viewModel.selectedTrims)
         }
         .navigationBarBackButtonHidden(true)
     }

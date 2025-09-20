@@ -14,7 +14,7 @@ struct RightOptionView: View {
     var body: some View {
         VStack {
             if selectedCategory == "제조사" {
-                BrandView(viewModel: viewModel)
+                BrandFilterView(viewModel: viewModel)
             } else if selectedCategory == "가격" {
                 PriceFilterView(minPrice: $viewModel.minPrice, maxPrice: $viewModel.maxPrice)
             } else if selectedCategory == "연식" {
