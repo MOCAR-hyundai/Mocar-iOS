@@ -8,7 +8,7 @@
 import SwiftUI
 
 struct BrandFilterView: View {
-    struct Maker: Identifiable {
+    struct Maker: Identifiable, Hashable {
         let id: UUID
         let name: String
         let count: Int
@@ -23,41 +23,42 @@ struct BrandFilterView: View {
     }
 
     @ObservedObject var viewModel: SearchDetailViewModel
-    
+    @Binding var path: [SearchDestination]  // SearchView에서 내려받은 path
+
     private var makers: [Maker] {
         viewModel.makerSummaries.map(Maker.init)
     }
 
     var body: some View {
-        NavigationStack {
-            VStack(alignment: .leading, spacing: 0) {
-                if viewModel.selectedMaker != nil || viewModel.selectedModel != nil {
-                    selectionPanel
-                    Spacer()
-                } else {
-                    ScrollView {
-                        VStack(alignment: .leading, spacing: 0) {
-                            Text("제조사")
-                                .font(.footnote)
-                                .fontWeight(.semibold)
-                            ForEach(makers) { maker in
-                                let isDisabled = maker.count == 0
-                                NavigationLink {
-                                    ModelSelectionView(viewModel: viewModel, maker: maker)
-                                } label: {
-                                    BrandOptionsRow(maker: maker)
-                                        .opacity(isDisabled ? 0.5 : 1.0)
-                                }
-                                .disabled(isDisabled)
+        VStack(alignment: .leading, spacing: 0) {
+            if viewModel.selectedMaker != nil || viewModel.selectedModel != nil {
+                selectionPanel
+                Spacer()
+            } else {
+                ScrollView {
+                    VStack(alignment: .leading, spacing: 0) {
+                        Text("제조사")
+                            .font(.footnote)
+                            .fontWeight(.semibold)
+                            .padding(.bottom, 8)
+
+                        ForEach(makers) { maker in
+                            let isDisabled = maker.count == 0
+                            NavigationLink(
+                                value: SearchDestination.model(makerName: maker.name)
+                            ) {
+                                BrandOptionsRow(maker: maker)
+                                    .opacity(isDisabled ? 0.5 : 1.0)
+                                    .padding(.vertical, 4)
                             }
+                            .disabled(isDisabled)
                         }
                     }
+                    .padding(.horizontal)
                 }
             }
-            .padding(.horizontal)
-            .padding(.top, 20)
-            .navigationBarBackButtonHidden(true)
         }
+        .padding(.top, 20)
     }
 
     private var selectionPanel: some View {
@@ -73,20 +74,17 @@ struct BrandFilterView: View {
             Divider()
             
             // 모델
-            NavigationLink {
-                if let makerName = viewModel.selectedMaker {
-                    ModelSelectionView(
-                        viewModel: viewModel,
-                        maker: makers.first { $0.name == makerName }!
-                    )
-                }
-            } label: {
+            NavigationLink(
+                value: viewModel.selectedMaker != nil
+                    ? SearchDestination.model(makerName: viewModel.selectedMaker!)
+                    : nil
+            ) {
                 selectionRow(
                     title: "모델",
                     value: viewModel.selectedModel,
                     placeholder: viewModel.selectedMaker == nil
-                    ? "제조사를 먼저 선택해 주세요."
-                    : "선택해 주세요.",
+                        ? "제조사를 먼저 선택해 주세요."
+                        : "선택해 주세요.",
                     onClear: viewModel.clearModel
                 )
             }
@@ -94,17 +92,12 @@ struct BrandFilterView: View {
             
             Divider()
             
-            // 세부 모델 (트림)
-            NavigationLink {
-                if let makerName = viewModel.selectedMaker,
-                   let modelName = viewModel.selectedModel {
-                    TrimSelectionView(
-                        viewModel: viewModel,
-                        makerName: makerName,
-                        modelName: modelName
-                    )
-                }
-            } label: {
+            // 트림
+            NavigationLink(
+                value: (viewModel.selectedMaker != nil && viewModel.selectedModel != nil)
+                    ? SearchDestination.trim(makerName: viewModel.selectedMaker!, modelName: viewModel.selectedModel!)
+                    : nil
+            ) {
                 HStack(spacing: 8) {
                     Text("세부 모델")
                         .font(.subheadline)
@@ -118,10 +111,14 @@ struct BrandFilterView: View {
                         .font(.subheadline)
                         .foregroundColor(.gray)
                     } else {
-                            VStack (spacing: 4) {
-                                ForEach(Array(viewModel.selectedTrims), id: \.self) { trim in
-                                    selectionChip(text: trim) {
-                                        viewModel.toggleTrim(trim, for: viewModel.selectedMaker!, model: viewModel.selectedModel!)
+                        VStack(spacing: 4) {
+                            ForEach(Array(viewModel.selectedTrims), id: \.self) { trim in
+                                selectionChip(text: trim) {
+                                    viewModel.toggleTrim(
+                                        trim,
+                                        for: viewModel.selectedMaker!,
+                                        model: viewModel.selectedModel!
+                                    )
                                 }
                             }
                         }

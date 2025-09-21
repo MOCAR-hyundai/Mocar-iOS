@@ -8,15 +8,15 @@
 import SwiftUI
 
 struct SearchView: View {
-    @Environment(\.dismiss) private var dismiss
     @StateObject private var viewModel = SearchDetailViewModel()
     @State private var selectedCategory: String? = "제조사"
     @State private var showRecentSheet: Bool = false
+    @State private var path: [SearchDestination] = []
     
     private let categories = ["제조사", "가격", "연식", "주행거리", "차종", "연료", "지역"]
     
     var body: some View {
-        NavigationStack {
+        NavigationStack(path: $path) {
             VStack(spacing: 0) {
                 // 상단 검색창
                 HStack {
@@ -45,7 +45,7 @@ struct SearchView: View {
                 .padding(.top, 16)
                 .padding(.horizontal)
                 
-                // 최근검색기록 (헤더 오른쪽에 팝업 열기 버튼)
+                // 최근검색기록
                 HStack {
                     Spacer()
                     Button(action: { showRecentSheet = true }) {
@@ -55,80 +55,15 @@ struct SearchView: View {
                     }
                     .font(.caption)
                     .foregroundColor(.gray)
-                    
                 }
                 .padding()
                 .sheet(isPresented: $showRecentSheet) {
-                    VStack(spacing: 0) {
-                        // 상단 커스텀 헤더
-                        HStack {
-                            Text("최근 검색")
-                                .font(.headline)
-                                .foregroundColor(.black)
-                            Spacer()
-                            Button(action: {
-                                viewModel.clearRecentSearches()
-                            }) {
-                                Text("전체 삭제")
-                                    .font(.footnote)
-                                    .foregroundColor(.red)
-                            }
-                            .buttonStyle(.plain)
-                        }
-                        .padding()
-                        .background(Color.white)
-                        .shadow(color: Color.black.opacity(0.05), radius: 2, x: 0, y: 2)
-
-                        Divider()
-
-                        // 리스트 영역
-                        if viewModel.recentSearches.isEmpty {
-                            Spacer()
-                            Text("저장된 검색 필터가 없습니다.")
-                                .foregroundColor(.gray)
-                                .padding(.vertical, 24)
-                            Spacer()
-                        } else {
-                            ScrollView {
-                                LazyVStack(spacing: 0) {
-                                    ForEach(viewModel.recentSearches, id: \.self) { item in
-                                        RecentSearchRow(
-                                            summary: item,
-                                            onApply: {
-                                                viewModel.applyRecentSearch(item)
-                                                showRecentSheet = false
-                                            },
-                                            onDelete: {
-                                                viewModel.removeRecentSearch(item)
-                                            }
-                                        )
-                                        .padding(.vertical, 8)
-                                        Divider()
-                                    }
-                                }
-                                .padding(.horizontal)
-                            }
-                        }
-
-                        // 닫기 버튼
-                        Button(action: {
-                            showRecentSheet = false
-                        }) {
-                            Text("닫기")
-                                .font(.body)
-                                .foregroundColor(.black)
-                                .frame(maxWidth: .infinity)
-                                .frame(height: 50)
-                                .background(Color(UIColor.systemGray6))
-                                .cornerRadius(8)
-                                .padding()
-                        }
-                    }
-                    .background(Color.white)                }
+                    RecentSearchView(viewModel: viewModel, isPresented: $showRecentSheet)
+                }
                 
                 Divider()
                 
-                // 메인 검색영역
+                // 메인 검색 영역
                 HStack(spacing: 0) {
                     LeftCategoryView(
                         categories: categories,
@@ -138,7 +73,8 @@ struct SearchView: View {
                     Divider()
                     RightOptionView(
                         selectedCategory: $selectedCategory,
-                        viewModel: viewModel
+                        viewModel: viewModel,
+                        path: $path // ✅ path 전달
                     )
                 }
                 
@@ -177,6 +113,20 @@ struct SearchView: View {
                 .padding()
             }
             .background(Color.white)
+            .navigationDestination(for: SearchDestination.self) { dest in
+                switch dest {
+                case .model(let makerName):
+                    ModelSelectionView(viewModel: viewModel,
+                                       makerName: makerName,
+                                       onCancel: { path = [] })
+                case .trim(let makerName, let modelName):
+                    TrimSelectionView(viewModel: viewModel,
+                                      makerName: makerName,
+                                      modelName: modelName,
+                                      path: $path
+                    )
+                }
+            }
         }
     }
 }
@@ -187,4 +137,10 @@ private extension SearchView {
         formatter.numberStyle = .decimal
         return formatter.string(from: NSNumber(value: viewModel.filteredCount)) ?? "\(viewModel.filteredCount)"
     }
+}
+
+// Destination enum
+enum SearchDestination: Hashable {
+    case model(makerName: String)
+    case trim(makerName: String, modelName: String)
 }

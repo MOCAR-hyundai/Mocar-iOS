@@ -8,31 +8,44 @@
 import SwiftUI
 
 struct ModelSelectionView: View {
-    @Environment(\.dismiss) private var dismiss
     @ObservedObject var viewModel: SearchDetailViewModel
-    let maker: BrandFilterView.Maker
+    let makerName: String
+    var onCancel: (() -> Void)? = nil   // BrandFilter로 직행 콜백
 
     private var models: [SearchDetailViewModel.ModelSummary] {
-        viewModel.models(for: maker.name)
+        viewModel.models(for: makerName)
     }
 
     var body: some View {
         VStack(spacing: 0) {
             HStack {
-                Button(action: { dismiss() }) {
+                Button(action: {
+                    viewModel.selectedMaker = makerName
+                    onCancel?()
+                }) {
                     Image(systemName: "chevron.left")
                         .foregroundColor(.black)
                 }
-                Text(maker.name)
+
+                Text(makerName)
                     .font(.system(size: 22, weight: .bold))
                     .foregroundColor(.black)
+
                 Spacer()
+
+                Button(action: {
+                    viewModel.selectedMaker = makerName
+                    onCancel?()
+                }) {
+                    Image(systemName: "xmark")
+                        .foregroundColor(.black)
+                }
             }
             .padding()
             .background(Color.white)
-            
+
             Divider()
-            
+
             ScrollView {
                 VStack(spacing: 0) {
                     if models.isEmpty {
@@ -42,9 +55,13 @@ struct ModelSelectionView: View {
                             .padding()
                     } else {
                         ForEach(models) { model in
-                            NavigationLink {
-                                TrimSelectionView(viewModel: viewModel, makerName: maker.name, modelName: model.name)
-                            } label: {
+                            // path 기반 NavigationLink
+                            NavigationLink(
+                                value: SearchDestination.trim(
+                                    makerName: makerName,
+                                    modelName: model.name
+                                )
+                            ) {
                                 HStack {
                                     Text(model.name)
                                         .foregroundColor(.black)
@@ -62,5 +79,11 @@ struct ModelSelectionView: View {
             }
         }
         .navigationBarBackButtonHidden(true)
+        .onAppear {
+            // ViewModel.selectedMaker가 nil이면 현재 makerName으로 초기화
+            if viewModel.selectedMaker == nil {
+                viewModel.selectedMaker = makerName
+            }
+        }
     }
 }
