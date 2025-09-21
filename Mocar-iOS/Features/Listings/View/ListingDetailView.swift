@@ -6,6 +6,8 @@
 //
 
 import SwiftUI
+import FirebaseFirestore
+import FirebaseAuth
 
 struct ListingDetailView: View {
     let listingId: String
@@ -13,18 +15,27 @@ struct ListingDetailView: View {
     // 따라서 View가 직접 소유(@StateObject)하고, 생성 시 외부에서 FavoritesViewModel을 주입받아야 함
     @StateObject private var viewModel: ListingDetailViewModel
     
+
     init(listingId: String, favoritesViewModel: FavoritesViewModel) {
         _viewModel = StateObject(
             wrappedValue: ListingDetailViewModel(favoritesViewModel: favoritesViewModel)
         )
         self.listingId = listingId
     }
+
+    /** 채팅방과 연결  **/
+    @StateObject private var userStore = UserStore()
+    @State private var selectedChat: Chat? = nil
+    @State private var isChatActive = false
+    /** 채팅방과 연결  **/
+    
     var body: some View {
         NavigationStack{
             if let listing = viewModel.listing {
                 VStack{
                     TopBar(style: .listing(title:viewModel.listing?.plateNo ?? ""))
                         .padding()
+
                     ScrollView{
                         VStack{
                             ZStack(alignment: .topTrailing){
@@ -120,23 +131,23 @@ struct ListingDetailView: View {
                             viewModel.loadListing(id: listingId)
                             }
                         }
-                    HStack{
-                        Button(action:{
-                            
-                        }){
-                            Text("구매 문의")
-                                .foregroundStyle(.white)
-                                .fontWeight(.bold)
-                            
-                        }
-                        .frame(maxWidth: .infinity, minHeight: 50)
-                        .background(
-                            RoundedRectangle(cornerRadius: 8)
-                                .fill(Color.blue)
-                        )
-                        
-                    }
-                    .padding()
+//                    HStack{
+//                        Button(action:{
+//                            
+//                        }){
+//                            Text("구매 문의")
+//                                .foregroundStyle(.white)
+//                                .fontWeight(.bold)
+//                            
+//                        }
+//                        .frame(maxWidth: .infinity, minHeight: 50)
+//                        .background(
+//                            RoundedRectangle(cornerRadius: 8)
+//                                .fill(Color.blue)
+//                        )
+//                        
+//                    }
+//                    .padding()
                 }
                 .background(Color.backgroundGray100)
                 .navigationBarHidden(true)   // 기본 네비게이션 바 숨김
@@ -159,9 +170,111 @@ struct ListingDetailView: View {
                     viewModel.loadListing(id: listingId)
                 }
             }
+
             
             }
-    }
+            .onAppear {
+                viewModel.loadListing(id: listingId)
+            }
+            .background(Color.backgroundGray100)
+            .navigationBarHidden(true)   // 기본 네비게이션 바 숨김
+            .navigationBarBackButtonHidden(true) // 기본 뒤로가기 숨김
+            HStack{
+//                Button(action:{
+//                    
+//                }){
+//                    Text("구매 문의")
+//                        .foregroundStyle(.white)
+//                        .fontWeight(.bold)
+//                    
+//                }
+//                .frame(maxWidth: .infinity, minHeight: 50)
+//                .background(
+//                    RoundedRectangle(cornerRadius: 8)
+//                        .fill(Color.blue)
+//                )
+                
+                /**채팅방과 연결 */
+                Button(action: {
+                    createOrFetchChat()
+                }) {
+                    Text("구매 문의")
+                        .foregroundStyle(.white)
+                        .fontWeight(.bold)
+                }
+                .frame(maxWidth: .infinity, minHeight: 50)
+                .background(
+                    RoundedRectangle(cornerRadius: 8)
+                        .fill(Color.blue)
+                )
+                
+                
+                // ✅ 네비게이션 링크 (선택된 Chat 있으면 활성화됨)
+                // ✅ ListingDetailView 안에
+                NavigationLink(
+                    destination:
+                        Group {
+                            if let chat = selectedChat,
+                               let currentUserId = Auth.auth().currentUser?.uid {
+                                ChatDetailView(
+                                    chat: chat,
+                                    currentUserId: currentUserId,
+                                    userStore: userStore
+                                )
+                            } else {
+                                EmptyView()
+                            }
+                        },
+                    isActive: $isChatActive
+                ) {
+                    EmptyView()
+                }
+                .hidden()
+
+
+                
+                /** 채팅방과 연결  */
+                
+            }
+            .padding()
+            
+            
+        }
+        
+
+    /**채팅방과 연결 */
+    // Firestore 확인 → Chat 객체 세팅 → Navigation 실행
+       private func createOrFetchChat() {
+           guard let currentUserId = Auth.auth().currentUser?.uid else { return } //로그인 후 이용 모달 나중에 띄우기
+           let db = Firestore.firestore()
+           
+           db.collection("chats")
+               .whereField("buyerId", isEqualTo: currentUserId)
+               .whereField("sellerId", isEqualTo: viewModel.listing?.sellerId ?? "")
+               .whereField("listingId", isEqualTo: viewModel.listing?.id ?? "")
+               .getDocuments (completion:{ snapshot, error in
+                   if let doc = snapshot?.documents.first,
+                      let existingChat = try? doc.data(as: Chat.self) {
+                       // ✅ 기존 채팅방 있음
+                       self.selectedChat = existingChat
+                       self.isChatActive = true
+                   } else {
+                       // ✅ 채팅방 없음 → 새 Chat 객체 넘기기
+                       let newChat = Chat(
+                           id: nil,
+                           buyerId: currentUserId,
+                           sellerId: viewModel.listing?.sellerId ?? "",
+                           listingId: viewModel.listing?.id ?? "",
+                           lastMessage: nil,
+                           listingTitle: viewModel.listing?.title ?? "",
+                           lastAt: Date()
+                       )
+                       self.selectedChat = newChat
+                       self.isChatActive = true
+                   }
+               })
+       }
+    /**채팅방과 연결 */
 
 }
 

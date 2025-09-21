@@ -48,5 +48,3 @@ struct Listing : Identifiable, Codable{
     }
     
 }
-
-

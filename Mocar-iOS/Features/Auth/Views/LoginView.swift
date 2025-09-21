@@ -25,151 +25,147 @@ struct LoginView: View {
     }
     
     var body: some View {
-        TopBar(style: .login)
-            
-        VStack(spacing: 20) {
-            Spacer().frame(height: 80)
-            
-            Text("로그인")
-                .font(.system(size: 30, weight: .semibold, design: .default))
-                .frame(maxWidth: .infinity, alignment: .leading)
-                .padding(.horizontal)
-            
-            Spacer().frame(height: 10)
-            
-            VStack(alignment: .leading, spacing: 7) {
-                // 이메일
-                Text("이메일")
-                    .font(.system(size: 14))
+        NavigationStack{
+            VStack(spacing: 20) {
+                Spacer().frame(height: 80)
                 
+                Text("로그인")
+                    .font(.system(size: 30, weight: .semibold, design: .default))
+                    .frame(maxWidth: .infinity, alignment: .leading)
+                    .padding(.horizontal)
+                
+                Spacer().frame(height: 10)
+                
+                VStack(alignment: .leading, spacing: 7) {
+                    // 이메일
+                    Text("이메일")
+                        .font(.system(size: 14))
+                    
 
-                TextField("abc@example.com", text: $email)
-                    .keyboardType(.emailAddress)
-                    .autocapitalization(.none)
-                    .textInputAutocapitalization(.never)
-                    .disableAutocorrection(true)
-                    .padding()
-                    .background(
-                        RoundedRectangle(cornerRadius: 10)
-                            .stroke(focusedField == .email ? Color(red: 0.188, green: 0.345, blue: 0.937)
-: Color.gray, lineWidth: 1)
-                    )
-                    .focused($focusedField, equals: .email)
-                
-                // 비밀번호
-                Text("비밀번호")
-                    .font(.system(size: 14))
-                    .padding(.top, 6)
-                
-                ZStack {
-                    if isPasswordSecured {
-                        SecureField("8자 이상의 비밀번호", text: $password)
-                            .autocapitalization(.none)   // 자동 대문자 방지
-                            .textInputAutocapitalization(.never) // 자동 대문자 방지: iOS 15 이상
-                            .disableAutocorrection(true) // 자동 수정 방지
-                            .padding()
-                            .padding(.trailing, 50)
-                            .background(
-                                RoundedRectangle(cornerRadius: 10)
-                                    .stroke(focusedField == .password ? Color(red: 0.188, green: 0.345, blue: 0.937)
-: Color.gray, lineWidth: 1)
-                            )
-                            .focused($focusedField, equals: .password)
-                    } else {
-                        TextField("8자 이상의 비밀번호", text: $password)
-                            .autocapitalization(.none)   // 자동 대문자 방지
-                            .textInputAutocapitalization(.never) // 자동 대문자 방지: iOS 15 이상
-                            .disableAutocorrection(true) // 자동 수정 방지
-                            .padding()
-                            .padding(.trailing, 50)
-                            .background(
-                                RoundedRectangle(cornerRadius: 8)
-                                    .stroke(Color.gray, lineWidth: 1)
-                            )
-                    }
-                    HStack {
-                        Spacer()
-                        Button(action: {
-                            isPasswordSecured.toggle()
-                        }) {
-                            ZStack {
-                                if isPasswordSecured {
-                                    Image("closedeye")   // Assets에 넣은 커스텀 이미지
-                                        .resizable()
-                                        .scaledToFit()
-                                        .frame(width: 20, height: 20)
-                                        .padding(.trailing)
-                                } else {
-                                    Image(systemName: "eye")   // SF Symbols
-                                        .foregroundStyle(.black)
-                                        .frame(width: 20, height: 20)
-                                        .padding(.trailing)
+                    TextField("abc@example.com", text: $email)
+                        .keyboardType(.emailAddress)
+                        .autocapitalization(.none)
+                        .textInputAutocapitalization(.never)
+                        .disableAutocorrection(true)
+                        .padding()
+                        .background(
+                            RoundedRectangle(cornerRadius: 10)
+                                .stroke(focusedField == .email ? Color.keyColorBlue : Color.gray, lineWidth: 1)
+                        )
+                        .focused($focusedField, equals: .email)
+                    
+                    // 비밀번호
+                    Text("비밀번호")
+                        .font(.system(size: 14))
+                        .padding(.top, 6)
+                    
+                    ZStack {
+                        if isPasswordSecured {
+                            SecureField("8자 이상의 비밀번호", text: $password)
+                                .autocapitalization(.none)   // 자동 대문자 방지
+                                .textInputAutocapitalization(.never) // 자동 대문자 방지: iOS 15 이상
+                                .disableAutocorrection(true) // 자동 수정 방지
+                                .padding()
+                                .padding(.trailing, 50)
+                                .background(
+                                    RoundedRectangle(cornerRadius: 10)
+                                        .stroke(focusedField == .password ? Color.keyColorBlue
+ : Color.gray, lineWidth: 1)
+                                )
+                                .focused($focusedField, equals: .password)
+                        } else {
+                            TextField("8자 이상의 비밀번호", text: $password)
+                                .autocapitalization(.none)   // 자동 대문자 방지
+                                .textInputAutocapitalization(.never) // 자동 대문자 방지: iOS 15 이상
+                                .disableAutocorrection(true) // 자동 수정 방지
+                                .padding()
+                                .padding(.trailing, 50)
+                                .background(
+                                    RoundedRectangle(cornerRadius: 8)
+                                        .stroke(Color.gray, lineWidth: 1)
+                                )
+                        }
+                        HStack {
+                            Spacer()
+                            Button(action: {
+                                isPasswordSecured.toggle()
+                            }) {
+                                ZStack {
+                                    if isPasswordSecured {
+                                        Image("closedeye")   // Assets에 넣은 커스텀 이미지
+                                            .resizable()
+                                            .scaledToFit()
+                                            .frame(width: 20, height: 20)
+                                            .padding(.trailing)
+                                    } else {
+                                        Image(systemName: "eye")   // SF Symbols
+                                            .foregroundStyle(.black)
+                                            .frame(width: 20, height: 20)
+                                            .padding(.trailing)
+                                    }
                                 }
                             }
                         }
                     }
+                    
+                    HStack {
+                        Toggle("로그인 상태 유지", isOn: $keepLoggedIn)
+                            .toggleStyle(CheckboxToggleStyle())
+                        Spacer()
+                        Button("비밀번호 재설정") {
+                            // 비밀번호 재설정 액션
+                        }
+                        .foregroundColor(.blue)
+                    }
+                    .font(.system(size: 14, weight: .regular, design: .default))
+                    .padding(.top, 6)
+                }
+                .padding(.horizontal)
+                
+                Spacer().frame(height: 20)
+                
+                if let errorMessage = loginErrorMessage {
+                    Text(errorMessage)
+                        .foregroundColor(.red)
+                        .font(.footnote)
+                        .padding(.horizontal)
                 }
                 
-                HStack {
-                    Toggle("로그인 상태 유지", isOn: $keepLoggedIn)
-                        .toggleStyle(CheckboxToggleStyle())
-                    Spacer()
-                    Button("비밀번호 재설정") {
-                        // 비밀번호 재설정 액션
+                // 로그인 버튼
+                Button(action: {
+                    // 로그인 액션
+                    login()
+                }) {
+                    if isLoading {
+                        ProgressView().progressViewStyle(CircularProgressViewStyle(tint: .white))
+                            .frame(maxWidth: .infinity, maxHeight: 30)
+                            .padding()
+                            .background(Color.keyColorDarkGray)
+                            .cornerRadius(62)
+                    } else {
+                        Text("로그인")
+                            .foregroundColor(.white)
+                            .frame(maxWidth: .infinity, maxHeight: 30)
+                            .padding()
+                            .background(Color.keyColorDarkGray)
+                            .cornerRadius(62)
                     }
-                    .foregroundColor(.blue)
                 }
-                .font(.system(size: 14, weight: .regular, design: .default))
-                .padding(.top, 6)
-            }
-            .padding(.horizontal)
-            
-            Spacer().frame(height: 20)
-            
-            if let errorMessage = loginErrorMessage {
-                Text(errorMessage)
-                    .foregroundColor(.red)
-                    .font(.footnote)
-                    .padding(.horizontal)
-            }
-            
-            // 로그인 버튼
-            Button(action: {
-                // 로그인 액션
-                login()
-            }) {
-                if isLoading {
-                    ProgressView().progressViewStyle(CircularProgressViewStyle(tint: .white))
-                        .frame(maxWidth: .infinity, maxHeight: 30)
-                        .padding()
-                        .background(Color(red: 0.129, green: 0.161, blue: 0.169))
-                        .cornerRadius(62)
-                } else {
-                    Text("로그인")
-                        .foregroundColor(.white)
-                        .frame(maxWidth: .infinity, maxHeight: 30)
-                        .padding()
-                        .background(Color(red: 0.129, green: 0.161, blue: 0.169))
-                        .cornerRadius(62)
+                .padding(.horizontal)
+                .font(.system(size: 18, weight: .bold, design: .default))
+                
+                Spacer()
+                
+                HStack {
+                    Text("계정이 없으신가요?")
+                    NavigationLink("회원가입", destination: SignUpView())
+                        .foregroundColor(.blue)
                 }
+                .font(.footnote)
             }
-            .padding(.horizontal)
-            .font(.system(size: 18, weight: .bold, design: .default))
+            .padding(.top)
             
-            Spacer()
-            
-            HStack {
-                Text("계정이 없으신가요?")
-                NavigationLink("회원가입", destination: SignUpView())
-                    .foregroundColor(.blue)
-            }
-            .font(.footnote)
         }
-        .padding(.top)
-//        NavigationStack{
-//            
-//            
-//        }
     }
     
     // MARK: - Firebase 로그인 함수
@@ -213,7 +209,7 @@ struct CheckboxToggleStyle: ToggleStyle {
             Image(systemName: configuration.isOn ? "checkmark.square.fill" : "square")
                 .resizable()                   // 이미지 크기 조절 가능
                 .frame(width: 19, height: 19)  // 원하는 크기
-                .foregroundColor(Color(red: 0.271, green: 0.271, blue: 0.271))    // 체크 색상 지정 가능
+                .foregroundColor(Color.textGray200)    // 체크 색상 지정 가능
                 .onTapGesture { configuration.isOn.toggle() }
             configuration.label
         }

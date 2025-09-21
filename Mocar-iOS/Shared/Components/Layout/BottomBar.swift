@@ -10,6 +10,8 @@ import SwiftUI
 struct BottomBar: View {
     @State private var selectedTab: Int = 0
     
+    @StateObject var session = UserSession()
+    
     var body: some View {
         ZStack(alignment: .bottom) {
             // 메인 콘텐츠
@@ -18,7 +20,18 @@ struct BottomBar: View {
                 HomeView().tag(0)
                 SellCarFlowView().tag(1)
                 SearchView().tag(2)
-                ContentView().tag(3)
+//                ChatListView().tag(3)
+                
+               // ChatListView에 currentUserId 전달
+               if let user = session.user {
+                   ChatListView(currentUserId: user.id ?? " ")
+                       .tag(3)
+               } else {
+                   Text("로그인 필요")
+                       .tag(3)
+               }
+                
+                
                 MyPageView().tag(4)
             }
             
@@ -53,7 +66,7 @@ struct BottomBar: View {
             VStack {
                 ZStack {
                     RoundedRectangle(cornerRadius: 20) // Capsule 대신 적당한 라운드
-                        .fill(selectedTab == index ? Color(UIColor(red: 48/255, green: 88/255, blue: 239/255, alpha: 1)) : Color.clear)
+                        .fill(selectedTab == index ? Color.keyColorBlue : Color.clear)
                         .frame(width: 68, height: 60)
                     
                     VStack {

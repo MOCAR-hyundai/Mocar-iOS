@@ -14,6 +14,7 @@ extension Color {
     static let textBlack100 = Color(hex: "#000000")
     static let textGray100 = Color(hex: "#7F7F7F")
     static let textGray200  = Color(hex: "#454545")
+    static let textGray300  = Color(hex: "#313131")
     
     //keyColor
     static let keyColorBlue = Color(hex: "#3058EF")
@@ -23,7 +24,8 @@ extension Color {
     static let backgroundGray100 = Color(hex: "#F8F8F8")
     static let iconGray = Color(hex: "#767676")
     static let lineGray = Color(hex: "#D7D7D7")
-    static let gray200   = Color(hex: "#EDEDED")
+    static let borderGray   = Color(hex: "#EDEDED")
+    static let cardBgGray   = Color(hex: "#F0F0F0") // 카드 리스트의 사진 배경
 
     // Red
     static let likeRed   = Color(hex: "#FA3B12")
