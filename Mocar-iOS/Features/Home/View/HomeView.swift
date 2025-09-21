@@ -7,32 +7,35 @@
 
 import SwiftUI
 
-let brandData: [Brand] = [
-    Brand(name: "Ferrari", logo: "ferrari"),
-    Brand(name: "Tesla", logo: "tesla"),
-    Brand(name: "BMW", logo: "BMW"),
-    Brand(name: "Kia", logo: "kia"),
-    Brand(name: "Hyundal", logo: "hyundai"),
-    Brand(name:"Audi",logo:"audi")
-    
-]
-
-struct Brand : Identifiable {
-    var id = UUID()
-    var name: String
-    var logo: String
-}
-
-
-
 struct HomeView: View {
-    @StateObject private var homeViewModel = HomeViewModel()
-    let listings: [Listing] = Listing.listingData
+    @StateObject private var favoritesViewModel: FavoritesViewModel
+    @StateObject private var homeViewModel: HomeViewModel
+    @StateObject private var userSession = UserSession()
+    @State private var showLogin = false
     
+    init(){
+        //FavoritesviewModel을 먼저 만들고 HomeViewModel에 주입
+        let favVM = FavoritesViewModel()
+            _favoritesViewModel = StateObject(wrappedValue: favVM)
+            _homeViewModel = StateObject(wrappedValue: HomeViewModel(favoriteViewModel: favVM))
+   }
+
     var body: some View {
         NavigationStack{
             VStack {
-                TopBar(style: .home)
+                TopBar(
+                    style: .home(isLoggedIn: userSession.user != nil),
+                    onLoginTap:{showLogin = true}
+                )
+                NavigationLink(
+                    destination: LoginView()
+                        .navigationBarHidden(true)       // 기본 네비게이션 바 숨김
+                        .navigationBarBackButtonHidden(true),
+                    isActive: $showLogin
+                ) {
+                    EmptyView()
+                }
+                
                 HStack{
                     //검색 창
                     ZStack(alignment: .leading){
@@ -63,7 +66,7 @@ struct HomeView: View {
                             .fill(Color.blue)
                     )
                 }
-                .padding(.bottom,16)
+                .padding(.vertical,16)
                 
                 ScrollView(showsIndicators: false){
                     //찜한 목록
@@ -77,17 +80,25 @@ struct HomeView: View {
                         //리스트
                         ScrollView(.horizontal, showsIndicators: false){
                             HStack(spacing: 16) {
-                                ForEach(homeViewModel.favorites,
-                                        id: \.id) { listing in
-                                    NavigationLink(destination: ListingDetailView(listingId: listing.id)) {
+                                ForEach(favoritesViewModel.favorites) { favorite in
+                                    if let listing = homeViewModel.listings.first(where: {$0.id == favorite.listingId}){
+                                        NavigationLink(
+                                            destination: ListingDetailView(
+                                                listingId: favorite.listingId,
+                                                favoritesViewModel: favoritesViewModel
+                                            )
+                                        ) {
                                             FavoriteCardView(
                                                 listing: listing,
+                                                isFavorite: favoritesViewModel.isFavorite(listing),
                                                 onToggleFavorite:{
-                                                    homeViewModel.toggleFavorite(listing)
+                                                    favoritesViewModel.toggleFavorite(listing)
                                                 }
                                             )
+                                        }
+                                         .buttonStyle(PlainButtonStyle())
                                     }
-                                     .buttonStyle(PlainButtonStyle())
+                                    
                                 }
                             }
                         }
@@ -101,13 +112,14 @@ struct HomeView: View {
                             .padding(.bottom,8)
                         ScrollView(.horizontal, showsIndicators: false){
                             HStack(spacing: 20) {
-                                ForEach(brandData) { brand in
+                                ForEach(homeViewModel.brands, id: \.self) { brand in
+                                    let logo = brandLogoMap[brand] ?? "이미지없음icon"
                                     BrandIconView(
-                                        brand: brand,
-                                        isSelected: homeViewModel.selectedBrand == brand.name,   // 선택 여부
+                                        brand: Brand(name: brand, logo: logo),
+                                        isSelected: homeViewModel.selectedBrand == brand,  // 선택 여부
                                         onSelect: {
                                             homeViewModel.selectBrand(brand)
-                                            print("\(brand.name) selected")
+                                            print("\(brand) selected")
                                         }
                                     )
                                 }
@@ -119,17 +131,23 @@ struct HomeView: View {
                             GridItem(.flexible()), // 첫 번째 열
                             GridItem(.flexible())  // 두 번째 열
                         ], spacing: 16) {
-                            ForEach(homeViewModel.filteredListings) { listing in
-                                NavigationLink(destination: ListingDetailView(listingId: listing.id)){
+                            ForEach(homeViewModel.filteredListings.compactMap{$0.id}, id: \.self) { id in
+                                if let listing = homeViewModel.filteredListings.first(where: {$0.id == id}){
+                                    NavigationLink(
+                                        destination: ListingDetailView(
+                                        listingId: id,
+                                        favoritesViewModel: favoritesViewModel)
+                                    ){
                                         ListingCardView(
                                             listing: listing,
-                                            isFavorite: homeViewModel.favorites.contains { $0.id == listing.id },
+                                            isFavorite: favoritesViewModel.isFavorite(listing),
                                             onToggleFavorite:{
-                                                homeViewModel.toggleFavorite(listing)
+                                                favoritesViewModel.toggleFavorite(listing)
                                             }
                                         )
+                                    }
+                                    .buttonStyle(PlainButtonStyle())
                                 }
-                                .buttonStyle(PlainButtonStyle())
                             }
                         }
                     }
@@ -146,7 +164,3 @@ struct HomeView: View {
    
 }
 
-
-#Preview{
-    HomeView()
-}

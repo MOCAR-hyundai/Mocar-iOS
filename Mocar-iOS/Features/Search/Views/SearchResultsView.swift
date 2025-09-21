@@ -9,6 +9,7 @@ import SwiftUI
 
 struct SearchResultsView: View {
     @StateObject private var viewModel = SearchViewModel()
+    @StateObject private var favoritesViewModel = FavoritesViewModel()
     
     @State private var selectedCategory: String = "" // 선택된 카테고리 저장
     
@@ -181,10 +182,19 @@ struct SearchResultsView: View {
                       ScrollView {
                           LazyVGrid(columns: columns, spacing: 25) {
                               ForEach(viewModel.listings) { listing in
-                                  NavigationLink(destination: ListingDetailView(listingId: listing.id)
-                                    .navigationBarBackButtonHidden(true)
-                                  ) { ListingCard(listing: listing) }
+                                  if let id = listing.id {
+                                      NavigationLink(
+                                        destination: ListingDetailView(
+                                            listingId: id,
+                                            favoritesViewModel: favoritesViewModel
+                                        )
+                                        .navigationBarBackButtonHidden(true)
+                                      ) {
+                                          ListingCard(listing: listing)
+                                      }
                                       .buttonStyle(PlainButtonStyle())
+                                  }
+                                  
                               }
                           }
                           .padding(.horizontal)
@@ -350,6 +360,3 @@ extension Int {
     }
 }
 
-#Preview {
-    SearchResultsView()
-}

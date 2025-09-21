@@ -9,6 +9,7 @@ import SwiftUI
 
 struct FavoriteCardView: View{
     let listing: Listing
+    let isFavorite: Bool
     let onToggleFavorite: () -> Void
     
     var body: some View {
@@ -23,7 +24,7 @@ struct FavoriteCardView: View{
                 Button(action: {
                     onToggleFavorite()
                 }) {
-                    Image(systemName: "heart.fill" )
+                    Image(systemName: isFavorite ?  "heart.fill" : "heart")
                         .foregroundColor(.red)
                         .padding(0)
                 }
