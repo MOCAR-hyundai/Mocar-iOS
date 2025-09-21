@@ -8,12 +8,14 @@
 import SwiftUI
 
 struct FavoriteButton: View {
-    let isFavorite: Bool
-    let action: () -> Void
+    @ObservedObject var favoritesViewModel: FavoritesViewModel
+    let listing: Listing
     
     var body: some View {
-        Button(action: action) {
-            Image(systemName: isFavorite ? "heart.fill" : "heart")
+        Button(action: {
+            favoritesViewModel.toggleFavorite(listing)
+        }) {
+            Image(systemName: favoritesViewModel.isFavorite(listing) ? "heart.fill" : "heart")
                 .foregroundColor(.red)
                 .frame(width: 30, height: 30)
         }
@@ -21,7 +23,4 @@ struct FavoriteButton: View {
     }
 }
 
-#Preview {
-    FavoriteButton(isFavorite: true, action: {})
-}
 

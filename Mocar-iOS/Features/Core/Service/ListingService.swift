@@ -31,7 +31,9 @@ class ListingService {
                         print("Raw data:", doc.data())
                     }
                 }
-                
+                //디버깅용
+                //let brands = decodedListings.map { $0.brand }
+                //print("브랜드 목록: \(brands)")
                 print("listings count:", decodedListings.count)
                 completion(.success(decodedListings))
             }

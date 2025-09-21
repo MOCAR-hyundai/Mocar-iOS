@@ -30,10 +30,12 @@ struct ListingDetailView: View {
                             ZStack(alignment: .topTrailing){
                                 CarImageTabView(images: listing.images)
                                 FavoriteButton(
-                                    isFavorite: viewModel.favoritesViewModel.isFavorite(listing),
-                                    action:{viewModel.favoritesViewModel.toggleFavorite(listing)}
+                                    favoritesViewModel: viewModel.favoritesViewModel,
+                                        listing: listing
                                 )
+                                
                             }
+                            
                             
                             //차량 기본 정보
                             VStack(alignment: .leading){
