@@ -6,15 +6,13 @@
 //
 
 import Foundation
-
+import FirebaseFirestore
 
 struct Favorite: Codable, Identifiable {
-    var id:UUID = UUID() 
+    @DocumentID var id: String? 
     var userId: String
     var listingId: String
     var createdAt: Date
-    
-
 }
 
 

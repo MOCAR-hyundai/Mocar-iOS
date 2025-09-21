@@ -50,8 +50,7 @@ struct LoginView: View {
                         .padding()
                         .background(
                             RoundedRectangle(cornerRadius: 10)
-                                .stroke(focusedField == .email ? Color(red: 0.188, green: 0.345, blue: 0.937)
- : Color.gray, lineWidth: 1)
+                                .stroke(focusedField == .email ? Color.keyColorBlue : Color.gray, lineWidth: 1)
                         )
                         .focused($focusedField, equals: .email)
                     
@@ -70,7 +69,7 @@ struct LoginView: View {
                                 .padding(.trailing, 50)
                                 .background(
                                     RoundedRectangle(cornerRadius: 10)
-                                        .stroke(focusedField == .password ? Color(red: 0.188, green: 0.345, blue: 0.937)
+                                        .stroke(focusedField == .password ? Color.keyColorBlue
  : Color.gray, lineWidth: 1)
                                 )
                                 .focused($focusedField, equals: .password)
@@ -141,14 +140,14 @@ struct LoginView: View {
                         ProgressView().progressViewStyle(CircularProgressViewStyle(tint: .white))
                             .frame(maxWidth: .infinity, maxHeight: 30)
                             .padding()
-                            .background(Color(red: 0.129, green: 0.161, blue: 0.169))
+                            .background(Color.keyColorDarkGray)
                             .cornerRadius(62)
                     } else {
                         Text("로그인")
                             .foregroundColor(.white)
                             .frame(maxWidth: .infinity, maxHeight: 30)
                             .padding()
-                            .background(Color(red: 0.129, green: 0.161, blue: 0.169))
+                            .background(Color.keyColorDarkGray)
                             .cornerRadius(62)
                     }
                 }
@@ -210,7 +209,7 @@ struct CheckboxToggleStyle: ToggleStyle {
             Image(systemName: configuration.isOn ? "checkmark.square.fill" : "square")
                 .resizable()                   // 이미지 크기 조절 가능
                 .frame(width: 19, height: 19)  // 원하는 크기
-                .foregroundColor(Color(red: 0.271, green: 0.271, blue: 0.271))    // 체크 색상 지정 가능
+                .foregroundColor(Color.textGray200)    // 체크 색상 지정 가능
                 .onTapGesture { configuration.isOn.toggle() }
             configuration.label
         }

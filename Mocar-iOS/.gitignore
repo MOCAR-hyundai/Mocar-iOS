@@ -26,4 +26,4 @@ fastlane/test_output     # 테스트 출력물
 
 *.xcuserstate
 xcuserdata/
-
+.idea/
