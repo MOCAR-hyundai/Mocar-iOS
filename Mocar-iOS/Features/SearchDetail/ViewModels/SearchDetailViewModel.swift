@@ -7,7 +7,8 @@ final class SearchDetailViewModel: ObservableObject {
         let id = UUID()
         let name: String
         let count: Int
-        let imageName: String
+        let imageName: UIImage?
+        let countryType: String
     }
     
     struct ModelSummary: Identifiable {
@@ -21,7 +22,12 @@ final class SearchDetailViewModel: ObservableObject {
         let name: String
         let count: Int
     }
-
+    
+    @Published var carBrands : [CarBrand] = []
+    @Published private(set) var makerImages: [String: UIImage] = [:]  // 이름 → 로고 URL 매핑
+    private var makerCountryType: [String: String] = [:] // 이름 → "국산차"/"수입차"
+    private let carBrandRepository = CarBrandRepository()
+    
     @Published var selectedMaker: String?
     @Published var selectedModel: String?
     @Published var selectedTrim: String?
@@ -45,27 +51,27 @@ final class SearchDetailViewModel: ObservableObject {
     let mileageRange: ClosedRange<Int> = 0...300000
     let yearRange: ClosedRange<Int>
     
-    private let makerImages: [String: String] = [
-        "현대": "hyundai 1",
-        "hyundai": "hyundai 1",
-        "제네시스": "genesis",
-        "genesis": "genesis",
-        "기아": "kia",
-        "kia": "kia",
-        "르노코리아": "renault",
-        "renault": "renault",
-        "쉐보레": "chevrolet",
-        "chevrolet": "chevrolet",
-        "벤츠": "benz",
-        "mercedes-benz": "benz",
-        "bmw": "BMW",
-        "아우디": "audi",
-        "audi": "audi",
-        "테슬라": "tesla",
-        "tesla": "tesla",
-        "페라리": "ferrari",
-        "ferrari": "ferrari"
-    ]
+    //    private let makerImages: [String: String] = [
+    //        "현대": "hyundai 1",
+    //        "hyundai": "hyundai 1",
+    //        "제네시스": "genesis",
+    //        "genesis": "genesis",
+    //        "기아": "kia",
+    //        "kia": "kia",
+    //        "르노코리아": "renault",
+    //        "renault": "renault",
+    //        "쉐보레": "chevrolet",
+    //        "chevrolet": "chevrolet",
+    //        "벤츠": "benz",
+    //        "mercedes-benz": "benz",
+    //        "bmw": "BMW",
+    //        "아우디": "audi",
+    //        "audi": "audi",
+    //        "테슬라": "tesla",
+    //        "tesla": "tesla",
+    //        "페라리": "ferrari",
+    //        "ferrari": "ferrari"
+    //    ]
     
     private(set) var allCars: [SearchCar]
     private var makerToModels: [String: [String]]
@@ -94,8 +100,58 @@ final class SearchDetailViewModel: ObservableObject {
         fuelOptions = []
         areaOptions = []
         carTypeOptions = []
+        
+        Task {
+            await loadListings()
+            await loadCarBrands()
+        }
+    }
+    
+    /// Firestore에서 브랜드 데이터를 불러와 매핑
+    private func loadCarBrands() async {
+        do {
+            let brands = try await carBrandRepository.fetchCarBrands()
+            
+            // Firestore에서 받아온 브랜드를 viewModel에 저장
+            await MainActor.run {
+                self.carBrands = brands
+            }
+            
+            for brand in brands {
+                // 1️⃣ 로고 이미지 다운로드
+                if let url = URL(string: brand.logoUrl) {
+                    do {
+                        let (data, _) = try await URLSession.shared.data(from: url)
+                        if let image = UIImage(data: data) {
+                            await MainActor.run {
+                                self.makerImages[brand.name] = image
+                                self.makerImages[brand.id.lowercased()] = image
+                            }
+                        }
+                    } catch {
+                        print("이미지 다운로드 실패: \(brand.name), \(error.localizedDescription)")
+                    }
+                }
 
-        Task { await loadListings() }
+                // 2️⃣ countryType 매핑
+                let countryString = brand.countryType.isEmpty ? "기타" : brand.countryType
+                let type: String
+                switch countryString.lowercased() {
+                case "imported":
+                    type = "수입차"
+                case "domestic":
+                    type = "국산차"
+                default:
+                    type = "기타"
+                }
+                
+                await MainActor.run {
+                    self.makerCountryType[brand.name] = type
+                }
+            }
+        } catch {
+            print("브랜드 데이터 로드 실패: \(error.localizedDescription)")
+        }
     }
     
     var filteredCars: [SearchCar] {
@@ -111,7 +167,7 @@ final class SearchDetailViewModel: ObservableObject {
         }
         let makers = makerToModels.keys.sorted()
         return makers.map { maker in
-            MakerSummary(name: maker, count: counts[maker] ?? 0, imageName: imageName(for: maker))
+            MakerSummary(name: maker, count: counts[maker] ?? 0, imageName: imageName(for: maker), countryType: countryType(for: maker))
         }
         .sorted { left, right in
             if left.count == right.count {
@@ -120,7 +176,7 @@ final class SearchDetailViewModel: ObservableObject {
             return left.count > right.count
         }
     }
-
+    
     func models(for maker: String) -> [ModelSummary] {
         var counts: [String: Int] = [:]
         for car in allCars where car.maker == maker {
@@ -151,7 +207,7 @@ final class SearchDetailViewModel: ObservableObject {
     func countForArea(_ name: String) -> Int {
         allCars.filter { $0.area == name && matches($0, ignoring: [.area]) }.count
     }
-
+    
     func selectMaker(_ maker: String) {
         guard selectedMaker != maker else { return }
         selectedMaker = maker
@@ -217,7 +273,7 @@ final class SearchDetailViewModel: ObservableObject {
         selectedTrims.removeAll()
         selectedTrim = nil
     }
-        
+    
     func countForTrim(maker: String, model: String, trim: String) -> Int {
         allCars.filter {
             $0.maker == maker && $0.model == model && ($0.trim ?? "") == trim
@@ -286,7 +342,7 @@ final class SearchDetailViewModel: ObservableObject {
     private var selectedCarTypes: Set<String> {
         Set(carTypeOptions.filter { $0.checked }.map { $0.name })
     }
-
+    
     func debugLogAppliedFilters() {
         let maker = selectedMaker ?? "없음"
         let model = selectedModel ?? "없음"
@@ -294,7 +350,7 @@ final class SearchDetailViewModel: ObservableObject {
         let fuels = Array(selectedFuels).sorted()
         let areas = Array(selectedAreas).sorted()
         let carTypes = Array(selectedCarTypes).sorted()
-
+        
         print("===== 검색 필터 =====")
         print("제조사: \(maker)")
         print("모델: \(model)")
@@ -308,7 +364,7 @@ final class SearchDetailViewModel: ObservableObject {
         print("총 결과 수: \(filteredCount)")
         print("====================")
     }
-
+    
     func addRecentSearch(_ text: String) {
         let trimmed = text.trimmingCharacters(in: .whitespacesAndNewlines)
         guard !trimmed.isEmpty else { return }
@@ -318,7 +374,7 @@ final class SearchDetailViewModel: ObservableObject {
             recentSearches = Array(recentSearches.prefix(10))
         }
     }
-
+    
     func addRecentKeyword(_ keyword: String) {
         let trimmed = keyword.trimmingCharacters(in: .whitespacesAndNewlines)
         guard !trimmed.isEmpty else { return }
@@ -328,26 +384,26 @@ final class SearchDetailViewModel: ObservableObject {
             recentKeywords = Array(recentKeywords.prefix(10))
         }
     }
-
+    
     func removeRecentSearch(_ summary: String) {
         recentSearches.removeAll { $0 == summary }
     }
-
+    
     func removeRecentKeyword(_ keyword: String) {
         recentKeywords.removeAll { $0 == keyword }
     }
-
+    
     func clearRecentSearches() {
         recentSearches.removeAll()
     }
-
+    
     func clearRecentKeywords() {
         recentKeywords.removeAll()
     }
-
+    
     func saveCurrentFiltersAsRecent() {
         var parts: [String] = []
-
+        
         // 우선순위: 세부모델 > 모델 > 제조사
         if !selectedTrims.isEmpty {
             let trimsString = selectedTrims.joined(separator: "\n")
@@ -357,7 +413,7 @@ final class SearchDetailViewModel: ObservableObject {
         } else if let maker = selectedMaker {
             parts.append("\(maker)")
         }
-
+        
         if minPrice > priceRange.lowerBound || maxPrice < priceRange.upperBound {
             parts.append("가격: \(minPrice)-\(maxPrice)")
         }
@@ -367,24 +423,24 @@ final class SearchDetailViewModel: ObservableObject {
         if minMileage > mileageRange.lowerBound || maxMileage < mileageRange.upperBound {
             parts.append("주행: \(minMileage)-\(maxMileage)km")
         }
-
+        
         let carTypes = Array(selectedCarTypes).sorted()
         if !carTypes.isEmpty {
             parts.append("차종: \(carTypes.joined(separator: ", "))")
         }
-
+        
         let fuels = Array(selectedFuels).sorted()
         if !fuels.isEmpty {
             parts.append("연료: \(fuels.joined(separator: ", "))")
         }
-
+        
         let summary = parts.joined(separator: " | ")
         addRecentSearch(summary)
     }
-
+    
     func applyRecentSearch(_ summary: String) {
         resetFilters()
-
+        
         let parts = summary.components(separatedBy: " | ")
         for part in parts {
             if part.hasPrefix("차종:") {
@@ -439,7 +495,7 @@ final class SearchDetailViewModel: ObservableObject {
             }
         }
     }
-
+    
     private func matches(
         _ car: SearchCar,
         ignoring dimensions: Set<FilterDimension> = [],
@@ -472,7 +528,7 @@ final class SearchDetailViewModel: ObservableObject {
         }
         return true
     }
-
+    
     func searchCarsTrim(maker: String, model: String) -> [SearchCar] {
         allCars.filter { $0.maker == maker && $0.model == model }
     }
@@ -557,39 +613,43 @@ final class SearchDetailViewModel: ObservableObject {
     
     // 제조사 -> 모델 목록, 제조사 -> 모델 -> 트림 목록 생성
     private static func groupModelsAndTrims(from cars: [SearchCar]) -> ([String: [String]], [String: [String: [String]]]) {
-    var modelsMap: [String: Set<String>] = [:]
-    var trimsMap: [String: [String: Set<String>]] = [:]
-    
-    for car in cars {
-                modelsMap[car.maker, default: []].insert(car.model)
-                let trimName = (car.trim ?? "").trimmingCharacters(in: .whitespacesAndNewlines)
-                if !trimName.isEmpty {
-                    var modelDict = trimsMap[car.maker] ?? [:]
-                    modelDict[car.model, default: []].insert(trimName)
-                    trimsMap[car.maker] = modelDict
-                }
+        var modelsMap: [String: Set<String>] = [:]
+        var trimsMap: [String: [String: Set<String>]] = [:]
+        
+        for car in cars {
+            modelsMap[car.maker, default: []].insert(car.model)
+            let trimName = (car.trim ?? "").trimmingCharacters(in: .whitespacesAndNewlines)
+            if !trimName.isEmpty {
+                var modelDict = trimsMap[car.maker] ?? [:]
+                modelDict[car.model, default: []].insert(trimName)
+                trimsMap[car.maker] = modelDict
             }
-    
-            let modelsFinal = modelsMap.mapValues { Array($0).sorted() }
-            var trimsFinal: [String: [String: [String]]] = [:]
-            for (maker, modelDict) in trimsMap {
-                var inner: [String: [String]] = [:]
-                for (model, trimsSet) in modelDict {
-                    inner[model] = Array(trimsSet).sorted()
-                }
-                trimsFinal[maker] = inner
-            }
-        return (modelsFinal, trimsFinal)
         }
-
-    private func imageName(for maker: String) -> String {
-        if let direct = makerImages[maker] {
-            return direct
+        
+        let modelsFinal = modelsMap.mapValues { Array($0).sorted() }
+        var trimsFinal: [String: [String: [String]]] = [:]
+        for (maker, modelDict) in trimsMap {
+            var inner: [String: [String]] = [:]
+            for (model, trimsSet) in modelDict {
+                inner[model] = Array(trimsSet).sorted()
+            }
+            trimsFinal[maker] = inner
+        }
+        return (modelsFinal, trimsFinal)
+    }
+    
+    private func imageName(for maker: String) -> UIImage? {
+        if let image = makerImages[maker] {
+            return image
         }
         let lowercased = maker.lowercased()
-        if let normalized = makerImages[lowercased] {
-            return normalized
+        if let image = makerImages[lowercased] {
+            return image
         }
-        return "hyundai 1"
+        return nil
+    }
+    
+    func countryType(for maker: String) -> String {
+        return makerCountryType[maker] ?? "기타"
     }
 }

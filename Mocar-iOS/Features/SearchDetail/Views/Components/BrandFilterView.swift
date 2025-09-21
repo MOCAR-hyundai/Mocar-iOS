@@ -12,13 +12,15 @@ struct BrandFilterView: View {
         let id: UUID
         let name: String
         let count: Int
-        let imageName: String
+        let imageName: UIImage?
+        let countryType: String
 
         init(summary: SearchDetailViewModel.MakerSummary) {
             id = summary.id
             name = summary.name
             count = summary.count
             imageName = summary.imageName
+            countryType = summary.countryType
         }
     }
 
@@ -47,7 +49,7 @@ struct BrandFilterView: View {
                             NavigationLink(
                                 value: SearchDestination.model(makerName: maker.name)
                             ) {
-                                BrandOptionsRow(maker: maker)
+                                BrandOptionsRow(viewModel: viewModel, maker: maker)
                                     .opacity(isDisabled ? 0.5 : 1.0)
                                     .padding(.vertical, 4)
                             }

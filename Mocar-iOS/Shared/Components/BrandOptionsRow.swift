@@ -8,19 +8,31 @@
 import SwiftUI
 
 struct BrandOptionsRow: View {
+    @ObservedObject var viewModel: SearchDetailViewModel
     let maker: BrandFilterView.Maker
     
     var body: some View {
         VStack(spacing: 0) {
             HStack(spacing: 12) {
-                Image(maker.imageName)
-                    .resizable()
-                    .scaledToFit()
-                    .frame(width: 28, height: 28)
-                    .clipShape(RoundedRectangle(cornerRadius: 6))
+                if let uiImage = viewModel.makerImages[maker.name] {
+                    Image(uiImage: uiImage)
+                        .resizable()
+                        .scaledToFit()
+                        .frame(width: 28, height: 28)
+                        .clipShape(RoundedRectangle(cornerRadius: 6))
+                } else {
+                    Color.gray.opacity(0.3)
+                        .frame(width: 28, height: 28)
+                        .clipShape(RoundedRectangle(cornerRadius: 6))
+                }
                 
-                Text(maker.name)
-                    .foregroundColor(.black)
+                VStack(alignment: .leading, spacing: 2) {
+                    Text(maker.name)
+                        .foregroundColor(.black)
+                    Text(maker.countryType) // 국산차/수입차 표시
+                        .font(.caption2)
+                        .foregroundColor(.gray)
+                }
                 
                 Spacer()
                 
