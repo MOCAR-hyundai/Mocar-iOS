@@ -6,10 +6,18 @@
 //
 
 import SwiftUI
+import FirebaseFirestore
+import FirebaseAuth
 
 struct ListingDetailView: View {
     let listingId: String
     @StateObject private var viewModel = ListingDetailViewModel()
+    
+    /** 채팅방과 연결  **/
+    @StateObject private var userStore = UserStore()
+    @State private var selectedChat: Chat? = nil
+    @State private var isChatActive = false
+    /** 채팅방과 연결  **/
     
     var body: some View {
         NavigationStack{
@@ -80,7 +88,7 @@ struct ListingDetailView: View {
                             .font(.title3)
                             .fontWeight(.semibold)
                             .padding(.bottom,3)
-                        Text("실내외 사용감이 다수 있습니다. 조수석 뒤 휠에 경미한 흠집이 있고 조수석 도외 외부 도어캐치 부근 경미한 붓 터치 자국이 있습니다.")
+                        Text(viewModel.listing.description)
                             .frame(maxWidth: .infinity, alignment: .leading)
                             .padding()
                             .background(Color.white)
@@ -122,13 +130,27 @@ struct ListingDetailView: View {
                 viewModel.loadListing(id: listingId)
             }
             HStack{
-                Button(action:{
-                    
-                }){
+//                Button(action:{
+//                    
+//                }){
+//                    Text("구매 문의")
+//                        .foregroundStyle(.white)
+//                        .fontWeight(.bold)
+//                    
+//                }
+//                .frame(maxWidth: .infinity, minHeight: 50)
+//                .background(
+//                    RoundedRectangle(cornerRadius: 8)
+//                        .fill(Color.blue)
+//                )
+                
+                /**채팅방과 연결 */
+                Button(action: {
+                    createOrFetchChat()
+                }) {
                     Text("구매 문의")
                         .foregroundStyle(.white)
                         .fontWeight(.bold)
-                    
                 }
                 .frame(maxWidth: .infinity, minHeight: 50)
                 .background(
@@ -136,14 +158,77 @@ struct ListingDetailView: View {
                         .fill(Color.blue)
                 )
                 
+                
+                // ✅ 네비게이션 링크 (선택된 Chat 있으면 활성화됨)
+                // ✅ ListingDetailView 안에
+                NavigationLink(
+                    destination:
+                        Group {
+                            if let chat = selectedChat,
+                               let currentUserId = Auth.auth().currentUser?.uid {
+                                ChatDetailView(
+                                    chat: chat,
+                                    currentUserId: currentUserId,
+                                    userStore: userStore
+                                )
+                            } else {
+                                EmptyView()
+                            }
+                        },
+                    isActive: $isChatActive
+                ) {
+                    EmptyView()
+                }
+                .hidden()
+
+
+                
+                /** 채팅방과 연결  */
+                
             }
             .padding()
+            
             
         }
         .background(Color.backgroundGray100)
         .navigationBarHidden(true)   // 기본 네비게이션 바 숨김
         .navigationBarBackButtonHidden(true) // 기본 뒤로가기 숨김
     }
+    
+    
+    /**채팅방과 연결 */
+    // Firestore 확인 → Chat 객체 세팅 → Navigation 실행
+       private func createOrFetchChat() {
+           guard let currentUserId = Auth.auth().currentUser?.uid else { return } //로그인 후 이용 모달 나중에 띄우기
+           let db = Firestore.firestore()
+           
+           db.collection("chats")
+               .whereField("buyerId", isEqualTo: currentUserId)
+               .whereField("sellerId", isEqualTo: viewModel.listing.sellerId)
+               .whereField("listingId", isEqualTo: viewModel.listing.id)
+               .getDocuments { snapshot, error in
+                   if let doc = snapshot?.documents.first,
+                      let existingChat = try? doc.data(as: Chat.self) {
+                       // ✅ 기존 채팅방 있음
+                       self.selectedChat = existingChat
+                       self.isChatActive = true
+                   } else {
+                       // ✅ 채팅방 없음 → 새 Chat 객체 넘기기
+                       let newChat = Chat(
+                           id: nil,
+                           buyerId: currentUserId,
+                           sellerId: viewModel.listing.sellerId,
+                           listingId: viewModel.listing.id,
+                           lastMessage: nil,
+                           listingTitle: viewModel.listing.title,
+                           lastAt: Date()
+                       )
+                       self.selectedChat = newChat
+                       self.isChatActive = true
+                   }
+               }
+       }
+    /**채팅방과 연결 */
 }
 
 

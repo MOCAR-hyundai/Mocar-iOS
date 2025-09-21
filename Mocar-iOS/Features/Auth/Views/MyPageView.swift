@@ -27,12 +27,13 @@ struct MyPageView: View {
                             .foregroundColor(.black)
                             .overlay(
                                 RoundedRectangle(cornerRadius: 50) // 충분히 큰 값이면 원처럼 둥글게
-                                    .stroke(Color(red: 0.88, green: 0.88, blue: 0.88), lineWidth: 1) // 테두리 색과 두께
+                                    .stroke(Color.lineGray, lineWidth: 1) // 테두리 색과 두께
                             )
                     }
                     Spacer()
                     Text("Profile")
                         .font(.system(size: 18, weight: .bold, design: .default))
+                    
                     
                     
                     Spacer()
@@ -45,7 +46,7 @@ struct MyPageView: View {
                             .padding(12) // 아이콘 주변 여백
                             .overlay(
                                 RoundedRectangle(cornerRadius: 50) // 충분히 큰 값이면 원처럼 둥글게
-                                    .stroke(Color(red: 0.88, green: 0.88, blue: 0.88), lineWidth: 1) // 테두리 색과 두께
+                                    .stroke(Color.lineGray, lineWidth: 1) // 테두리 색과 두께
                             )
                     }
                 }
@@ -53,7 +54,7 @@ struct MyPageView: View {
                 .padding(3)
                 .padding(.vertical, 6)
                 .padding(.bottom, 5)
-                .background(Color(red: 248/255, green: 248/255, blue: 248/255)) // <- F8F8F8 배경
+                .background(Color.backgroundGray100) // <- F8F8F8 배경
                 
                 
                 // 상단 사용자 정보
@@ -122,16 +123,20 @@ struct MyPageView: View {
                     
                     Spacer()
                     
-                    Button(action: {
-                        // Edit profile action
-                    }) {
-                        VStack{
-                           Image("edit")
-                           Text("Edit profile")
-                                .font(.footnote)
-                                .foregroundColor(.gray)
-                        }
-                    }
+//                    Button(action: {
+//                        // Edit profile action
+//                    }) {
+//                        VStack{
+//                             Image("edit")
+//                                 .resizable()           // 이미지 크기 조절 가능하게
+//                                 .scaledToFit()         // 비율 유지
+//                                 .frame(width: 18, height: 18) // 원하는 크기
+//
+//                             Text("Edit profile")
+//                                 .font(.footnote)
+//                                 .foregroundColor(.gray)
+//                         }
+//                    }
                 }
                 .padding(.horizontal)
                 .padding(.vertical,4)
@@ -161,11 +166,15 @@ struct MyPageView: View {
                     .padding(.horizontal)
                 
                 VStack(spacing: 0) {
-                    ProfileRow(icon: "gearshape", title: "Settings")
+                    ProfileRow(icon: "gearshape", title: "회원 정보 수정")
                     ProfileRow(icon: "arrow.right.square", title: "Log out")
                     .onTapGesture {
                         viewModel.logout()
                     }
+                    
+                    ProfileRow(icon: "person.fill.xmark", title: "회원 탈퇴")
+                    ProfileRow(icon: "person.badge.minus", title: "회원 탈퇴")
+                    
                 }
                 .padding(.horizontal)
                 .padding(.bottom, 4)
@@ -192,19 +201,20 @@ struct ProfileRow: View {
                 .scaledToFit()               // 비율 유지
                 .frame(width: 20, height: 20) // 아이콘 크기 증가
                 .padding(10)                 // 원과의 여백 조절
-                .foregroundColor(Color(red: 118/255, green: 118/255, blue: 118/255))
+                .foregroundColor(Color.iconGray)
                 .overlay(
                     RoundedRectangle(cornerRadius: 50)
-                        .stroke(Color(red: 0.88, green: 0.88, blue: 0.88), lineWidth: 1)
+                        .stroke(Color.lineGray, lineWidth: 1)
                         .frame(width: 36, height: 36) // 원 크기 조정 (아이콘보다 약간 큰)
                 )
             Text(title)
                 .font(.system(size: 14))
-                .foregroundColor(Color(red: 49/255, green: 49/255, blue: 49/255))
+                .foregroundColor(Color.textGray300)
             
             Spacer()
-            Image(systemName: "chevron.right")
+            Image(systemName: "chevron.right")//person.badge.minus
                 .foregroundColor(.gray)
+            
         }
         .padding(.bottom, 16)
     }
