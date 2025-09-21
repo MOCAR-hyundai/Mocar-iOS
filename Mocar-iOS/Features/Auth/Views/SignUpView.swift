@@ -25,27 +25,8 @@ struct SignUpView: View {
     
     
     var body: some View {
+        TopBar(style: .singup)
         VStack (spacing: 20) {
-            HStack {
-                Button(action: {
-                   dismiss() // 뒤로가기
-                }) {
-                       Image(systemName: "chevron.left")   // 원하는 아이콘
-                           .frame(width: 20, height: 20)
-                           .padding(12)
-                           .foregroundColor(.black)
-                           .overlay(
-                               RoundedRectangle(cornerRadius: 50)
-                                   .stroke(Color(red: 0.929, green: 0.929, blue: 0.929), lineWidth: 1)
-                           )
-                }
-                Spacer()
-           }
-            .padding(.horizontal)
-            .padding(.top,6)
-            
-            
-            Spacer().frame(height: 5) // HStack과 Text 사이 공간
             
            // 제목
            Text("회원가입")

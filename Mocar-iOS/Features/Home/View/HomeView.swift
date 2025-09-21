@@ -9,12 +9,25 @@ import SwiftUI
 
 struct HomeView: View {
     @StateObject private var homeViewModel = HomeViewModel()
-    //let listings: [Listing] = Listing.listingData
+    @StateObject private var userSession = UserSession()
+    @State private var showLogin = false
     
     var body: some View {
         NavigationStack{
             VStack {
-                TopBar(style: .home)
+                TopBar(
+                    style: .home(isLoggedIn: userSession.user != nil),
+                    onLoginTap:{showLogin = true}
+                )
+                NavigationLink(
+                    destination: LoginView()
+                        .navigationBarHidden(true)       // 기본 네비게이션 바 숨김
+                        .navigationBarBackButtonHidden(true),
+                    isActive: $showLogin
+                ) {
+                    EmptyView()
+                }
+                
                 HStack{
                     //검색 창
                     ZStack(alignment: .leading){
@@ -45,7 +58,7 @@ struct HomeView: View {
                             .fill(Color.blue)
                     )
                 }
-                .padding(.bottom,16)
+                .padding(.vertical,16)
                 
                 ScrollView(showsIndicators: false){
                     //찜한 목록
@@ -134,7 +147,3 @@ struct HomeView: View {
    
 }
 
-
-#Preview{
-    HomeView()
-}

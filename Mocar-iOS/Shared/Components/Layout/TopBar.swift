@@ -8,7 +8,7 @@
 import SwiftUI
 
 enum TopBarStyle{
-    case home                   // 로고 + 검색
+    case home(isLoggedIn: Bool)                 // 로고 + 검색
     case login                   // 로그인
     case singup                  //회원가입
     case listing(title: String) // 뒤로가기 + 타이틀
@@ -17,22 +17,29 @@ enum TopBarStyle{
 
 struct TopBar: View {
     let style : TopBarStyle
+    var onLoginTap: (() -> Void)? = nil
 
-    
     var body: some View {
         HStack{
             switch style {
-            case .home:
+            case .home(let isLoggedIn):
                 Image("logo")
                     .resizable()
                     .scaledToFit()
                     .frame(maxWidth: 150)
                     
                 Spacer()
-                    
+                if !isLoggedIn {
+                    Button("로그인/회원가입") {
+                        onLoginTap?()
+                    }
+                    .font(.system(size: 14))
+                    .foregroundColor(.gray)
+                    .padding(.vertical,10)
+                }
                 
             case .login:
-                Image("logo")
+                BackButton()
             case .singup:
                 BackButton()
             case .listing(title: let title):
@@ -54,19 +61,20 @@ struct BackButton: View {
     @Environment(\.dismiss) private var dismiss
     
     var body: some View {
-        Button(action:{
-            dismiss()
-        }){
-            Image(systemName: "chevron.left")
-                .font(.system(size: 18, weight: .medium))
-                .foregroundColor(.black)
-                .frame(width: 36, height: 36)
-                .background(Circle().stroke(Color.gray.opacity(0.5)))
+        HStack{
+            Button(action:{
+                dismiss()
+            }){
+                Image(systemName: "chevron.left")
+                    .font(.system(size: 18, weight: .medium))
+                    .foregroundColor(.black)
+                    .frame(width: 36, height: 36)
+            }
+            Spacer()
         }
     }
 }
 
 #Preview {
-    TopBar(style: .home)
-        
+    BackButton()
 }
