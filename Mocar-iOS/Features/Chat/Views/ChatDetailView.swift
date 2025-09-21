@@ -177,9 +177,9 @@ struct ChatDetailView: View {
             // 입력 바
                HStack(spacing: 8) {
                    Button(action: { isImagePickerPresented = true }) {
-                       Image(systemName: "photo")
+                       Image(systemName: "paperclip")
                            .resizable()
-                           .frame(width: 28, height: 28)
+                           .frame(width: 23, height: 23)
                            .foregroundColor(.blue)
                    }
                    .sheet(isPresented: $isImagePickerPresented) {

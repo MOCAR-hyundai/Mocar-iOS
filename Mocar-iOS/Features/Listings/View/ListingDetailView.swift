@@ -87,7 +87,7 @@ struct ListingDetailView: View {
                             .font(.title3)
                             .fontWeight(.semibold)
                             .padding(.bottom,3)
-                        Text("실내외 사용감이 다수 있습니다. 조수석 뒤 휠에 경미한 흠집이 있고 조수석 도외 외부 도어캐치 부근 경미한 붓 터치 자국이 있습니다.")
+                        Text(viewModel.listing.description)
                             .frame(maxWidth: .infinity, alignment: .leading)
                             .padding()
                             .background(Color.white)
