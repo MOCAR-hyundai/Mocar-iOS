@@ -21,7 +21,7 @@ struct LeftCategoryView: View {
                     ZStack {
                         Text(category)
                             .fontWeight(selectedCategory == category ? .bold : .regular)
-                            .foregroundColor(selectedCategory == category ? .black : .gray)
+                            .foregroundColor(selectedCategory == category ? Color.keyColorBlue : .gray)
                             .frame(maxWidth: .infinity)
                         HStack {
                             Spacer(minLength: 4)
