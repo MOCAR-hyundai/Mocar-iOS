@@ -26,7 +26,7 @@ struct SearchView: View {
                             .foregroundColor(.black)
                     }
                     
-                    NavigationLink(destination: SearchKeywordView(viewModel: viewModel)) {
+                    NavigationLink(value: SearchDestination.searchKeyword) {
                         HStack {
                             Image(systemName: "magnifyingglass")
                                 .foregroundColor(.gray)
@@ -125,6 +125,8 @@ struct SearchView: View {
                                       modelName: modelName,
                                       path: $path
                     )
+                case .searchKeyword:
+                    SearchKeywordView(viewModel: viewModel)
                 }
             }
         }
@@ -143,4 +145,5 @@ private extension SearchView {
 enum SearchDestination: Hashable {
     case model(makerName: String)
     case trim(makerName: String, modelName: String)
+    case searchKeyword
 }

@@ -34,7 +34,6 @@ struct SearchKeywordView: View {
     }
     
     var body: some View {
-        NavigationStack {
             VStack(spacing: 16) {
                 HStack {
                     Button {
@@ -122,7 +121,6 @@ struct SearchKeywordView: View {
                     }
                 }
             }
-        }
     }
     
     private var searchField: some View {

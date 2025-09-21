@@ -290,6 +290,7 @@ final class SearchDetailViewModel: ObservableObject {
     func debugLogAppliedFilters() {
         let maker = selectedMaker ?? "없음"
         let model = selectedModel ?? "없음"
+        let trims = selectedTrims.isEmpty ? "없음" : selectedTrims.joined(separator: "\n\t")
         let fuels = Array(selectedFuels).sorted()
         let areas = Array(selectedAreas).sorted()
         let carTypes = Array(selectedCarTypes).sorted()
@@ -297,6 +298,7 @@ final class SearchDetailViewModel: ObservableObject {
         print("===== 검색 필터 =====")
         print("제조사: \(maker)")
         print("모델: \(model)")
+        print("트림: \(trims)")
         print("가격: \(minPrice)만원 ~ \(maxPrice)만원")
         print("연식: \(minYear)년 ~ \(maxYear)년")
         print("주행거리: \(minMileage)km ~ \(maxMileage)km")
