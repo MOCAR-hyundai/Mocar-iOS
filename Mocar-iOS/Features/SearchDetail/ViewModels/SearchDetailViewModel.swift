@@ -42,7 +42,7 @@ final class SearchDetailViewModel: ObservableObject {
     @Published var loadErrorMessage: String?
     
     let priceRange: ClosedRange<Int> = 0...10000
-    let mileageRange: ClosedRange<Int> = 0...200000
+    let mileageRange: ClosedRange<Int> = 0...300000
     let yearRange: ClosedRange<Int>
     
     private let makerImages: [String: String] = [

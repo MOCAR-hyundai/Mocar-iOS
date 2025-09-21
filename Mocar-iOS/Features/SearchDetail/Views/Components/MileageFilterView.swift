@@ -14,7 +14,7 @@ struct MileageFilterView: View {
     @State private var minText: String = ""
     @State private var maxText: String = ""
     
-    private let mileageRange: ClosedRange<Int> = 0...200000
+    private let mileageRange: ClosedRange<Int> = 0...300000
     
     var body: some View {
         VStack {
