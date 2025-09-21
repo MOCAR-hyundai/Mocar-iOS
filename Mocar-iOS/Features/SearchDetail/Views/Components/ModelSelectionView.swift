@@ -55,7 +55,9 @@ struct ModelSelectionView: View {
                             .padding()
                     } else {
                         ForEach(models) { model in
-                            // path 기반 NavigationLink
+                            let isDisabled = model.count == 0
+                            let textColor: Color = isDisabled ? .gray : .black
+
                             NavigationLink(
                                 value: SearchDestination.trim(
                                     makerName: makerName,
@@ -64,14 +66,17 @@ struct ModelSelectionView: View {
                             ) {
                                 HStack {
                                     Text(model.name)
-                                        .foregroundColor(.black)
-                                        .padding(.vertical, 12)
+                                        .foregroundColor(textColor)
+                                        .padding(.vertical, 16)
                                     Spacer()
-                                    Text("\(model.count)")
+                                    Text("\(model.count)대")
+                                        .foregroundColor(.gray)
+                                    Image(systemName: "chevron.right")
                                         .foregroundColor(.gray)
                                 }
                                 .padding(.horizontal)
                             }
+                            .disabled(isDisabled)
                             Divider()
                         }
                     }
