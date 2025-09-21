@@ -8,6 +8,7 @@
 import SwiftUI
 
 struct SearchView: View {
+    @Environment(\.dismiss) private var dismiss
     @StateObject private var viewModel = SearchDetailViewModel()
     @State private var selectedCategory: String? = "제조사"
     @State private var showRecentSheet: Bool = false
@@ -20,7 +21,9 @@ struct SearchView: View {
             VStack(spacing: 0) {
                 // 상단 검색창
                 HStack {
-                    Button(action: {}) {
+                    Button(action: {
+                        dismiss()
+                    }) {
                         Image(systemName: "chevron.left")
                             .font(.title2)
                             .foregroundColor(.black)
@@ -130,6 +133,7 @@ struct SearchView: View {
                 }
             }
         }
+        .navigationBarHidden(true)
     }
 }
 

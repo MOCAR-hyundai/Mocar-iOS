@@ -28,6 +28,8 @@ final class SearchDetailViewModel: ObservableObject {
     private var makerCountryType: [String: String] = [:] // 이름 → "국산차"/"수입차"
     private let carBrandRepository = CarBrandRepository()
     
+    @Published var allMakers: [BrandFilterView.Maker] = []
+
     @Published var selectedMaker: String?
     @Published var selectedModel: String?
     @Published var selectedTrim: String?
@@ -50,28 +52,6 @@ final class SearchDetailViewModel: ObservableObject {
     let priceRange: ClosedRange<Int> = 0...100000
     let mileageRange: ClosedRange<Int> = 0...300000
     let yearRange: ClosedRange<Int>
-    
-    //    private let makerImages: [String: String] = [
-    //        "현대": "hyundai 1",
-    //        "hyundai": "hyundai 1",
-    //        "제네시스": "genesis",
-    //        "genesis": "genesis",
-    //        "기아": "kia",
-    //        "kia": "kia",
-    //        "르노코리아": "renault",
-    //        "renault": "renault",
-    //        "쉐보레": "chevrolet",
-    //        "chevrolet": "chevrolet",
-    //        "벤츠": "benz",
-    //        "mercedes-benz": "benz",
-    //        "bmw": "BMW",
-    //        "아우디": "audi",
-    //        "audi": "audi",
-    //        "테슬라": "tesla",
-    //        "tesla": "tesla",
-    //        "페라리": "ferrari",
-    //        "ferrari": "ferrari"
-    //    ]
     
     private(set) var allCars: [SearchCar]
     private var makerToModels: [String: [String]]
@@ -112,28 +92,35 @@ final class SearchDetailViewModel: ObservableObject {
         do {
             let brands = try await carBrandRepository.fetchCarBrands()
             
-            // Firestore에서 받아온 브랜드를 viewModel에 저장
-            await MainActor.run {
-                self.carBrands = brands
-            }
+            // 로컬 배열에 먼저 모든 데이터를 준비
+            var imagesMap: [String: UIImage] = [:]
+            var countryMap: [String: String] = [:]
             
-            for brand in brands {
-                // 1️⃣ 로고 이미지 다운로드
-                if let url = URL(string: brand.logoUrl) {
-                    do {
-                        let (data, _) = try await URLSession.shared.data(from: url)
-                        if let image = UIImage(data: data) {
-                            await MainActor.run {
-                                self.makerImages[brand.name] = image
-                                self.makerImages[brand.id.lowercased()] = image
+            await withTaskGroup(of: (String, UIImage?).self) { group in
+                for brand in brands {
+                    group.addTask {
+                        var downloadedImage: UIImage? = nil
+                        if let url = URL(string: brand.logoUrl) {
+                            do {
+                                let (data, _) = try await URLSession.shared.data(from: url)
+                                downloadedImage = UIImage(data: data)
+                            } catch {
+                                print("이미지 다운로드 실패: \(brand.name), \(error.localizedDescription)")
                             }
                         }
-                    } catch {
-                        print("이미지 다운로드 실패: \(brand.name), \(error.localizedDescription)")
+                        return (brand.name, downloadedImage)
                     }
                 }
-
-                // 2️⃣ countryType 매핑
+                
+                for await (name, image) in group {
+                    if let image = image {
+                        imagesMap[name] = image
+                    }
+                }
+            }
+            
+            // countryType 매핑
+            for brand in brands {
                 let countryString = brand.countryType.isEmpty ? "기타" : brand.countryType
                 let type: String
                 switch countryString.lowercased() {
@@ -144,11 +131,16 @@ final class SearchDetailViewModel: ObservableObject {
                 default:
                     type = "기타"
                 }
-                
-                await MainActor.run {
-                    self.makerCountryType[brand.name] = type
-                }
+                countryMap[brand.name] = type
             }
+            
+            // MainActor에서 한 번에 업데이트
+            await MainActor.run {
+                self.carBrands = brands
+                self.makerImages = imagesMap
+                self.makerCountryType = countryMap
+            }
+            
         } catch {
             print("브랜드 데이터 로드 실패: \(error.localizedDescription)")
         }

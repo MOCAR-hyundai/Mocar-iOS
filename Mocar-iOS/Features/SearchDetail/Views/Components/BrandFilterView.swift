@@ -42,35 +42,18 @@ struct BrandFilterView: View {
             } else {
                 ScrollView {
                     VStack(alignment: .leading, spacing: 0) {
-                        
-                        // 국산차 섹션
                         if !domesticMakers.isEmpty {
                             SectionHeader(title: "국산차")
                             ForEach(domesticMakers) { maker in
-                                let isDisabled = maker.count == 0
-                                NavigationLink(
-                                    value: SearchDestination.model(makerName: maker.name)
-                                ) {
-                                    BrandOptionsRow(viewModel: viewModel, maker: maker)
-                                        .opacity(isDisabled ? 0.5 : 1.0)
-                                }
-                                .disabled(isDisabled)
+                                BrandOptionsRow(viewModel: viewModel, maker: maker)
                             }
                         }
                         
-                        // 수입차 섹션
                         if !importedMakers.isEmpty {
                             SectionHeader(title: "수입차")
                                 .padding(.top)
                             ForEach(importedMakers) { maker in
-                                let isDisabled = maker.count == 0
-                                NavigationLink(
-                                    value: SearchDestination.model(makerName: maker.name)
-                                ) {
-                                    BrandOptionsRow(viewModel: viewModel, maker: maker)
-                                        .opacity(isDisabled ? 0.5 : 1.0)
-                                }
-                                .disabled(isDisabled)
+                                BrandOptionsRow(viewModel: viewModel, maker: maker)
                             }
                         }
                     }
