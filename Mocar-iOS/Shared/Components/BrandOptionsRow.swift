@@ -29,9 +29,6 @@ struct BrandOptionsRow: View {
                 VStack(alignment: .leading, spacing: 2) {
                     Text(maker.name)
                         .foregroundColor(.black)
-                    Text(maker.countryType) // 국산차/수입차 표시
-                        .font(.caption2)
-                        .foregroundColor(.gray)
                 }
                 
                 Spacer()

@@ -14,7 +14,7 @@ struct BrandFilterView: View {
         let count: Int
         let imageName: UIImage?
         let countryType: String
-
+        
         init(summary: SearchDetailViewModel.MakerSummary) {
             id = summary.id
             name = summary.name
@@ -23,14 +23,17 @@ struct BrandFilterView: View {
             countryType = summary.countryType
         }
     }
-
+    
     @ObservedObject var viewModel: SearchDetailViewModel
     @Binding var path: [SearchDestination]  // SearchView에서 내려받은 path
-
+    
     private var makers: [Maker] {
         viewModel.makerSummaries.map(Maker.init)
     }
-
+    
+    private var domesticMakers: [Maker] { makers.filter { $0.countryType == "국산차" } }
+    private var importedMakers: [Maker] { makers.filter { $0.countryType == "수입차" } }
+    
     var body: some View {
         VStack(alignment: .leading, spacing: 0) {
             if viewModel.selectedMaker != nil || viewModel.selectedModel != nil {
@@ -39,30 +42,44 @@ struct BrandFilterView: View {
             } else {
                 ScrollView {
                     VStack(alignment: .leading, spacing: 0) {
-                        Text("제조사")
-                            .font(.footnote)
-                            .fontWeight(.semibold)
-                            .padding(.bottom, 8)
-
-                        ForEach(makers) { maker in
-                            let isDisabled = maker.count == 0
-                            NavigationLink(
-                                value: SearchDestination.model(makerName: maker.name)
-                            ) {
-                                BrandOptionsRow(viewModel: viewModel, maker: maker)
-                                    .opacity(isDisabled ? 0.5 : 1.0)
-                                    .padding(.vertical, 4)
+                        
+                        // 국산차 섹션
+                        if !domesticMakers.isEmpty {
+                            SectionHeader(title: "국산차")
+                            ForEach(domesticMakers) { maker in
+                                let isDisabled = maker.count == 0
+                                NavigationLink(
+                                    value: SearchDestination.model(makerName: maker.name)
+                                ) {
+                                    BrandOptionsRow(viewModel: viewModel, maker: maker)
+                                        .opacity(isDisabled ? 0.5 : 1.0)
+                                }
+                                .disabled(isDisabled)
                             }
-                            .disabled(isDisabled)
+                        }
+                        
+                        // 수입차 섹션
+                        if !importedMakers.isEmpty {
+                            SectionHeader(title: "수입차")
+                                .padding(.top)
+                            ForEach(importedMakers) { maker in
+                                let isDisabled = maker.count == 0
+                                NavigationLink(
+                                    value: SearchDestination.model(makerName: maker.name)
+                                ) {
+                                    BrandOptionsRow(viewModel: viewModel, maker: maker)
+                                        .opacity(isDisabled ? 0.5 : 1.0)
+                                }
+                                .disabled(isDisabled)
+                            }
                         }
                     }
                     .padding(.horizontal)
                 }
             }
         }
-        .padding(.top, 20)
     }
-
+    
     private var selectionPanel: some View {
         VStack(spacing: 0) {
             // 제조사
@@ -78,15 +95,15 @@ struct BrandFilterView: View {
             // 모델
             NavigationLink(
                 value: viewModel.selectedMaker != nil
-                    ? SearchDestination.model(makerName: viewModel.selectedMaker!)
-                    : nil
+                ? SearchDestination.model(makerName: viewModel.selectedMaker!)
+                : nil
             ) {
                 selectionRow(
                     title: "모델",
                     value: viewModel.selectedModel,
                     placeholder: viewModel.selectedMaker == nil
-                        ? "제조사를 먼저 선택해 주세요."
-                        : "선택해 주세요.",
+                    ? "제조사를 먼저 선택해 주세요."
+                    : "선택해 주세요.",
                     onClear: viewModel.clearModel
                 )
             }
@@ -97,8 +114,8 @@ struct BrandFilterView: View {
             // 트림
             NavigationLink(
                 value: (viewModel.selectedMaker != nil && viewModel.selectedModel != nil)
-                    ? SearchDestination.trim(makerName: viewModel.selectedMaker!, modelName: viewModel.selectedModel!)
-                    : nil
+                ? SearchDestination.trim(makerName: viewModel.selectedMaker!, modelName: viewModel.selectedModel!)
+                : nil
             ) {
                 HStack(spacing: 8) {
                     Text("세부 모델")
@@ -136,7 +153,7 @@ struct BrandFilterView: View {
             .disabled(viewModel.selectedModel == nil)
         }
     }
-
+    
     private func selectionRow(
         title: String,
         value: String?,
@@ -162,7 +179,7 @@ struct BrandFilterView: View {
         .padding(.horizontal, 16)
         .contentShape(Rectangle())
     }
-
+    
     private func selectionChip(text: String, onClear: @escaping () -> Void) -> some View {
         Button(action: onClear) {
             HStack(spacing: 4) {
@@ -183,4 +200,20 @@ struct BrandFilterView: View {
         }
         .buttonStyle(.plain)
     }
+}
+
+private func SectionHeader(title: String) -> some View {
+    HStack {
+        Text(title)
+            .padding(.vertical, 4)
+            .padding(.horizontal, 8)
+            .font(.footnote)
+            .fontWeight(.semibold)
+            .background(
+                RoundedRectangle(cornerRadius: 50)
+                    .stroke(Color.gray, lineWidth: 1)
+            )
+        Spacer()
+    }
+    .padding(.top, 20)
 }

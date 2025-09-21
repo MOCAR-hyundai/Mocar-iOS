@@ -14,7 +14,7 @@ struct PriceFilterView: View {
     @State private var minText: String = ""
     @State private var maxText: String = ""
     
-    private let priceRange: ClosedRange<Int> = 0...10000
+    private let priceRange: ClosedRange<Int> = 0...100000
     
     var body: some View {
         VStack {

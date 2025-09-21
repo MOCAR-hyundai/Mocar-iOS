@@ -47,7 +47,7 @@ final class SearchDetailViewModel: ObservableObject {
     @Published var isLoading: Bool = false
     @Published var loadErrorMessage: String?
     
-    let priceRange: ClosedRange<Int> = 0...10000
+    let priceRange: ClosedRange<Int> = 0...100000
     let mileageRange: ClosedRange<Int> = 0...300000
     let yearRange: ClosedRange<Int>
     
@@ -89,7 +89,7 @@ final class SearchDetailViewModel: ObservableObject {
         makerToModels = [:]
         makerModelToTrims = [:]
         let currentYear = Calendar.current.component(.year, from: Date())
-        let lowerYear = max(currentYear - 20, 2006)
+        let lowerYear = 1990
         yearRange = lowerYear...currentYear
         minPrice = priceRange.lowerBound
         maxPrice = priceRange.upperBound

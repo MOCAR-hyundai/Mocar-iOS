@@ -14,7 +14,7 @@ struct YearFilterView: View {
     @State private var minText: String = ""
     @State private var maxText: String = ""
     
-    private let yearRange: ClosedRange<Int> = 2006...Calendar.current.component(.year, from: Date())
+    private let yearRange: ClosedRange<Int> = 1990...Calendar.current.component(.year, from: Date())
     
     var body: some View {
         VStack {
