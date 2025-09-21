@@ -72,12 +72,12 @@ struct HomeView: View {
                         //리스트
                         ScrollView(.horizontal, showsIndicators: false){
                             HStack(spacing: 16) {
-                                ForEach(homeViewModel.favorites.compactMap{$0.id},
-                                        id: \.self) { id in
-                                    if let listing = homeViewModel.favorites.first(where: {$0.id == id}){
-                                        NavigationLink(destination: ListingDetailView(listingId: id)) {
+                                ForEach(homeViewModel.favorites) { favorite in
+                                    if let listing = homeViewModel.listings.first(where: {$0.id == favorite.listingId}){
+                                        NavigationLink(destination: ListingDetailView(listingId: favorite.listingId)) {
                                                 FavoriteCardView(
                                                     listing: listing,
+                                                    isFavorite: homeViewModel.isFavorite(listing),
                                                     onToggleFavorite:{
                                                         homeViewModel.toggleFavorite(listing)
                                                     }
@@ -123,7 +123,7 @@ struct HomeView: View {
                                     NavigationLink(destination: ListingDetailView(listingId: id)){
                                             ListingCardView(
                                                 listing: listing,
-                                                isFavorite: homeViewModel.favorites.contains { $0.id == listing.id },
+                                                isFavorite: homeViewModel.isFavorite(listing),
                                                 onToggleFavorite:{
                                                     homeViewModel.toggleFavorite(listing)
                                                 }

@@ -13,8 +13,6 @@ struct Favorite: Codable, Identifiable {
     var userId: String
     var listingId: String
     var createdAt: Date
-    
-
 }
 
 
