@@ -93,6 +93,7 @@ struct HomeView: View {
                         }
                     }
                     .padding(.bottom,16)
+                    
                     //브랜드 스크롤
                     VStack(alignment: .leading, spacing: 8){
                         Text("Brands")
@@ -101,7 +102,7 @@ struct HomeView: View {
                         ScrollView(.horizontal, showsIndicators: false){
                             HStack(spacing: 20) {
                                 ForEach(brandData) { brand in
-                                    BrandsIconView(
+                                    BrandIconView(
                                         brand: brand,
                                         isSelected: homeViewModel.selectedBrand == brand.name,   // 선택 여부
                                         onSelect: {
@@ -145,137 +146,6 @@ struct HomeView: View {
    
 }
 
-
-struct FavoriteCardView: View{
-    let listing: Listing
-    let onToggleFavorite: () -> Void
-    
-    var body: some View {
-        VStack(alignment: .leading, spacing: 4) {
-            ZStack(alignment: .topTrailing) {
-                Image("hyundai")
-                    .resizable()
-                    .scaledToFit()
-                    .frame(width: 180, height: 120)   // frame을 카드 width에 맞춤
-                    .clipped()                        // 잘려서 여백 없애기
-
-                Button(action: {
-                    onToggleFavorite()
-                }) {
-                    Image(systemName: "heart.fill" )
-                        .foregroundColor(.red)
-                        .padding(0)
-                }
-            }
-            CarInfoView(listing: listing)
-            
-        }
-        .padding(24)
-        .overlay(
-            RoundedRectangle(cornerRadius: 12)
-                .stroke(Color.gray, lineWidth: 0.5)
-        )
-        .background(Color.white)  // 카드 내부 색 지정
-        .cornerRadius(12)
-
-    }
-}
-
-struct ListingCardView: View{
-    let listing: Listing
-    let isFavorite: Bool
-    let onToggleFavorite: () -> Void
-    
-    var body: some View {
-        VStack(alignment: .leading,spacing: 4) {
-            ZStack(alignment: .topTrailing){
-                Image("hyundai")
-                    .resizable()
-                
-                Button(action: {
-                    onToggleFavorite()
-                }) {
-                    Image(systemName: isFavorite ? "heart.fill" : "heart")
-                        .foregroundColor(isFavorite ? .red : .gray)
-                        .padding(8)
-                }
-            }
-            CarInfoView(listing: listing)
-            
-            
-            
-        }
-        .padding(10)
-        .overlay(
-            RoundedRectangle(cornerRadius: 12)
-                .stroke(Color.gray, lineWidth: 1)
-        )
-        .background(Color.white) 
-        .cornerRadius(12)
-        .frame(width: 170, height: 223)
-        
-    }
-}
-
-struct CarInfoView: View {
-    let listing: Listing
-    var body: some View {
-        VStack(alignment: .leading,spacing: 4) {
-      
-            Text(listing.model)
-                .fontWeight(.semibold)
-                .foregroundColor(.textBlack100)
-            HStack{
-                Text("\(listing.mileage)Km")
-                    .foregroundColor(.textGray100)
-                Image("iconlocation")
-                    .resizable()
-                    .frame(width: 13, height: 15)
-                Text(listing.region)
-                    .foregroundColor(.textGray100)
-            }
-            Text("\(listing.price)만원")
-                .padding(.top,4)
-                .font(.title3)
-                .fontWeight(.bold)
-                .foregroundColor(Color.keyColorBlue)
-            
-        }
-        .padding(10)
-    }
-}
-
-
-
-struct BrandsIconView: View {
-    let brand: Brand
-    let isSelected: Bool
-    let onSelect: () -> Void
-    
-    var body: some View {
-        Button(action:{
-            onSelect()
-        }){
-            VStack{
-                Image(brand.logo)
-                    .resizable()
-                    .scaledToFit()
-                    .frame(width: 40, height: 40)
-                    .padding(15) // 이미지 주변에 여백 → 원 안에 들어가게
-                    .background(
-                        Circle()
-                            .fill(Color.white) // 흰 배경 원
-                            .overlay(
-                                Circle().stroke(isSelected ? Color.keyColorBlue : Color.borderGray, lineWidth: 1)
-                            )
-                            .frame(width: 65, height: 65)
-                    )
-                Text(brand.name)
-                    .foregroundColor(Color.textGray200)
-            }
-        }
-    }
-}
 
 #Preview{
     HomeView()
