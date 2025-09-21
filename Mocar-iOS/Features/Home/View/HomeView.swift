@@ -8,10 +8,18 @@
 import SwiftUI
 
 struct HomeView: View {
-    @StateObject private var homeViewModel = HomeViewModel()
+    @StateObject private var favoritesViewModel: FavoritesViewModel
+    @StateObject private var homeViewModel: HomeViewModel
     @StateObject private var userSession = UserSession()
     @State private var showLogin = false
     
+    init(){
+        //FavoritesviewModel을 먼저 만들고 HomeViewModel에 주입
+        let favVM = FavoritesViewModel()
+            _favoritesViewModel = StateObject(wrappedValue: favVM)
+            _homeViewModel = StateObject(wrappedValue: HomeViewModel(favoriteViewModel: favVM))
+   }
+
     var body: some View {
         NavigationStack{
             VStack {
@@ -72,16 +80,21 @@ struct HomeView: View {
                         //리스트
                         ScrollView(.horizontal, showsIndicators: false){
                             HStack(spacing: 16) {
-                                ForEach(homeViewModel.favorites) { favorite in
+                                ForEach(favoritesViewModel.favorites) { favorite in
                                     if let listing = homeViewModel.listings.first(where: {$0.id == favorite.listingId}){
-                                        NavigationLink(destination: ListingDetailView(listingId: favorite.listingId)) {
-                                                FavoriteCardView(
-                                                    listing: listing,
-                                                    isFavorite: homeViewModel.isFavorite(listing),
-                                                    onToggleFavorite:{
-                                                        homeViewModel.toggleFavorite(listing)
-                                                    }
-                                                )
+                                        NavigationLink(
+                                            destination: ListingDetailView(
+                                                listingId: favorite.listingId,
+                                                favoritesViewModel: favoritesViewModel
+                                            )
+                                        ) {
+                                            FavoriteCardView(
+                                                listing: listing,
+                                                isFavorite: favoritesViewModel.isFavorite(listing),
+                                                onToggleFavorite:{
+                                                    favoritesViewModel.toggleFavorite(listing)
+                                                }
+                                            )
                                         }
                                          .buttonStyle(PlainButtonStyle())
                                     }
@@ -120,14 +133,18 @@ struct HomeView: View {
                         ], spacing: 16) {
                             ForEach(homeViewModel.filteredListings.compactMap{$0.id}, id: \.self) { id in
                                 if let listing = homeViewModel.filteredListings.first(where: {$0.id == id}){
-                                    NavigationLink(destination: ListingDetailView(listingId: id)){
-                                            ListingCardView(
-                                                listing: listing,
-                                                isFavorite: homeViewModel.isFavorite(listing),
-                                                onToggleFavorite:{
-                                                    homeViewModel.toggleFavorite(listing)
-                                                }
-                                            )
+                                    NavigationLink(
+                                        destination: ListingDetailView(
+                                        listingId: id,
+                                        favoritesViewModel: favoritesViewModel)
+                                    ){
+                                        ListingCardView(
+                                            listing: listing,
+                                            isFavorite: favoritesViewModel.isFavorite(listing),
+                                            onToggleFavorite:{
+                                                favoritesViewModel.toggleFavorite(listing)
+                                            }
+                                        )
                                     }
                                     .buttonStyle(PlainButtonStyle())
                                 }

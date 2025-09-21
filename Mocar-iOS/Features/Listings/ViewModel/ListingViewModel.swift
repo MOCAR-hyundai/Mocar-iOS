@@ -7,14 +7,14 @@
 
 import Foundation
 import FirebaseFirestore
+import FirebaseAuth
 
 class ListingDetailViewModel: ObservableObject {
     //@Published var listing: Listing = Listing.placeholder
     @Published var listings: [Listing] = []     //전체 매물
     @Published var listing: Listing?            //단일 매물(상세화면용)
-    @Published var favorites: [Listing] = []    //찜하기 리스트
     
-    private var db = Firestore.firestore()
+    let favoritesViewModel: FavoritesViewModel
     
     //그래프 계산
     @Published var currentValue: Double = 0
@@ -24,6 +24,14 @@ class ListingDetailViewModel: ObservableObject {
     @Published var safeMin: Double = 0
     @Published var safeMax: Double = 0
     @Published var ticks: [Int] = []
+    
+    
+    private var db = Firestore.firestore()
+    
+    
+    init(favoritesViewModel: FavoritesViewModel){
+        self.favoritesViewModel = favoritesViewModel
+    }
 
     //전체 매물 불러오기
 //    func fetchListings() {
@@ -50,13 +58,6 @@ class ListingDetailViewModel: ObservableObject {
     }
     
     func loadListing(id: String){
-        //메모리에서 먼저 조회
-        if let found = listings.first(where: {$0.id == id}){
-            applyListing(found)
-            return
-        }
-        
-        //없으면 db에서 단일 조회
         db.collection("listings").document(id).getDocument { doc, error in
             if let doc = doc, doc.exists {
                 do {
@@ -158,14 +159,5 @@ class ListingDetailViewModel: ObservableObject {
         pos = min(max(pos, circleRadius), width - circleRadius)
         
         return pos
-    }
-    
-    
-    func toggleFavorite(_ listing: Listing){
-        if favorites.contains(where: {$0.id == listing.id}){
-            favorites.removeAll{$0.id == listing.id}
-        }else{
-            favorites.append(listing)
-        }
     }
 }
