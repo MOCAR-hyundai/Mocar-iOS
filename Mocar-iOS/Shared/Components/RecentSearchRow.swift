@@ -1,24 +1,45 @@
 import SwiftUI
 
-public struct RecentSearchRow: View {
-    private let summary: String
-    private let onApply: () -> Void
-    private let onDelete: () -> Void
-    
+struct RecentSearchRow: View {
+    let filter: SearchDetailViewModel.RecentSearchFilter
+    let onApply: () -> Void
+    let onDelete: () -> Void
+
     private var components: [String] {
-        summary.components(separatedBy: " | ")
+        var parts: [String] = []
+
+        if let maker = filter.maker {
+            parts.append("제조사: \(maker)")
+        }
+        if let model = filter.model {
+            parts.append("모델: \(model)")
+        }
+        if !filter.trims.isEmpty {
+            parts.append("세부모델: \(filter.trims.joined(separator: ", "))")
+        }
+        if filter.minPrice != 0 || filter.maxPrice != 100_000 {
+            parts.append("가격: \(filter.minPrice)-\(filter.maxPrice)")
+        }
+        if filter.minYear != 1990 || filter.maxYear != Calendar.current.component(.year, from: Date()) {
+            parts.append("연식: \(filter.minYear)-\(filter.maxYear)")
+        }
+        if filter.minMileage != 0 || filter.maxMileage != 300_000 {
+            parts.append("주행: \(filter.minMileage)-\(filter.maxMileage)km")
+        }
+        if !filter.carTypes.isEmpty {
+            parts.append("차종: \(filter.carTypes.joined(separator: ", "))")
+        }
+        if !filter.fuels.isEmpty {
+            parts.append("연료: \(filter.fuels.joined(separator: ", "))")
+        }
+
+        return parts
     }
-    
-    public init(summary: String, onApply: @escaping () -> Void, onDelete: @escaping () -> Void) {
-        self.summary = summary
-        self.onApply = onApply
-        self.onDelete = onDelete
-    }
-    
-    public var body: some View {
+
+    var body: some View {
         HStack(alignment: .top, spacing: 12) {
             VStack(alignment: .leading, spacing: 6) {
-                ForEach(Array(components.enumerated()), id: \.offset) { _, part in
+                ForEach(components, id: \.self) { part in
                     Text(part)
                         .font(.subheadline)
                         .foregroundColor(.black)
@@ -37,7 +58,7 @@ public struct RecentSearchRow: View {
         .padding(16)
         .background(
             RoundedRectangle(cornerRadius: 12)
-                .fill(Color(UIColor.white))
+                .fill(Color.white)
         )
         .contentShape(Rectangle())
         .onTapGesture {

@@ -35,7 +35,6 @@ final class SearchDetailViewModel: ObservableObject {
     @Published var selectedTrim: String?
     @Published var selectedTrims: Set<String> = []
     @Published var recentKeyword: String = ""
-    @Published var recentSearches: [String] = []
     @Published var recentKeywords: [String] = []
     @Published var minPrice: Int
     @Published var maxPrice: Int
@@ -357,16 +356,6 @@ final class SearchDetailViewModel: ObservableObject {
         print("====================")
     }
     
-    func addRecentSearch(_ text: String) {
-        let trimmed = text.trimmingCharacters(in: .whitespacesAndNewlines)
-        guard !trimmed.isEmpty else { return }
-        recentSearches.removeAll { $0 == trimmed }
-        recentSearches.insert(trimmed, at: 0)
-        if recentSearches.count > 10 {
-            recentSearches = Array(recentSearches.prefix(10))
-        }
-    }
-    
     func addRecentKeyword(_ keyword: String) {
         let trimmed = keyword.trimmingCharacters(in: .whitespacesAndNewlines)
         guard !trimmed.isEmpty else { return }
@@ -376,11 +365,7 @@ final class SearchDetailViewModel: ObservableObject {
             recentKeywords = Array(recentKeywords.prefix(10))
         }
     }
-    
-    func removeRecentSearch(_ summary: String) {
-        recentSearches.removeAll { $0 == summary }
-    }
-    
+
     func removeRecentKeyword(_ keyword: String) {
         recentKeywords.removeAll { $0 == keyword }
     }
@@ -392,100 +377,92 @@ final class SearchDetailViewModel: ObservableObject {
     func clearRecentKeywords() {
         recentKeywords.removeAll()
     }
-    
-    func saveCurrentFiltersAsRecent() {
-        var parts: [String] = []
+
+    @Published var recentSearches: [RecentSearchFilter] = []
+
+    struct RecentSearchFilter: Codable, Hashable, Identifiable {
+        let id = UUID()
+        var maker: String?
+        var model: String?
+        var trims: Set<String>
+        var carTypes: Set<String>
+        var fuels: Set<String>
+        var minPrice: Int?
+        var maxPrice: Int?
+        var minYear: Int?
+        var maxYear: Int?
+        var minMileage: Int?
+        var maxMileage: Int?
+        var name: String?
         
-        // 우선순위: 세부모델 > 모델 > 제조사
-        if !selectedTrims.isEmpty {
-            let trimsString = selectedTrims.joined(separator: "\n")
-            parts.append("\(trimsString)")
-        } else if let model = selectedModel, let maker = selectedMaker {
-            parts.append("\(maker) \(model)")
-        } else if let maker = selectedMaker {
-            parts.append("\(maker)")
-        }
-        
-        if minPrice > priceRange.lowerBound || maxPrice < priceRange.upperBound {
-            parts.append("가격: \(minPrice)-\(maxPrice)")
-        }
-        if minYear > yearRange.lowerBound || maxYear < yearRange.upperBound {
-            parts.append("연식: \(minYear)-\(maxYear)")
-        }
-        if minMileage > mileageRange.lowerBound || maxMileage < mileageRange.upperBound {
-            parts.append("주행: \(minMileage)-\(maxMileage)km")
-        }
-        
-        let carTypes = Array(selectedCarTypes).sorted()
-        if !carTypes.isEmpty {
-            parts.append("차종: \(carTypes.joined(separator: ", "))")
-        }
-        
-        let fuels = Array(selectedFuels).sorted()
-        if !fuels.isEmpty {
-            parts.append("연료: \(fuels.joined(separator: ", "))")
+        static func == (lhs: RecentSearchFilter, rhs: RecentSearchFilter) -> Bool {
+            lhs.maker == rhs.maker &&
+            lhs.model == rhs.model &&
+            lhs.trims == rhs.trims &&
+            lhs.carTypes == rhs.carTypes &&
+            lhs.fuels == rhs.fuels &&
+            lhs.minPrice == rhs.minPrice &&
+            lhs.maxPrice == rhs.maxPrice &&
+            lhs.minYear == rhs.minYear &&
+            lhs.maxYear == rhs.maxYear &&
+            lhs.minMileage == rhs.minMileage &&
+            lhs.maxMileage == rhs.maxMileage
         }
         
-        let summary = parts.joined(separator: " | ")
-        addRecentSearch(summary)
+        func hash(into hasher: inout Hasher) {
+            hasher.combine(maker)
+            hasher.combine(model)
+            hasher.combine(trims)
+            hasher.combine(carTypes)
+            hasher.combine(fuels)
+            hasher.combine(minPrice)
+            hasher.combine(maxPrice)
+            hasher.combine(minYear)
+            hasher.combine(maxYear)
+            hasher.combine(minMileage)
+            hasher.combine(maxMileage)
+        }
     }
-    
-    func applyRecentSearch(_ summary: String) {
-        resetFilters()
+
+    func saveCurrentFiltersAsRecent() {
+        let filter = RecentSearchFilter(
+            maker: selectedMaker,
+            model: selectedModel,
+            trims: selectedTrims,
+            carTypes: Set(carTypeOptions.filter { $0.checked }.map { $0.name }),
+            fuels: Set(fuelOptions.filter { $0.checked }.map { $0.name }),
+            minPrice: minPrice,
+            maxPrice: maxPrice,
+            minYear: minYear,
+            maxYear: maxYear,
+            minMileage: minMileage,
+            maxMileage: maxMileage,
+            name: "필터 \(recentSearches.count + 1)"
+        )
+
+        // 중복 제거
+        recentSearches.removeAll { $0 == filter }
+        recentSearches.insert(filter, at: 0)
         
-        let parts = summary.components(separatedBy: " | ")
-        for part in parts {
-            if part.hasPrefix("차종:") {
-                let value = part.replacingOccurrences(of: "차종:", with: "").trimmingCharacters(in: .whitespaces)
-                let names = value.split(separator: ",").map { $0.trimmingCharacters(in: .whitespaces) }
-                carTypeOptions = carTypeOptions.map { item in
-                    CheckableItem(name: item.name, checked: names.contains(item.name))
-                }
-            } else if part.hasPrefix("세부모델:") {
-                let rest = part.replacingOccurrences(of: "세부모델:", with: "").trimmingCharacters(in: .whitespaces)
-                let trims = rest.split(separator: ",").map { $0.trimmingCharacters(in: .whitespaces) }
-                selectedTrims = Set(trims)
-            } else if part.hasPrefix("제조사:") {
-                let rest = part.replacingOccurrences(of: "제조사:", with: "").trimmingCharacters(in: .whitespaces)
-                if rest.contains("/ 모델:") {
-                    let comps = rest.components(separatedBy: "/ 모델:")
-                    let maker = comps[0].trimmingCharacters(in: .whitespaces)
-                    let model = comps[1].trimmingCharacters(in: .whitespaces)
-                    selectedMaker = maker
-                    selectedModel = model
-                } else {
-                    selectedMaker = rest
-                }
-            } else if part.hasPrefix("가격:") {
-                let rest = part.replacingOccurrences(of: "가격:", with: "").trimmingCharacters(in: .whitespaces)
-                let nums = rest.components(separatedBy: "-")
-                if nums.count == 2, let a = Int(nums[0]), let b = Int(nums[1]) {
-                    minPrice = a
-                    maxPrice = b
-                }
-            } else if part.hasPrefix("연식:") {
-                let rest = part.replacingOccurrences(of: "연식:", with: "").trimmingCharacters(in: .whitespaces)
-                let nums = rest.components(separatedBy: "-")
-                if nums.count == 2, let a = Int(nums[0]), let b = Int(nums[1]) {
-                    minYear = a
-                    maxYear = b
-                }
-            } else if part.hasPrefix("주행:") {
-                var rest = part.replacingOccurrences(of: "주행:", with: "").trimmingCharacters(in: .whitespaces)
-                rest = rest.replacingOccurrences(of: "km", with: "")
-                let nums = rest.components(separatedBy: "-")
-                if nums.count == 2, let a = Int(nums[0]), let b = Int(nums[1]) {
-                    minMileage = a
-                    maxMileage = b
-                }
-            } else if part.hasPrefix("연료:") {
-                let rest = part.replacingOccurrences(of: "연료:", with: "").trimmingCharacters(in: .whitespaces)
-                let fuels = rest.split(separator: ",").map { $0.trimmingCharacters(in: .whitespaces) }
-                fuelOptions = fuelOptions.map { item in
-                    CheckableItem(name: item.name, checked: fuels.contains(item.name))
-                }
-            }
+        if recentSearches.count > 10 {
+            recentSearches = Array(recentSearches.prefix(10))
         }
+    }
+
+    func applyRecentSearch(_ filter: RecentSearchFilter) {
+        selectedMaker = filter.maker
+        selectedModel = filter.model
+        selectedTrims = filter.trims
+
+        carTypeOptions = carTypeOptions.map { CheckableItem(name: $0.name, checked: filter.carTypes.contains($0.name)) }
+        fuelOptions = fuelOptions.map { CheckableItem(name: $0.name, checked: filter.fuels.contains($0.name)) }
+
+        minPrice = filter.minPrice ?? priceRange.lowerBound
+        maxPrice = filter.maxPrice ?? priceRange.upperBound
+        minYear = filter.minYear ?? yearRange.lowerBound
+        maxYear = filter.maxYear ?? yearRange.upperBound
+        minMileage = filter.minMileage ?? mileageRange.lowerBound
+        maxMileage = filter.maxMileage ?? mileageRange.upperBound
     }
     
     private func matches(

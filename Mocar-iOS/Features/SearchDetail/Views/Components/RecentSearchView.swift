@@ -20,7 +20,7 @@ struct RecentSearchView: View {
                     .foregroundColor(.black)
                 Spacer()
                 Button("전체 삭제") {
-                    viewModel.clearRecentSearches()
+                    viewModel.recentSearches.removeAll()
                 }
                 .foregroundColor(.red)
             }
@@ -40,18 +40,22 @@ struct RecentSearchView: View {
             } else {
                 ScrollView {
                     LazyVStack(spacing: 0) {
-                        ForEach(viewModel.recentSearches, id: \.self) { item in
+                        ForEach(viewModel.recentSearches, id: \.id) { filter in
+                            let onApply = {
+                                viewModel.applyRecentSearch(filter)
+                                isPresented = false
+                            }
+                            let onDelete = {
+                                viewModel.recentSearches.removeAll { $0.id == filter.id }
+                            }
+                            
                             RecentSearchRow(
-                                summary: item,
-                                onApply: {
-                                    viewModel.applyRecentSearch(item)
-                                    isPresented = false
-                                },
-                                onDelete: {
-                                    viewModel.removeRecentSearch(item)
-                                }
+                                filter: filter,
+                                onApply: onApply,
+                                onDelete: onDelete
                             )
                             .padding(.vertical, 8)
+                            
                             Divider()
                         }
                     }

@@ -34,93 +34,108 @@ struct SearchKeywordView: View {
     }
     
     var body: some View {
-            VStack(spacing: 16) {
-                HStack {
-                    Button {
-                        dismiss()
-                        query = ""
-                    } label: {
-                        Image(systemName: "chevron.left")
-                            .font(.title2)
-                            .foregroundColor(.black)
-                    }
-                    searchField
+        VStack(spacing: 16) {
+            HStack {
+                Button {
+                    dismiss()
+                    query = ""
+                } label: {
+                    Image(systemName: "chevron.left")
+                        .font(.title2)
+                        .foregroundColor(.black)
                 }
-                .padding(.top, 16)
-                .padding(.horizontal)
-                
-                if !viewModel.recentKeywords.isEmpty {
-                    recentKeywordsSection
-                        .padding(.horizontal)
-                }
-                
-                if query.trimmingCharacters(in: .whitespacesAndNewlines).count < 2 {
+                searchField
+            }
+            .padding(.top, 16)
+            .padding(.horizontal)
+            
+            if !viewModel.recentKeywords.isEmpty {
+                recentKeywordsSection
+                    .padding(.horizontal)
+            }
+            
+            if query.trimmingCharacters(in: .whitespacesAndNewlines).count < 2 {
+                Spacer()
+                Text("모델명을 입력해 차량을 검색하세요.")
+                    .foregroundColor(.gray)
+                Spacer()
+            } else {
+                if results.isEmpty {
                     Spacer()
-                    Text("모델명을 입력해 차량을 검색하세요.")
+                    Text("일치하는 차량이 없습니다.")
                         .foregroundColor(.gray)
                     Spacer()
                 } else {
-                    if results.isEmpty {
-                        Spacer()
-                        Text("일치하는 차량이 없습니다.")
-                            .foregroundColor(.gray)
-                        Spacer()
-                    } else {
-                        // title별로 중복 제거하고 리스트
-                        List(groupedResults.keys.sorted(), id: \.self) { title in
-                            if let cars = groupedResults[title], let car = cars.first {
-                                NavigationLink(destination: SearchResultsView()) {
-                                    VStack(alignment: .leading, spacing: 4) {
+                    // title별로 중복 제거하고 리스트
+                    ScrollView {
+                        LazyVStack(alignment: .leading, spacing: 0) {
+                            ForEach(groupedResults.keys.sorted(), id: \.self) { title in
+                                if let cars = groupedResults[title], let car = cars.first {
+                                    NavigationLink(destination: SearchResultsView()) {
                                         HStack {
-                                            Text("\(title)")
-                                                .font(.headline)
+                                            VStack(alignment: .leading, spacing: 4) {
+                                                HStack {
+                                                    Text("\(title)")
+                                                        .font(.headline)
+                                                    Spacer()
+                                                }
+                                                HStack(spacing: 12) {
+                                                    Text("연식 \(car.year)년")
+                                                        .font(.subheadline)
+                                                        .foregroundColor(.gray)
+                                                    Text("가격 \(formattedPrice(car.price))만원")
+                                                        .font(.subheadline)
+                                                        .foregroundColor(.gray)
+                                                    Text("주행 \(formattedMileage(car.mileage))km")
+                                                        .font(.subheadline)
+                                                        .foregroundColor(.gray)
+                                                }
+                                            }
+                                            .padding(.vertical, 8)
+                                            
                                             Spacer()
                                             Text("\(cars.count)대")
-                                        }
-                                        HStack(spacing: 12) {
-                                            Text("연식 \(car.year)년")
                                                 .font(.subheadline)
-                                                .foregroundColor(.gray)
-                                            Text("가격 \(formattedPrice(car.price))만원")
-                                                .font(.subheadline)
-                                                .foregroundColor(.gray)
-                                            Text("주행 \(formattedMileage(car.mileage))km")
+                                                .foregroundColor(.black)
+                                            Image(systemName: "chevron.right")
                                                 .font(.subheadline)
                                                 .foregroundColor(.gray)
                                         }
+                                        .padding()
                                     }
-                                    .padding(.vertical, 8)
+                                    .simultaneousGesture(TapGesture().onEnded {
+                                        viewModel.addRecentKeyword(title)
+                                        viewModel.recentKeyword = ""
+                                        query = ""
+                                    })
+                                    .buttonStyle(.plain)
+                                    
+                                    Divider()
                                 }
-                                .simultaneousGesture(TapGesture().onEnded {
-                                    viewModel.addRecentKeyword(title)
-                                    viewModel.recentKeyword = ""
-                                    query = ""
-                                })
-                                .buttonStyle(.plain)
                             }
                         }
-                        .listStyle(.plain)
                     }
                 }
             }
-            .navigationBarBackButtonHidden(true)
-            .onAppear {
-                query = viewModel.recentKeyword
-                debouncedQuery = query
-                DispatchQueue.main.asyncAfter(deadline: .now() + 0.1) {
-                    isSearchFieldFocused = true
+        }
+        .navigationBarBackButtonHidden(true)
+        .onAppear {
+            query = viewModel.recentKeyword
+            debouncedQuery = query
+            DispatchQueue.main.asyncAfter(deadline: .now() + 0.1) {
+                isSearchFieldFocused = true
+            }
+        }
+        // 디바운스 적용
+        .onChange(of: query) { newValue in
+            debounceTask?.cancel()
+            debounceTask = Task {
+                try? await Task.sleep(nanoseconds: 300_000_000) // 0.3초 딜레이
+                if !Task.isCancelled {
+                    debouncedQuery = newValue
                 }
             }
-            // 디바운스 적용
-            .onChange(of: query) { newValue in
-                debounceTask?.cancel()
-                debounceTask = Task {
-                    try? await Task.sleep(nanoseconds: 300_000_000) // 0.3초 딜레이
-                    if !Task.isCancelled {
-                        debouncedQuery = newValue
-                    }
-                }
-            }
+        }
     }
     
     private var searchField: some View {
