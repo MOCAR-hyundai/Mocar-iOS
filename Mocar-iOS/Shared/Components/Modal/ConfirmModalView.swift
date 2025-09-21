@@ -26,7 +26,7 @@ struct ConfirmModalView: View {
                         .foregroundColor(.pureWhite)
                         .frame(maxWidth: .infinity)
                         .padding()
-                        .background(Color.gray200)
+                        .background(Color.borderGray)
                         .cornerRadius(8)
                 }
                 Button(action: {onConfirm()}){

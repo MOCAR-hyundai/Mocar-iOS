@@ -26,7 +26,7 @@ struct BrandIconView: View {
                         Circle()
                             .fill(Color.white) // 흰 배경 원
                             .overlay(
-                                Circle().stroke(isSelected ? Color.keyColorBlue : Color.gray200, lineWidth: 1)
+                                Circle().stroke(isSelected ? Color.keyColorBlue : Color.borderGray, lineWidth: 1)
                             )
                             .frame(width: 65, height: 65)
                     )
