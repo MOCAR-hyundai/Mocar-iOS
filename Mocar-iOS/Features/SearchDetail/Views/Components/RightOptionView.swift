@@ -10,11 +10,12 @@ import SwiftUI
 struct RightOptionView: View {
     @Binding var selectedCategory: String?
     @ObservedObject var viewModel: SearchDetailViewModel
+    @Binding var path: [SearchDestination]
     
     var body: some View {
         VStack {
             if selectedCategory == "제조사" {
-                BrandView(viewModel: viewModel)
+                BrandFilterView(viewModel: viewModel, path: $path)
             } else if selectedCategory == "가격" {
                 PriceFilterView(minPrice: $viewModel.minPrice, maxPrice: $viewModel.maxPrice)
             } else if selectedCategory == "연식" {
@@ -22,11 +23,7 @@ struct RightOptionView: View {
             } else if selectedCategory == "주행거리" {
                 MileageFilterView(minMileage: $viewModel.minMileage, maxMileage: $viewModel.maxMileage)
             } else if selectedCategory == "차종" {
-                CarSizeFilterView(options: $viewModel.carTypeOptions, countProvider: viewModel.countForCarType) { updated in
-                    if updated.checked {
-                        viewModel.addRecentSearch("차종: \(updated.name)")
-                    }
-                }
+                CarSizeFilterView(options: $viewModel.carTypeOptions, countProvider: viewModel.countForCarType)
             } else if selectedCategory == "연료" {
                 FuelFilterView(options: $viewModel.fuelOptions, countProvider: viewModel.countForFuel)
             } else if selectedCategory == "지역" {

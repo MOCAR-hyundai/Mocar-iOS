@@ -8,24 +8,28 @@
 import SwiftUI
 
 struct SearchView: View {
+    @Environment(\.dismiss) private var dismiss
     @StateObject private var viewModel = SearchDetailViewModel()
     @State private var selectedCategory: String? = "제조사"
     @State private var showRecentSheet: Bool = false
+    @State private var path: [SearchDestination] = []
     
     private let categories = ["제조사", "가격", "연식", "주행거리", "차종", "연료", "지역"]
     
     var body: some View {
-        NavigationStack {
+        NavigationStack(path: $path) {
             VStack(spacing: 0) {
                 // 상단 검색창
                 HStack {
-                    Button(action: {}) {
+                    Button(action: {
+                        dismiss()
+                    }) {
                         Image(systemName: "chevron.left")
                             .font(.title2)
                             .foregroundColor(.black)
                     }
                     
-                    NavigationLink(destination: SearchKeywordView(viewModel: viewModel)) {
+                    NavigationLink(value: SearchDestination.searchKeyword) {
                         HStack {
                             Image(systemName: "magnifyingglass")
                                 .foregroundColor(.gray)
@@ -41,45 +45,28 @@ struct SearchView: View {
                     }
                     .buttonStyle(PlainButtonStyle())
                 }
+                .padding(.top, 16)
                 .padding(.horizontal)
                 
-                // 최근검색기록 (헤더 오른쪽에 팝업 열기 버튼)
+                // 최근검색기록
                 HStack {
                     Spacer()
                     Button(action: { showRecentSheet = true }) {
                         Text("최근검색기록")
-                            .font(.footnote)
-                            .foregroundColor(.blue)
+                        Text("\(viewModel.recentSearches.count)")
                         Image(systemName: "chevron.right")
-                            .font(.caption)
-                            .foregroundColor(.blue)
                     }
+                    .font(.caption)
+                    .foregroundColor(.gray)
                 }
                 .padding()
-                .padding(.vertical, 8)
                 .sheet(isPresented: $showRecentSheet) {
-                    NavigationStack {
-                        List {
-                            ForEach(viewModel.recentSearches, id: \.self) { item in
-                                Button(action: {
-                                    viewModel.applyRecentSearch(item)
-                                    viewModel.recentKeyword = item
-                                    showRecentSheet = false
-                                }) {
-                                    Text(item)
-                                        .lineLimit(2)
-                                }
-                                .buttonStyle(.plain)
-                            }
-                        }
-                        .navigationTitle("최근 검색")
-                        .toolbar { ToolbarItem(placement: .cancellationAction) { Button("닫기") { showRecentSheet = false } } }
-                    }
+                    RecentSearchView(viewModel: viewModel, isPresented: $showRecentSheet)
                 }
                 
                 Divider()
                 
-                // 메인 검색영역
+                // 메인 검색 영역
                 HStack(spacing: 0) {
                     LeftCategoryView(
                         categories: categories,
@@ -89,7 +76,8 @@ struct SearchView: View {
                     Divider()
                     RightOptionView(
                         selectedCategory: $selectedCategory,
-                        viewModel: viewModel
+                        viewModel: viewModel,
+                        path: $path // ✅ path 전달
                     )
                 }
                 
@@ -128,7 +116,24 @@ struct SearchView: View {
                 .padding()
             }
             .background(Color.white)
+            .navigationDestination(for: SearchDestination.self) { dest in
+                switch dest {
+                case .model(let makerName):
+                    ModelSelectionView(viewModel: viewModel,
+                                       makerName: makerName,
+                                       onCancel: { path = [] })
+                case .trim(let makerName, let modelName):
+                    TrimSelectionView(viewModel: viewModel,
+                                      makerName: makerName,
+                                      modelName: modelName,
+                                      path: $path
+                    )
+                case .searchKeyword:
+                    SearchKeywordView(viewModel: viewModel)
+                }
+            }
         }
+        .navigationBarHidden(true)
     }
 }
 
@@ -138,4 +143,11 @@ private extension SearchView {
         formatter.numberStyle = .decimal
         return formatter.string(from: NSNumber(value: viewModel.filteredCount)) ?? "\(viewModel.filteredCount)"
     }
+}
+
+// Destination enum
+enum SearchDestination: Hashable {
+    case model(makerName: String)
+    case trim(makerName: String, modelName: String)
+    case searchKeyword
 }

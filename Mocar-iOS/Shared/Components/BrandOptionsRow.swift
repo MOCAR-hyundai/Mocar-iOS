@@ -8,19 +8,28 @@
 import SwiftUI
 
 struct BrandOptionsRow: View {
-    let maker: BrandView.Maker
+    @ObservedObject var viewModel: SearchDetailViewModel
+    let maker: BrandFilterView.Maker
     
     var body: some View {
         VStack(spacing: 0) {
             HStack(spacing: 12) {
-                Image(maker.imageName)
-                    .resizable()
-                    .scaledToFit()
-                    .frame(width: 28, height: 28)
-                    .clipShape(RoundedRectangle(cornerRadius: 6))
+                if let uiImage = viewModel.makerImages[maker.name] {
+                    Image(uiImage: uiImage)
+                        .resizable()
+                        .scaledToFit()
+                        .frame(width: 28, height: 28)
+                        .clipShape(RoundedRectangle(cornerRadius: 6))
+                } else {
+                    Color.gray.opacity(0.3)
+                        .frame(width: 28, height: 28)
+                        .clipShape(RoundedRectangle(cornerRadius: 6))
+                }
                 
-                Text(maker.name)
-                    .foregroundColor(.black)
+                VStack(alignment: .leading, spacing: 2) {
+                    Text(maker.name)
+                        .foregroundColor(.black)
+                }
                 
                 Spacer()
                 
@@ -31,10 +40,8 @@ struct BrandOptionsRow: View {
                 Image(systemName: "chevron.right")
                     .foregroundColor(.gray)
             }
-            .padding(.horizontal, 16)
-            .frame(maxWidth: .infinity, minHeight: 56)
+            .frame(maxWidth: .infinity, minHeight: 50)
             Divider()
-                .padding(.leading, 16)
         }
         .contentShape(Rectangle())
     }

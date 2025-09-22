@@ -1,5 +1,5 @@
 //
-//  YearFilterView.swift
+//  MileageFilterView.swift
 //  Mocar-iOS
 //
 //  Created by wj on 9/17/25.
@@ -7,38 +7,39 @@
 
 import SwiftUI
 
-struct YearFilterView: View {
-    @Binding var minYear: Int
-    @Binding var maxYear: Int
+struct MileageFilterView: View {
+    @Binding var minMileage: Int
+    @Binding var maxMileage: Int
     
     @State private var minText: String = ""
     @State private var maxText: String = ""
     
-    private let yearRange: ClosedRange<Int> = 2006...Calendar.current.component(.year, from: Date())
+    private let mileageRange: ClosedRange<Int> = 0...300000
     
     var body: some View {
         VStack {
             VStack(alignment: .leading, spacing: 20) {
-                Text("연식")
-                    .font(.headline)
+                Text("주행거리")
+                    .font(.footnote)
+                    .fontWeight(.semibold)
                 
                 // 슬라이더: Int ↔ Double 변환
                 RangeSlider(
                     lowerValue: Binding(
-                        get: { Double(minYear) },
+                        get: { Double(minMileage) },
                         set: { newValue in
                             let intValue = Int(newValue.rounded())
-                            minYear = min(max(intValue, yearRange.lowerBound), maxYear)
-                            minText = String(minYear)
+                            minMileage = min(max(intValue, mileageRange.lowerBound), maxMileage)
+                            minText = String(minMileage)
                         }),
                     upperValue: Binding(
-                        get: { Double(maxYear) },
+                        get: { Double(maxMileage) },
                         set: { newValue in
                             let intValue = Int(newValue.rounded())
-                            maxYear = max(min(intValue, yearRange.upperBound), minYear)
-                            maxText = String(maxYear)
+                            maxMileage = max(min(intValue, mileageRange.upperBound), minMileage)
+                            maxText = String(maxMileage)
                         }),
-                    range: Double(yearRange.lowerBound)...Double(yearRange.upperBound)
+                    range: Double(mileageRange.lowerBound)...Double(mileageRange.upperBound)
                 )
                 .frame(height: 50)
                 .padding(.horizontal, 16)
@@ -53,15 +54,17 @@ struct YearFilterView: View {
                     .onChange(of: minText) { newValue, _ in
                         minText = newValue.filter { "0123456789".contains($0) }
                         if let value = Int(minText) {
-                            minYear = min(max(value, yearRange.lowerBound), maxYear)
+                            minMileage = min(max(value, mileageRange.lowerBound), maxMileage)
                         }
                     }
                     .onSubmit {
-                        minText = String(minYear)
+                        minText = String(minMileage)
                     }
                 
-                Text("년")
+                Text("km")
                 
+                Spacer()
+                Text("~")
                 Spacer()
                 
                 TextField("최대", text: $maxText)
@@ -71,20 +74,20 @@ struct YearFilterView: View {
                     .onChange(of: maxText) { newValue, _ in
                         maxText = newValue.filter { "0123456789".contains($0) }
                         if let value = Int(maxText) {
-                            maxYear = max(min(value, yearRange.upperBound), minYear)
+                            maxMileage = max(min(value, mileageRange.upperBound), minMileage)
                         }
                     }
                     .onSubmit {
-                        maxText = String(maxYear)
+                        maxText = String(maxMileage)
                     }
                 
-                Text("년")
+                Text("km")
             }
         }
         .padding(.horizontal, 16)
         .onAppear {
-            minText = String(minYear)
-            maxText = String(maxYear)
+            minText = String(minMileage)
+            maxText = String(maxMileage)
         }
         Spacer()
     }

@@ -1,44 +1,45 @@
 //
-//  PriceFilterView.swift
+//  YearFilterView.swift
 //  Mocar-iOS
 //
-//  Created by wj on 9/16/25.
+//  Created by wj on 9/17/25.
 //
 
 import SwiftUI
 
-struct PriceFilterView: View {
-    @Binding var minPrice: Int
-    @Binding var maxPrice: Int
+struct YearFilterView: View {
+    @Binding var minYear: Int
+    @Binding var maxYear: Int
     
     @State private var minText: String = ""
     @State private var maxText: String = ""
     
-    private let priceRange: ClosedRange<Int> = 0...10000
+    private let yearRange: ClosedRange<Int> = 1990...Calendar.current.component(.year, from: Date())
     
     var body: some View {
         VStack {
             VStack(alignment: .leading, spacing: 20) {
-                Text("가격")
-                    .font(.headline)
+                Text("연식")
+                    .font(.footnote)
+                    .fontWeight(.semibold)
                 
                 // 슬라이더: Int ↔ Double 변환
                 RangeSlider(
                     lowerValue: Binding(
-                        get: { Double(minPrice) },
+                        get: { Double(minYear) },
                         set: { newValue in
                             let intValue = Int(newValue.rounded())
-                            minPrice = min(max(intValue, priceRange.lowerBound), maxPrice)
-                            minText = String(minPrice)
+                            minYear = min(max(intValue, yearRange.lowerBound), maxYear)
+                            minText = String(minYear)
                         }),
                     upperValue: Binding(
-                        get: { Double(maxPrice) },
+                        get: { Double(maxYear) },
                         set: { newValue in
                             let intValue = Int(newValue.rounded())
-                            maxPrice = max(min(intValue, priceRange.upperBound), minPrice)
-                            maxText = String(maxPrice)
+                            maxYear = max(min(intValue, yearRange.upperBound), minYear)
+                            maxText = String(maxYear)
                         }),
-                    range: Double(priceRange.lowerBound)...Double(priceRange.upperBound)
+                    range: Double(yearRange.lowerBound)...Double(yearRange.upperBound)
                 )
                 .frame(height: 50)
                 .padding(.horizontal, 16)
@@ -53,15 +54,17 @@ struct PriceFilterView: View {
                     .onChange(of: minText) { newValue, _ in
                         minText = newValue.filter { "0123456789".contains($0) }
                         if let value = Int(minText) {
-                            minPrice = min(max(value, priceRange.lowerBound), maxPrice)
+                            minYear = min(max(value, yearRange.lowerBound), maxYear)
                         }
                     }
                     .onSubmit {
-                        minText = String(minPrice)
+                        minText = String(minYear)
                     }
                 
-                Text("만원")
+                Text("년")
                 
+                Spacer()
+                Text("~")
                 Spacer()
                 
                 TextField("최대", text: $maxText)
@@ -71,20 +74,20 @@ struct PriceFilterView: View {
                     .onChange(of: maxText) { newValue, _ in
                         maxText = newValue.filter { "0123456789".contains($0) }
                         if let value = Int(maxText) {
-                            maxPrice = max(min(value, priceRange.upperBound), minPrice)
+                            maxYear = max(min(value, yearRange.upperBound), minYear)
                         }
                     }
                     .onSubmit {
-                        maxText = String(maxPrice)
+                        maxText = String(maxYear)
                     }
                 
-                Text("만원")
+                Text("년")
             }
         }
         .padding(.horizontal, 16)
         .onAppear {
-            minText = String(minPrice)
-            maxText = String(maxPrice)
+            minText = String(minYear)
+            maxText = String(maxYear)
         }
         Spacer()
     }
