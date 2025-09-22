@@ -186,7 +186,8 @@ struct SearchResultsView: View {
                                       NavigationLink(
                                         destination: ListingDetailView(
                                             listingId: id,
-                                            favoritesViewModel: favoritesViewModel
+                                            favoritesViewModel: favoritesViewModel,
+                                            service: ListingServiceImpl(repository: ListingRepository())
                                         )
                                         .navigationBarBackButtonHidden(true)
                                       ) {

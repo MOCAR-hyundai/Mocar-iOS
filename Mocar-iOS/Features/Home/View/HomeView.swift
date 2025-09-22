@@ -16,8 +16,10 @@ struct HomeView: View {
     init(){
         //FavoritesviewModel을 먼저 만들고 HomeViewModel에 주입
         let favVM = FavoritesViewModel()
-            _favoritesViewModel = StateObject(wrappedValue: favVM)
-            _homeViewModel = StateObject(wrappedValue: HomeViewModel(favoriteViewModel: favVM))
+        let repository = ListingRepository()
+        let service = HomeServiceImpl(repository: repository)
+        _favoritesViewModel = StateObject(wrappedValue: favVM)
+        _homeViewModel = StateObject(wrappedValue: HomeViewModel(service: service, favoritesViewModel: favVM))
    }
 
     var body: some View {
@@ -85,7 +87,8 @@ struct HomeView: View {
                                         NavigationLink(
                                             destination: ListingDetailView(
                                                 listingId: favorite.listingId,
-                                                favoritesViewModel: favoritesViewModel
+                                                favoritesViewModel: favoritesViewModel,
+                                                service: ListingServiceImpl(repository: ListingRepository())
                                             )
                                         ) {
                                             FavoriteCardView(
@@ -135,8 +138,10 @@ struct HomeView: View {
                                 if let listing = homeViewModel.filteredListings.first(where: {$0.id == id}){
                                     NavigationLink(
                                         destination: ListingDetailView(
-                                        listingId: id,
-                                        favoritesViewModel: favoritesViewModel)
+                                            listingId: id,
+                                            favoritesViewModel: favoritesViewModel,
+                                            service: ListingServiceImpl(repository: ListingRepository())
+                                        )
                                     ){
                                         ListingCardView(
                                             listing: listing,
@@ -156,6 +161,9 @@ struct HomeView: View {
             }
             .padding()
             .background(Color.backgroundGray100)
+            .task {
+                await homeViewModel.fetchListings()
+            }
         }
         .navigationBarHidden(true)
         .background(Color.backgroundGray100)

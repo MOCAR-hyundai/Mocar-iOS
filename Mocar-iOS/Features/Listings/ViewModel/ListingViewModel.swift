@@ -9,12 +9,10 @@ import Foundation
 import FirebaseFirestore
 import FirebaseAuth
 
-class ListingDetailViewModel: ObservableObject {
-    //@Published var listing: Listing = Listing.placeholder
+@MainActor
+final class ListingDetailViewModel: ObservableObject {
     @Published var listings: [Listing] = []     //전체 매물
     @Published var listing: Listing?            //단일 매물(상세화면용)
-    
-    let favoritesViewModel: FavoritesViewModel
     
     //그래프 계산
     @Published var currentValue: Double = 0
@@ -25,11 +23,11 @@ class ListingDetailViewModel: ObservableObject {
     @Published var safeMax: Double = 0
     @Published var ticks: [Int] = []
     
+    private let service: ListingService
+    let favoritesViewModel: FavoritesViewModel
     
-    private var db = Firestore.firestore()
-    
-    
-    init(favoritesViewModel: FavoritesViewModel){
+    init(service: ListingService, favoritesViewModel: FavoritesViewModel){
+        self.service = service
         self.favoritesViewModel = favoritesViewModel
     }
     
@@ -40,50 +38,56 @@ class ListingDetailViewModel: ObservableObject {
         return "적정"
     }
     
-    func loadListing(id: String){
-        db.collection("listings").document(id).getDocument { doc, error in
-            if let doc = doc, doc.exists {
-                do {
-                    let found = try doc.data(as: Listing.self)
-                    DispatchQueue.main.async {
-                        self.applyListing(found)
-                    }
-                } catch {
-                    print("Error decoding listing: \(error)")
-                }
-            }
+    func loadListing(id: String) async {
+        do {
+            let (listing, prices, minPrice, maxPrice, safeMin, safeMax, ticks) =
+                            try await service.getListingDetail(id: id, allListings: listings)
+            
+            self.listing = listing
+            self.currentValue = Double(listing.price)
+            self.prices = prices
+            self.minPrice = minPrice
+            self.maxPrice = maxPrice
+            self.safeMin = safeMin
+            self.safeMax = safeMax
+            self.ticks = ticks
+
+        } catch {
+            print("fail to load listing: \(error)")
         }
+            
+        
     }
     
     //선택된 매물, 그래프 데이터
-    private func applyListing(_ found: Listing){
-        self.listing = found
-        self.currentValue = Double(found.price)
-        
-        //동일 모델의 매물들 필터링
-        let sameModelListings = listings.filter {$0.model == found.model}
-        //가격 리스트만 추출
-        self.prices = sameModelListings.map { Double($0.price)}
-        
-        // 최소, 최대 값 계산
-        self.minPrice = prices.min() ?? 0
-        self.maxPrice = prices.max() ?? 0
-        self.ticks = makeTicks(minPrice: minPrice, maxPrice: maxPrice)
-        
-        //시세 안전 구간 범위
-        if ticks.count == 6 {
-            self.safeMin = Double(ticks[1])
-            self.safeMax = Double(ticks[4])
-        }
-    }
+//    private func applyListing(_ found: Listing){
+//        self.listing = found
+//        self.currentValue = Double(found.price)
+//        
+//        //동일 모델의 매물들 필터링
+//        let sameModelListings = listings.filter {$0.model == found.model}
+//        //가격 리스트만 추출
+//        self.prices = sameModelListings.map { Double($0.price)}
+//        
+//        // 최소, 최대 값 계산
+//        self.minPrice = prices.min() ?? 0
+//        self.maxPrice = prices.max() ?? 0
+//        self.ticks = makeTicks(minPrice: minPrice, maxPrice: maxPrice)
+//        
+//        //시세 안전 구간 범위
+//        if ticks.count == 6 {
+//            self.safeMin = Double(ticks[1])
+//            self.safeMax = Double(ticks[4])
+//        }
+//    }
     
     
-    private func makeTicks(minPrice: Double, maxPrice: Double) -> [Int] {
-            guard minPrice < maxPrice else { return [Int(minPrice)] }
-            let step = (maxPrice - minPrice) / 5.0
-            return (0...5).map {i in
-                Int(minPrice + Double(i) * step) }
-    }
+//    private func makeTicks(minPrice: Double, maxPrice: Double) -> [Int] {
+//            guard minPrice < maxPrice else { return [Int(minPrice)] }
+//            let step = (maxPrice - minPrice) / 5.0
+//            return (0...5).map {i in
+//                Int(minPrice + Double(i) * step) }
+//    }
     
     // 안전 구간 시작 X 좌표
     func safeStartX(width: CGFloat) -> CGFloat {

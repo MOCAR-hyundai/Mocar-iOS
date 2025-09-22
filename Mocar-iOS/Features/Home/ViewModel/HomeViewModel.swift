@@ -9,41 +9,30 @@ import Foundation
 import FirebaseFirestore
 import FirebaseAuth
 
-class HomeViewModel: ObservableObject {
-    private let service = ListingRepository()
-    
-    let favoritesViewModel: FavoritesViewModel
-    
+@MainActor
+final class HomeViewModel: ObservableObject {
     @Published var listings: [Listing] = []
     @Published var selectedBrand: String? = nil
     @Published var brands : [String] = []
     
-    private let db = Firestore.firestore()
+    private let service : HomeService
+    let favoritesViewModel: FavoritesViewModel
     
-    
-    init(favoriteViewModel: FavoritesViewModel) {
-        self.favoritesViewModel = favoriteViewModel
-        //listings 불러오기
-        fetchListings()
+    init(service: HomeService, favoritesViewModel: FavoritesViewModel) {
+        self.service = service
+        self.favoritesViewModel = favoritesViewModel
     }
     
-    func fetchListings() {
-        service.fetchListings { result in
-            DispatchQueue.main.async {
-                switch result {
-                case .success(let listings):
-                    self.listings = listings
-                    //print("불러온 listings 브랜드들:", listings.map { $0.brand })
-                    self.brands = Array(Set(listings.map{$0.brand})).sorted()
-                    
-                    if let first = self.brands.first {
-                        self.selectedBrand = first
-                    }
-                case .failure(let error):
-                    print("Error fetching listings: \(error)")
-                }
-            }
+    func fetchListings() async {
+        do {
+            let (listings, brands) = try await service.getListingsAndBrands()
+            self.listings = listings
+            self.brands = brands
+            self.selectedBrand = brands.first
+        } catch {
+            print(" Error fetching listings: \(error)")
         }
+        
     }
     
     func selectBrand(_ brand: String) {

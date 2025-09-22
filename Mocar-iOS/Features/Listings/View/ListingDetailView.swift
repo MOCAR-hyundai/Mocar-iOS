@@ -16,9 +16,9 @@ struct ListingDetailView: View {
     @StateObject private var viewModel: ListingDetailViewModel
     
 
-    init(listingId: String, favoritesViewModel: FavoritesViewModel) {
+    init(listingId: String, favoritesViewModel: FavoritesViewModel, service: ListingService) {
         _viewModel = StateObject(
-            wrappedValue: ListingDetailViewModel(favoritesViewModel: favoritesViewModel)
+            wrappedValue: ListingDetailViewModel(service: service,favoritesViewModel: favoritesViewModel)
         )
         self.listingId = listingId
     }
@@ -35,14 +35,14 @@ struct ListingDetailView: View {
                 VStack{
                     TopBar(style: .listing(title:viewModel.listing?.plateNo ?? ""))
                         .padding()
-
+                    
                     ScrollView{
                         VStack{
                             ZStack(alignment: .topTrailing){
                                 CarImageTabView(images: listing.images)
                                 FavoriteButton(
                                     favoritesViewModel: viewModel.favoritesViewModel,
-                                        listing: listing
+                                    listing: listing
                                 )
                                 
                             }
@@ -127,33 +127,30 @@ struct ListingDetailView: View {
                             
                         }
                         .padding(.bottom, 90)
-                        .onAppear {
-                            viewModel.loadListing(id: listingId)
-                            }
-                        }
-//                    HStack{
-//                        Button(action:{
-//                            
-//                        }){
-//                            Text("구매 문의")
-//                                .foregroundStyle(.white)
-//                                .fontWeight(.bold)
-//                            
-//                        }
-//                        .frame(maxWidth: .infinity, minHeight: 50)
-//                        .background(
-//                            RoundedRectangle(cornerRadius: 8)
-//                                .fill(Color.blue)
-//                        )
-//                        
-//                    }
-//                    .padding()
-                }
-                .background(Color.backgroundGray100)
-                .navigationBarHidden(true)   // 기본 네비게이션 바 숨김
-                .navigationBarBackButtonHidden(true) // 기본 뒤로가기 숨김
-                .onAppear {
-                    viewModel.loadListing(id: listingId)
+                        //                    HStack{
+                        //                        Button(action:{
+                        //
+                        //                        }){
+                        //                            Text("구매 문의")
+                        //                                .foregroundStyle(.white)
+                        //                                .fontWeight(.bold)
+                        //
+                        //                        }
+                        //                        .frame(maxWidth: .infinity, minHeight: 50)
+                        //                        .background(
+                        //                            RoundedRectangle(cornerRadius: 8)
+                        //                                .fill(Color.blue)
+                        //                        )
+                        //
+                        //                    }
+                        //                    .padding()
+                    }
+                    .background(Color.backgroundGray100)
+                    .navigationBarHidden(true)   // 기본 네비게이션 바 숨김
+                    .navigationBarBackButtonHidden(true) // 기본 뒤로가기 숨김
+                    .task {
+                        await viewModel.loadListing(id: listingId)
+                    }
                 }
             } else {
                 VStack {
@@ -166,15 +163,11 @@ struct ListingDetailView: View {
                 .background(Color.backgroundGray100)
                 .navigationBarHidden(true)
                 .navigationBarBackButtonHidden(true)
-                .onAppear {
-                    viewModel.loadListing(id: listingId)
+                .task {
+                    await viewModel.loadListing(id: listingId)
                 }
             }
 
-            
-            }
-            .onAppear {
-                viewModel.loadListing(id: listingId)
             }
             .background(Color.backgroundGray100)
             .navigationBarHidden(true)   // 기본 네비게이션 바 숨김
