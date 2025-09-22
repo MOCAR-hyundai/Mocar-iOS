@@ -17,80 +17,42 @@ struct MyPageView: View {
     var body: some View {
         NavigationView {
             VStack(alignment: .leading) {
-                HStack {
-                    Button(action: {
-                        // 뒤로가기 액션
-                    }) {
-                        Image(systemName: "chevron.left")
-                            .frame(width: 20, height: 20)
-                            .padding(12) // 아이콘 주변 여백
-                            .foregroundColor(.black)
-                            .overlay(
-                                RoundedRectangle(cornerRadius: 50) // 충분히 큰 값이면 원처럼 둥글게
-                                    .stroke(Color.lineGray, lineWidth: 1) // 테두리 색과 두께
-                            )
-                    }
-                    Spacer()
-                    Text("Profile")
-                        .font(.system(size: 18, weight: .bold, design: .default))
-                    
-                    
-                    
-                    Spacer()
-                    
-                    Button(action: {
-                        // 점 세개 액션
-                    }) {
-                        Image("3Dot")
-                            .frame(width: 20, height: 20)
-                            .padding(12) // 아이콘 주변 여백
-                            .overlay(
-                                RoundedRectangle(cornerRadius: 50) // 충분히 큰 값이면 원처럼 둥글게
-                                    .stroke(Color.lineGray, lineWidth: 1) // 테두리 색과 두께
-                            )
-                    }
-                }
-                .padding(.horizontal)
-                .padding(3)
-                .padding(.vertical, 6)
-                .padding(.bottom, 5)
-                .background(Color.backgroundGray100) // <- F8F8F8 배경
+                
+                TopBar(style: .MyPage(title: "Profile"))
+                    .padding(.bottom)
+                    .background(Color.backgroundGray100)
                 
                 
                 // 상단 사용자 정보
                 HStack(alignment: .center, spacing: 16) {
                     ZStack(alignment: .bottomTrailing) {
-                        // 프로필 사진
-//                        Image("user1sample")
-//                            .resizable()
-//                            .scaledToFill()
-//                            .frame(width: 80, height: 80)
-//                            .clipShape(Circle())
-                    if let photoString = viewModel.photoURL, let url = URL(string: photoString) {
-                        AsyncImage(url: url) { image in
-                            image
-                                .resizable()
-                                .scaledToFill()
-                        } placeholder: {
-                            // placeholder 생략
+                        
+                        if let photoString = viewModel.photoURL, let url = URL(string: photoString) {
+                            AsyncImage(url: url) { image in
+                                image
+                                    .resizable()
+                                    .scaledToFill()
+                            } placeholder: {
+                                // placeholder 생략
+                                Image("user1sample")
+                                    .resizable()
+                                    .scaledToFill()
+                            }
+                            .frame(width: 80, height: 80)
+                            .clipShape(Circle())
+                        } else {
                             Image("user1sample")
                                 .resizable()
                                 .scaledToFill()
+                                .frame(width: 80, height: 80)
+                                .clipShape(Circle())
                         }
-                        .frame(width: 80, height: 80)
-                        .clipShape(Circle())
-                    } else {
-                        Image("user1sample")
-                            .resizable()
-                            .scaledToFill()
-                            .frame(width: 80, height: 80)
-                            .clipShape(Circle())
-                    }
-                        
                         
                         // 오른쪽 하단 카메라 버튼
                         Button(action: {
                             // 사진 변경 액션
+                            
+
                         }) {
                             Image("Camera") // 또는 이미지로 대체 가능
                                 .resizable()
@@ -100,8 +62,8 @@ struct MyPageView: View {
                                 .clipShape(Circle())
                                 .shadow(radius: 1)
                         }
-                        
                     }
+                    
                     VStack(alignment: .leading, spacing: 4) {
                         Text(viewModel.displayName)
                             .font(.system(size: 16, weight: .semibold))
@@ -112,31 +74,11 @@ struct MyPageView: View {
                         }
                     }
                     
-//                    VStack(alignment: .leading, spacing: 4) {
-//                        Text("Benjamin Jack")
-//                            .font(.system(size: 16, weight: .semibold, design: .default))
-//                        
-//                        Text("benjaminJack@gmail.com")
-//                            .font(.system(size: 14))
-//                            .foregroundColor(.gray)
-//                    }
+
                     
                     Spacer()
                     
-//                    Button(action: {
-//                        // Edit profile action
-//                    }) {
-//                        VStack{
-//                             Image("edit")
-//                                 .resizable()           // 이미지 크기 조절 가능하게
-//                                 .scaledToFit()         // 비율 유지
-//                                 .frame(width: 18, height: 18) // 원하는 크기
-//
-//                             Text("Edit profile")
-//                                 .font(.footnote)
-//                                 .foregroundColor(.gray)
-//                         }
-//                    }
+
                 }
                 .padding(.horizontal)
                 .padding(.vertical,4)
@@ -152,15 +94,22 @@ struct MyPageView: View {
                 
                 VStack(spacing: 0) {
                     ProfileRow(icon: "heart", title: "나의 찜 매물")
-                    ProfileRow(icon: "car.fill", title: "나의 구입 매물")
-                    ProfileRow(icon: "dollarsign.circle", title: "나의 등록 매물")
+                    
+                    NavigationLink(destination: MyOrdersView()
+                        .navigationBarHidden(true)) {
+                        ProfileRow(icon: "car.fill", title: "나의 구입 매물")
+                    }
+                    
+                    NavigationLink(destination: MyListingsView()) {
+                       ProfileRow(icon: "dollarsign.circle", title: "나의 등록 매물")
+                   }
                 }
                 .padding(.horizontal)
                 .padding(.bottom, 4)
                 
                 
                 
-                // Support Section
+                // Account Section
                 Text("Account")
                     .font(.headline)
                     .padding(.horizontal)

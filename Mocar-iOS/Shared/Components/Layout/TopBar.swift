@@ -12,6 +12,7 @@ enum TopBarStyle{
     case login                   // 로그인
     case singup                  //회원가입
     case listing(title: String) // 뒤로가기 + 타이틀
+    case MyPage(title: String)  // 뒤로가기 + 타이틀
     //case chat(title: String)   // 뒤로가기 + 채팅방 이름
 }
 
@@ -49,6 +50,16 @@ struct TopBar: View {
                         Spacer()
                     }
                     Text(title)
+                }
+            case .MyPage(title: let title):
+                ZStack{
+                    HStack {
+                        BackButton()
+                            .padding(.leading, 5)
+                        Spacer()
+                    }
+                    Text(title)
+                        .font(.system(size: 18, weight: .semibold, design: .default))
                 }
                 
             }

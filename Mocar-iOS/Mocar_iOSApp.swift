@@ -21,13 +21,17 @@ struct Mocar_iOSApp: App {
     var body: some Scene {
         WindowGroup {
 
-            if userSession.user != nil {
-                
-                BottomBar()  // 이미 로그인 되어 있으면 메인 뷰(ContentView로 대체)
-            } else {
-                HomeView()   // 로그인 안 되어 있으면 로그인 화면
-            }
+            BottomBar()
+
         }
     }
 
 }
+
+
+//            if userSession.user != nil {
+//
+//                BottomBar()  // 이미 로그인 되어 있으면 메인 뷰(ContentView로 대체)
+//            } else {
+//                HomeView()   // 로그인 안 되어 있으면 로그인 화면
+//            }
