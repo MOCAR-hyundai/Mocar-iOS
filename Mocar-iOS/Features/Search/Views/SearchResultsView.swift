@@ -28,10 +28,11 @@ struct SearchResultsView: View {
     @State private var upperPlaceholder: String = ""
     @State private var unit: String = ""
     
-    
+    let cardWidth = (UIScreen.main.bounds.width - 12*3) / 2 // 좌우 패딩 12, 그리드 간격 12
+
     let columns = [
-        GridItem(.flexible(minimum: 160, maximum: 200), spacing: 12),
-        GridItem(.flexible(minimum: 160, maximum: 200), spacing: 12)
+        GridItem(.flexible(), spacing: 12),
+        GridItem(.flexible(), spacing: 12)
     ]
 
     
@@ -183,10 +184,14 @@ struct SearchResultsView: View {
                       
                       // MARK: - 검색 결과 그리드
                       ScrollView {
-                          LazyVGrid(columns: columns, spacing: 25) {
+                          LazyVGrid(columns: [
+                              GridItem(.fixed(cardWidth), spacing: 12),
+                              GridItem(.fixed(cardWidth), spacing: 12)
+                          ], spacing: 12) {
                               ForEach(viewModel.listings) { listing in
                                   NavigationLink(destination: ListingDetailView(listingId: listing.id ?? "", favoritesViewModel: favoritesViewModel)) {
                                       ListingCard(listing: listing, favoritesViewModel: favoritesViewModel)
+                                        .frame(width: cardWidth) // 카드 폭 고정
                                   }
                                   .buttonStyle(PlainButtonStyle())
                               }
@@ -247,32 +252,37 @@ struct ListingCard: View {
     @State private var isFavorite: Bool = false
     @ObservedObject var favoritesViewModel: FavoritesViewModel
     
+    let cardWidth = (UIScreen.main.bounds.width - 12*3) / 2 // 좌우 패딩 12, 그리드 간격 12
+
     var body: some View {
         VStack(alignment: .leading, spacing: 4) {
             
             ZStack(alignment: .topTrailing) {
                 // 이미지 배경 통일
                 Color.cardBgGray // 배경색
+                    .frame(height: 124)
                     .frame(maxWidth: .infinity)
-                  
+                
                   // 실제 이미지
                 if let first = listing.images.first, let url = URL(string: first) {
                     AsyncImage(url: url) { phase in
                         switch phase {
                         case .empty:
                             ProgressView()
-                                .frame(maxHeight: 124)
+                                .frame(width: cardWidth, height: 124)
                         case .success(let image):
                             image
                                 .resizable()
                                 .scaledToFill()    // 꽉 채우기
-                                .frame(maxHeight: 124)
+                                .frame(width: cardWidth, height: 124)
+                                .frame(maxWidth: .infinity, alignment: .center)
                                 .clipped()         // 넘치는 부분 잘라냄
                         case .failure:
                             Image(systemName: "car.fill")
                                 .resizable()
                                 .scaledToFit()
-                                .frame(maxHeight: 124)
+                                .frame(width: cardWidth, height: 124)
+                                .frame(maxWidth: .infinity, alignment: .center)
                                 .foregroundColor(.gray)
                         @unknown default:
                             EmptyView()
