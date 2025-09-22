@@ -11,6 +11,7 @@ import FirebaseFirestore
 struct Order: Codable, Identifiable {
     @DocumentID var id: String?      // Firestore 문서 ID (자동 매핑)
     var orderId: String              // 명시적으로 저장된 orderId
+    var contractPrice: Int?          // 구입가 (추가 필드)
     var listingId: String
     var buyerId: String
     var sellerId: String
@@ -18,6 +19,7 @@ struct Order: Codable, Identifiable {
     
     var reservedAt: String?          // ISO8601 문자열
     var soldAt: String?
+    
 }
 
 enum OrderStatus: String, Codable {

@@ -8,11 +8,72 @@
 import SwiftUI
 
 struct MyOrdersView: View {
+    let currentUserId: String
+    @StateObject private var vm = MyOrdersViewModel()
+    @ObservedObject var favoritesViewModel: FavoritesViewModel   // 외부에서 주입
+    
+    @Environment(\.dismiss) private var dismiss
+    
     var body: some View {
-        Text(/*@START_MENU_TOKEN@*/"Hello, World!"/*@END_MENU_TOKEN@*/)
+//        NavigationStack {
+            VStack {
+                TopBar(style: .Mylistings(title: "나의 구입 매물"))
+                    .padding(.bottom)
+                    .background(Color.backgroundGray100)
+                
+                ScrollView {
+                    LazyVGrid(columns: [
+                        GridItem(.flexible()),
+                        GridItem(.flexible())
+                    ], spacing: 16) {
+//                        ForEach(vm.myOrders, id: \.listing.id) { item in
+//                            NavigationLink(
+//                                destination: ListingDetailView(
+//                                    listingId: item.listing.id ?? "",
+//                                    favoritesViewModel: favoritesViewModel
+//                                )
+//                            ) {
+//                                OrdersCardView(
+//                                    order: item.order,
+//                                    listing: item.listing,
+//                                    isFavorite: favoritesViewModel.isFavorite(item.listing),
+//                                    onToggleFavorite: {
+//                                        favoritesViewModel.toggleFavorite(item.listing)
+//                                    }
+//                                )
+//                            }
+//                            .buttonStyle(PlainButtonStyle())
+//                        }
+
+                        ForEach(vm.myOrders) { item in
+                            NavigationLink(
+                                destination: ListingDetailView(
+                                    listingId: item.listing.id ?? "",
+                                    favoritesViewModel: favoritesViewModel
+                                )
+                            ) {
+                                OrdersCardView(
+                                    order: item.order,            // ✅ Order도 같이 전달
+                                    listing: item.listing,
+                                    isFavorite: favoritesViewModel.isFavorite(item.listing),
+                                    onToggleFavorite: {
+                                        favoritesViewModel.toggleFavorite(item.listing)
+                                    }
+                                )
+                            }
+                            .buttonStyle(PlainButtonStyle())
+                        }
+                    }
+                    .padding()
+                }
+                .onAppear {
+                    vm.fetchMyOrders(for: currentUserId)
+                }
+            }
+//        }
     }
 }
 
 #Preview {
-    MyOrdersView()
+//    MyOrdersView()
 }

@@ -12,7 +12,9 @@ import FirebaseFirestore
 @MainActor
 struct MyPageView: View {
     @StateObject private var viewModel = MyPageViewModel()
+    @StateObject private var favoritesViewModel = FavoritesViewModel()
     
+    let UserId = Auth.auth().currentUser?.uid
     
     var body: some View {
         NavigationView {
@@ -51,7 +53,6 @@ struct MyPageView: View {
                         // 오른쪽 하단 카메라 버튼
                         Button(action: {
                             // 사진 변경 액션
-                            
 
                         }) {
                             Image("Camera") // 또는 이미지로 대체 가능
@@ -95,12 +96,25 @@ struct MyPageView: View {
                 VStack(spacing: 0) {
                     ProfileRow(icon: "heart", title: "나의 찜 매물")
                     
-                    NavigationLink(destination: MyOrdersView()
-                        .navigationBarHidden(true)) {
+                    NavigationLink(
+                        destination: MyOrdersView(
+                            currentUserId: UserId ?? "",
+                            favoritesViewModel: favoritesViewModel // 외부에서 만든 뷰모델 주입
+                        )
+                        .navigationBarHidden(true)   // 기본 네비게이션 바 숨김
+                    ) {
                         ProfileRow(icon: "car.fill", title: "나의 구입 매물")
                     }
                     
-                    NavigationLink(destination: MyListingsView()) {
+                    
+                    
+                    NavigationLink(
+                        destination: MyListingsView(
+                            currentUserId: UserId ?? "",
+                            favoritesViewModel: favoritesViewModel // 외부에서 만든 뷰모델 주입
+                        )
+                        .navigationBarHidden(true)   // 기본 네비게이션 바 숨김
+                    ) {
                        ProfileRow(icon: "dollarsign.circle", title: "나의 등록 매물")
                    }
                 }

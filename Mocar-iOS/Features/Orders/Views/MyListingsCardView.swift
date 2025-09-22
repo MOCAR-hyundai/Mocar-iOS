@@ -1,5 +1,5 @@
 //
-//  OrdersCardView.swift
+//  MyListingsCardView.swift
 //  Mocar-iOS
 //
 //  Created by Admin on 9/22/25.
@@ -7,8 +7,8 @@
 
 import SwiftUI
 
-struct OrdersCardView: View {
-    let order: Order
+struct MyListingsCardView: View {
+    
     let listing: Listing
     let isFavorite: Bool
     let onToggleFavorite: () -> Void
@@ -58,52 +58,18 @@ struct OrdersCardView: View {
                     .multilineTextAlignment(.leading) // 왼쪽 정렬
                 
                 //23/02식(23년형) · 23,214 km · 하이브리드(가솔린) ·  경기
-                
                 let tyear = String(listing.year).suffix(2)
                 Text("\(tyear)년형 · \(listing.mileage.decimalString)km · \(listing.fuel) · \(listing.region)")
                     .foregroundColor(.secondary)
                     .font(.system(size: 11, weight: .regular))
                     .lineLimit(2)          // 최대 2줄까지 허용
                     .multilineTextAlignment(.leading) // 왼쪽 정렬
+                
+                Text("\(NumberFormatter.koreanPriceString(from: listing.price))")
+                    .font(.system(size: 16, weight: .semibold))
+                    .foregroundColor(Color.keyColorBlue)
+
  
-                switch order.status {
-                case .sold:
-                    if let soldAt = order.soldAt {
-                        Text("판매일: \(formatDateString(soldAt))")
-                            .foregroundColor(.green)
-                            .font(.system(size: 11, weight: .medium))
-                    } else {
-                        Text("판매일: 미정")
-                            .foregroundColor(.secondary)
-                            .font(.system(size: 11, weight: .medium))
-                    }
-
-                    if let contractPrice = order.contractPrice {
-                        Text("구입가 : \(NumberFormatter.koreanPriceString(from: contractPrice))")
-                            .font(.system(size: 11, weight: .semibold))
-                            .foregroundColor(Color.keyColorBlue)
-                    } else {
-                        Text("구입가 : 미정")
-                            .font(.system(size: 11, weight: .semibold))
-                            .foregroundColor(.secondary)
-                    }
-
-                case .reserved:
-                    if let reservedAt = order.reservedAt {
-                        Text("예약일: \(formatDateString(reservedAt))")
-                            .foregroundColor(.orange)
-                            .font(.system(size: 11, weight: .medium))
-                    } else {
-                        Text("예약일: 미정")
-                            .foregroundColor(.secondary)
-                            .font(.system(size: 11, weight: .medium))
-                    }
-
-                    Text("판매가 : \(NumberFormatter.koreanPriceString(from: listing.price))")
-                        .font(.system(size: 11, weight: .semibold))
-                        .foregroundColor(Color.keyColorBlue)
-                }
-
                
             }
             .frame(height: 80)
@@ -119,4 +85,8 @@ struct OrdersCardView: View {
                 .stroke(Color.lineGray, lineWidth: 1) // 회색 테두리, 두께 1
         )
     }
+}
+
+#Preview {
+//    MyListingsCardView()
 }
