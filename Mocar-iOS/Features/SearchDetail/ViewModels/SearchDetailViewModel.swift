@@ -1,4 +1,5 @@
 import Foundation
+import FirebaseAuth
 import SwiftUI
 
 @MainActor
@@ -27,9 +28,12 @@ final class SearchDetailViewModel: ObservableObject {
     @Published private(set) var makerImages: [String: UIImage] = [:]  // 이름 → 로고 URL 매핑
     private var makerCountryType: [String: String] = [:] // 이름 → "국산차"/"수입차"
     private let carBrandRepository = CarBrandRepository()
+    private let recentHistoryRepository = RecentHistoryRepository()
     
     @Published var allMakers: [BrandFilterView.Maker] = []
-
+    
+    @Published var recentFilters: [RecentFilter] = []
+    
     @Published var selectedMaker: String?
     @Published var selectedModel: String?
     @Published var selectedTrim: String?
@@ -365,7 +369,7 @@ final class SearchDetailViewModel: ObservableObject {
             recentKeywords = Array(recentKeywords.prefix(10))
         }
     }
-
+    
     func removeRecentKeyword(_ keyword: String) {
         recentKeywords.removeAll { $0 == keyword }
     }
@@ -377,9 +381,9 @@ final class SearchDetailViewModel: ObservableObject {
     func clearRecentKeywords() {
         recentKeywords.removeAll()
     }
-
-    @Published var recentSearches: [RecentSearchFilter] = []
-
+    
+    @Published var recentSearches: [RecentFilter] = []
+    
     struct RecentSearchFilter: Codable, Hashable, Identifiable {
         let id = UUID()
         var maker: String?
@@ -423,40 +427,43 @@ final class SearchDetailViewModel: ObservableObject {
             hasher.combine(maxMileage)
         }
     }
-
+    
+    // 필터 저장
     func saveCurrentFiltersAsRecent() {
-        let filter = RecentSearchFilter(
-            maker: selectedMaker,
+        let firestoreFilter = RecentFilter(
+            userId: Auth.auth().currentUser?.uid,
+            brand: selectedMaker,
             model: selectedModel,
-            trims: selectedTrims,
-            carTypes: Set(carTypeOptions.filter { $0.checked }.map { $0.name }),
-            fuels: Set(fuelOptions.filter { $0.checked }.map { $0.name }),
+            subModels: Array(selectedTrims),
+            carTypes: Array(carTypeOptions.filter { $0.checked }.map { $0.name }),
+            fuels: Array(fuelOptions.filter { $0.checked }.map { $0.name }),
+            regions: [],
             minPrice: minPrice,
             maxPrice: maxPrice,
             minYear: minYear,
             maxYear: maxYear,
             minMileage: minMileage,
-            maxMileage: maxMileage,
-            name: "필터 \(recentSearches.count + 1)"
+            maxMileage: maxMileage
         )
-
-        // 중복 제거
-        recentSearches.removeAll { $0 == filter }
-        recentSearches.insert(filter, at: 0)
         
-        if recentSearches.count > 10 {
-            recentSearches = Array(recentSearches.prefix(10))
+        Task {
+            do {
+                try await recentHistoryRepository.saveFilter(firestoreFilter)
+                
+                // 저장 후 Firestore에서 최신 목록 갱신
+                self.recentSearches = try await recentHistoryRepository.fetchFilters()
+            } catch {
+                print("❌ 필터 저장/불러오기 실패:", error.localizedDescription)
+            }
         }
     }
-
-    func applyRecentSearch(_ filter: RecentSearchFilter) {
-        selectedMaker = filter.maker
+    
+    func applyRecentSearch(_ filter: RecentFilter) {
+        selectedMaker = filter.brand
         selectedModel = filter.model
-        selectedTrims = filter.trims
-
-        carTypeOptions = carTypeOptions.map { CheckableItem(name: $0.name, checked: filter.carTypes.contains($0.name)) }
-        fuelOptions = fuelOptions.map { CheckableItem(name: $0.name, checked: filter.fuels.contains($0.name)) }
-
+        selectedTrims = Set(filter.subModels ?? [])
+        carTypeOptions = carTypeOptions.map { CheckableItem(name: $0.name, checked: filter.carTypes?.contains($0.name) ?? false) }
+        fuelOptions = fuelOptions.map { CheckableItem(name: $0.name, checked: filter.fuels?.contains($0.name) ?? false) }
         minPrice = filter.minPrice ?? priceRange.lowerBound
         maxPrice = filter.maxPrice ?? priceRange.upperBound
         minYear = filter.minYear ?? yearRange.lowerBound
@@ -620,5 +627,106 @@ final class SearchDetailViewModel: ObservableObject {
     
     func countryType(for maker: String) -> String {
         return makerCountryType[maker] ?? "기타"
+    }
+    
+    func loadRecentKeywords() {
+        Task {
+            do {
+                self.recentKeywords = try await recentHistoryRepository.fetchKeywords()
+            } catch {
+                print("❌ 최근 검색 로드 실패:", error.localizedDescription)
+            }
+        }
+    }
+    
+    func addKeyword(_ keyword: String) {
+        Task {
+            do {
+                try await recentHistoryRepository.saveKeyword(keyword)
+                self.recentKeywords = try await recentHistoryRepository.fetchKeywords()
+            } catch {
+                print("❌ 키워드 저장 실패:", error.localizedDescription)
+            }
+        }
+    }
+    
+    func clearKeywords() async {
+        do {
+            try await recentHistoryRepository.clearKeywords()
+            self.recentKeywords = []
+        } catch {
+            print("❌ 최근 키워드 전체 삭제 실패:", error.localizedDescription)
+        }
+    }
+    
+    func removeKeyword(_ keyword: String) {
+        Task {
+            do {
+                try await recentHistoryRepository.removeKeyword(keyword)
+                // 로컬 배열에서도 제거
+                if let index = recentKeywords.firstIndex(of: keyword) {
+                    recentKeywords.remove(at: index)
+                }
+            } catch {
+                print("키워드 삭제 실패:", error.localizedDescription)
+            }
+        }
+    }
+    
+    // MARK: - 필터 저장
+    func saveFilter(_ filter: RecentFilter) {
+        Task {
+            do {
+                try await recentHistoryRepository.saveFilter(filter)
+                // 저장 후 최신 필터 목록 갱신
+                self.recentSearches = try await recentHistoryRepository.fetchFilters()
+            } catch {
+                print("❌ 필터 저장 실패:", error.localizedDescription)
+            }
+        }
+    }
+
+        // MARK: - 특정 필터 삭제
+    func removeFilter(_ filter: RecentFilter) {
+        Task {
+            do {
+                try await recentHistoryRepository.removeFilter(filter.id)
+                
+                // Firestore에서 삭제 후 로컬 배열에서도 제거
+                await MainActor.run {
+                    self.recentSearches.removeAll { $0.id == filter.id }
+                }
+            } catch {
+                print("❌ 필터 삭제 실패:", error.localizedDescription)
+            }
+        }
+    }
+
+        // MARK: - 전체 필터 삭제
+    func clearFilters() {
+        Task {
+            do {
+                try await recentHistoryRepository.clearFilters()
+                
+                // Firestore 삭제 후 로컬 배열에서도 제거
+                await MainActor.run {
+                    self.recentSearches.removeAll()
+                }
+            } catch {
+                print("❌ 전체 필터 삭제 실패:", error.localizedDescription)
+            }
+        }
+    }
+        
+
+        // MARK: - 최근 필터 불러오기
+    func loadRecentFilters() {
+        Task {
+            do {
+                self.recentSearches = try await recentHistoryRepository.fetchFilters()
+            } catch {
+                print("❌ 최근 필터 로드 실패:", error.localizedDescription)
+            }
+        }
     }
 }

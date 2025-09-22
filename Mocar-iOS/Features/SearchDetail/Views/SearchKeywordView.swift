@@ -102,7 +102,7 @@ struct SearchKeywordView: View {
                                         .padding()
                                     }
                                     .simultaneousGesture(TapGesture().onEnded {
-                                        viewModel.addRecentKeyword(title)
+                                        viewModel.addKeyword(title)
                                         viewModel.recentKeyword = ""
                                         query = ""
                                     })
@@ -120,6 +120,7 @@ struct SearchKeywordView: View {
         .onAppear {
             query = viewModel.recentKeyword
             debouncedQuery = query
+            viewModel.loadRecentKeywords()
             DispatchQueue.main.asyncAfter(deadline: .now() + 0.1) {
                 isSearchFieldFocused = true
             }
@@ -180,7 +181,9 @@ struct SearchKeywordView: View {
                     .foregroundColor(.black)
                 Spacer()
                 Button("전체 삭제") {
-                    viewModel.clearRecentKeywords()
+                    Task {
+                        await viewModel.clearKeywords()
+                        }
                 }
                 .font(.footnote)
                 .foregroundColor(.red)
@@ -194,7 +197,7 @@ struct SearchKeywordView: View {
                         viewModel.recentKeyword = keyword
                     },
                     onDelete: { keyword in
-                        viewModel.removeRecentKeyword(keyword)
+                        viewModel.removeKeyword(keyword)
                     }
                 )
             }

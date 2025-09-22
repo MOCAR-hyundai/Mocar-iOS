@@ -82,7 +82,7 @@ struct SearchView: View {
                     RightOptionView(
                         selectedCategory: $selectedCategory,
                         viewModel: viewModel,
-                        path: $path // ✅ path 전달
+                        path: $path
                     )
                 }
                 
@@ -139,6 +139,9 @@ struct SearchView: View {
             }
         }
         .navigationBarHidden(true)
+        .onAppear {
+            viewModel.loadRecentFilters()
+        }
     }
 }
 
