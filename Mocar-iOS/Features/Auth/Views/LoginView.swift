@@ -25,8 +25,8 @@ struct LoginView: View {
     }
     
     var body: some View {
-        NavigationStack{
-            VStack(spacing: 20) {
+        VStack(spacing: 20) {
+            TopBar(style: .login)
                 Spacer().frame(height: 80)
                 
                 Text("로그인")
@@ -164,8 +164,8 @@ struct LoginView: View {
                 .font(.footnote)
             }
             .padding(.top)
-            
-        }
+            .navigationBarBackButtonHidden(true) 
+ 
     }
     
     // MARK: - Firebase 로그인 함수

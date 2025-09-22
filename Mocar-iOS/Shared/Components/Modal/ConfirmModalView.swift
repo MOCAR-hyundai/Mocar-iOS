@@ -43,6 +43,8 @@ struct ConfirmModalView: View {
         .background(Color.white)
         .cornerRadius(12)
         .padding(.horizontal, 40)
+        
+        
     }
 }
 
