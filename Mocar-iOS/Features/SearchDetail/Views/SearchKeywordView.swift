@@ -49,10 +49,8 @@ struct SearchKeywordView: View {
             .padding(.top, 16)
             .padding(.horizontal)
             
-            if !viewModel.recentKeywords.isEmpty {
-                recentKeywordsSection
-                    .padding(.horizontal)
-            }
+            recentKeywordsSection
+                .padding(.horizontal)
             
             if query.trimmingCharacters(in: .whitespacesAndNewlines).count < 2 {
                 Spacer()
@@ -175,20 +173,20 @@ struct SearchKeywordView: View {
     
     private var recentKeywordsSection: some View {
         VStack(alignment: .leading, spacing: 12) {
-            if !viewModel.recentKeywords.isEmpty {
-                HStack {
-                    Text("최근 검색 키워드")
-                        .font(.subheadline)
-                        .fontWeight(.semibold)
-                        .foregroundColor(.black)
-                    Spacer()
-                    Button("전체 삭제") {
-                        viewModel.clearRecentKeywords()
-                    }
-                    .font(.footnote)
-                    .foregroundColor(.red)
-                    .buttonStyle(.plain)
+            HStack {
+                Text("최근 검색 키워드")
+                    .font(.subheadline)
+                    .fontWeight(.semibold)
+                    .foregroundColor(.black)
+                Spacer()
+                Button("전체 삭제") {
+                    viewModel.clearRecentKeywords()
                 }
+                .font(.footnote)
+                .foregroundColor(.red)
+                .buttonStyle(.plain)
+            }
+            if !viewModel.recentKeywords.isEmpty {
                 SearchKeywordChipsView(
                     keywords: viewModel.recentKeywords,
                     onTap: { keyword in
