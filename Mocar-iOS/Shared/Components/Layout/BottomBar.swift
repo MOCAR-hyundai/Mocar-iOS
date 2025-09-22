@@ -32,9 +32,9 @@ struct BottomBar: View {
                        Color.clear.tag(3)
                     }
                     if let _ = session.user {
-                        MyPageView().tag(4)
+                        MyPageView(selectedTab: $selectedTab).tag(4)
                     } else {
-                        Color.clear.tag(4)
+                        HomeView().tag(4)
                     }
                    
                 }
