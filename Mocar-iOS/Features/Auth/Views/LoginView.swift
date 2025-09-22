@@ -30,7 +30,12 @@ struct LoginView: View {
     var body: some View {
         NavigationStack{
             VStack(spacing: 20) {
-                Spacer().frame(height: 80)
+              
+                TopBar(style: .login)
+                    .padding(.bottom, 70)
+                    .padding(.leading,5)
+                    .background(Color.backgroundGray100)
+                
                 
                 Text("로그인")
                     .font(.system(size: 30, weight: .semibold, design: .default))
@@ -56,7 +61,7 @@ struct LoginView: View {
                                 .stroke(focusedField == .email ? Color.keyColorBlue : Color.gray, lineWidth: 1)
                         )
                         .focused($focusedField, equals: .email)
-                    
+                        .background(Color.white)
                     // 비밀번호
                     Text("비밀번호")
                         .font(.system(size: 14))
@@ -75,6 +80,7 @@ struct LoginView: View {
                                         .stroke(focusedField == .password ? Color.keyColorBlue : Color.gray, lineWidth: 1)
                                 )
                                 .focused($focusedField, equals: .password)
+                                .background(Color.white)
                         } else {
                             TextField("8자 이상의 비밀번호", text: $password)
                                 .autocapitalization(.none)   // 자동 대문자 방지
@@ -86,6 +92,7 @@ struct LoginView: View {
                                     RoundedRectangle(cornerRadius: 8)
                                         .stroke(Color.gray, lineWidth: 1)
                                 )
+                                .background(Color.white)
                         }
                         HStack {
                             Spacer()
@@ -164,13 +171,16 @@ struct LoginView: View {
                         .foregroundColor(.blue)
                 }
                 .font(.footnote)
+                .padding(.bottom, 50)
             }
             .padding(.top)
             .navigationDestination(isPresented: $navigateToHome) {
                 HomeView()
             }
+            .background(Color.backgroundGray100)
             
         }
+        .background(Color.backgroundGray100)
     }
     
     // MARK: - Firebase 로그인 함수
