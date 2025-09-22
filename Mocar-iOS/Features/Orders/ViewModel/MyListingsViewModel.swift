@@ -24,6 +24,7 @@ class MyListingsViewModel: ObservableObject {
                 self.listings = documents.compactMap { doc in
                     try? doc.data(as: Listing.self)
                 }
+                .filter { $0.status.rawValue != "draft" } // ✅ draft 제외
             }
     }
 }
