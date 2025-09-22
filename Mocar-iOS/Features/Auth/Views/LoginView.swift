@@ -18,6 +18,7 @@ struct LoginView: View {
     @State private var isLoading: Bool = false
     
     @FocusState private var focusedField: Field?
+    @Environment(\.dismiss) private var dismiss
 
     enum Field {
         case email
@@ -195,7 +196,7 @@ struct LoginView: View {
                     UserDefaults.standard.set(true, forKey: "keepLoggedIn")
                 }
                 // 다음 화면으로 이동 처리 가능
-                
+                dismiss()
             }
         }
     }

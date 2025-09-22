@@ -11,6 +11,7 @@ import FirebaseFirestore
 
 @MainActor
 struct MyPageView: View {
+    @Binding var selectedTab: Int
     @StateObject private var viewModel = MyPageViewModel()
     
     
@@ -170,6 +171,7 @@ struct MyPageView: View {
                     ProfileRow(icon: "arrow.right.square", title: "Log out")
                     .onTapGesture {
                         viewModel.logout()
+                        selectedTab = 0
                     }
                     
                     ProfileRow(icon: "person.fill.xmark", title: "회원 탈퇴")
@@ -220,6 +222,4 @@ struct ProfileRow: View {
     }
 }
 
-#Preview {
-    MyPageView()
-}
+
