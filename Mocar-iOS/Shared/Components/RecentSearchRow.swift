@@ -17,14 +17,14 @@ struct RecentSearchRow: View {
         if !filter.trims.isEmpty {
             parts.append("세부모델: \(filter.trims.joined(separator: ", "))")
         }
-        if filter.minPrice != 0 || filter.maxPrice != 100_000 {
-            parts.append("가격: \(filter.minPrice)-\(filter.maxPrice)")
+        if (filter.minPrice ?? 0) != 0 || (filter.maxPrice ?? 100_000) != 100_000 {
+            parts.append("가격: \((filter.minPrice ?? 0))-\((filter.maxPrice ?? 100_000))")
         }
-        if filter.minYear != 1990 || filter.maxYear != Calendar.current.component(.year, from: Date()) {
-            parts.append("연식: \(filter.minYear)-\(filter.maxYear)")
+        if (filter.minYear ?? 1990) != 1990 || (filter.maxYear ?? Calendar.current.component(.year, from: Date())) != Calendar.current.component(.year, from: Date()) {
+            parts.append("연식: \((filter.minYear ?? 1990))-\((filter.maxYear ?? Calendar.current.component(.year, from: Date())))")
         }
-        if filter.minMileage != 0 || filter.maxMileage != 300_000 {
-            parts.append("주행: \(filter.minMileage)-\(filter.maxMileage)km")
+        if (filter.minMileage ?? 0) != 0 || (filter.maxMileage ?? 300_000) != 300_000 {
+            parts.append("주행: \((filter.minMileage ?? 0))-\((filter.maxMileage ?? 300_000))km")
         }
         if !filter.carTypes.isEmpty {
             parts.append("차종: \(filter.carTypes.joined(separator: ", "))")
