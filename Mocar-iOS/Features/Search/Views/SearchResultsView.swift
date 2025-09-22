@@ -9,7 +9,10 @@ import SwiftUI
 
 struct SearchResultsView: View {
     @StateObject private var viewModel = SearchViewModel()
-    @StateObject private var favoritesViewModel = FavoritesViewModel()
+    @StateObject private var favoritesViewModel = FavoritesViewModel(
+        listingRepository: ListingRepository(),
+        favoriteRepository: FavoriteRepository()
+    )
     
     @State private var selectedCategory: String = "" // 선택된 카테고리 저장
     
@@ -362,3 +365,4 @@ extension Int {
     }
 }
 
+//

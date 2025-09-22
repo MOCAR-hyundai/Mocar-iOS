@@ -9,7 +9,7 @@ import Foundation
 import FirebaseFirestore
 import FirebaseAuth
 
-@MainActor
+
 final class HomeViewModel: ObservableObject {
     @Published var listings: [Listing] = []
     @Published var selectedBrand: CarBrand? = nil

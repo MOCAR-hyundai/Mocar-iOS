@@ -8,21 +8,21 @@
 import SwiftUI
 
 struct HomeView: View {
-    @StateObject private var favoritesViewModel: FavoritesViewModel
-    @StateObject private var homeViewModel: HomeViewModel
+    @StateObject private var favoritesViewModel = DIContainer.shared.favoritesVM
+    @StateObject private var homeViewModel =  DIContainer.shared.homeVM
     @StateObject private var brandViewModel = CarBrandViewModel()
     @StateObject private var userSession = UserSession()
     //@State private var selectedBrand: CarBrand? = nil
     @State private var showLogin = false
     
-    init(){
-        //FavoritesviewModel을 먼저 만들고 HomeViewModel에 주입
-        let favVM = FavoritesViewModel()
-        let repository = ListingRepository()
-        let service = HomeServiceImpl(repository: repository)
-        _favoritesViewModel = StateObject(wrappedValue: favVM)
-        _homeViewModel = StateObject(wrappedValue: HomeViewModel(service: service, favoritesViewModel: favVM))
-   }
+//    init(){
+//        //FavoritesviewModel을 먼저 만들고 HomeViewModel에 주입
+//        let favVM = FavoritesViewModel()
+//        let repository = ListingRepository()
+//        let service = HomeServiceImpl(repository: repository)
+//        _favoritesViewModel = StateObject(wrappedValue: favVM)
+//        _homeViewModel = StateObject(wrappedValue: HomeViewModel(service: service, favoritesViewModel: favVM))
+//   }
 
     var body: some View {
         NavigationStack{

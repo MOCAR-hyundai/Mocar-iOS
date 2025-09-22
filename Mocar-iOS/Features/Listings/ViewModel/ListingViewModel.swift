@@ -9,6 +9,7 @@ import Foundation
 import FirebaseFirestore
 import FirebaseAuth
 
+//view와 바인딩되면, service를 호출해서 @Published 값으로 상태 관리
 @MainActor
 final class ListingDetailViewModel: ObservableObject {
     @Published var listings: [Listing] = []     //전체 매물
@@ -39,6 +40,8 @@ final class ListingDetailViewModel: ObservableObject {
     }
     
     func loadListing(id: String) async {
+        //이미 로딩된 경우 다시 불러오지 않음
+        if listing != nil { return }
         do {
             let (listing, prices, minPrice, maxPrice, safeMin, safeMax, ticks) =
                             try await service.getListingDetail(id: id, allListings: listings)

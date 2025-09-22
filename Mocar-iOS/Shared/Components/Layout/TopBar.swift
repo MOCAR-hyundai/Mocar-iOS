@@ -12,6 +12,8 @@ enum TopBarStyle{
     case login                   // 로그인
     case singup                  //회원가입
     case listing(title: String) // 뒤로가기 + 타이틀
+    case list(title: String)    // 뒤로가기 + 타이틀
+    case mypage(title: String)
     //case chat(title: String)   // 뒤로가기 + 채팅방 이름
 }
 
@@ -27,7 +29,7 @@ struct TopBar: View {
                     .resizable()
                     .scaledToFit()
                     .frame(maxWidth: 150)
-                    
+                
                 Spacer()
                 if !isLoggedIn {
                     Button("로그인/회원가입") {
@@ -40,8 +42,10 @@ struct TopBar: View {
                 
             case .login:
                 BackButton()
+                Spacer()
             case .singup:
                 BackButton()
+                Spacer()
             case .listing(title: let title):
                 ZStack{
                     HStack {
@@ -50,8 +54,21 @@ struct TopBar: View {
                     }
                     Text(title)
                 }
-                
+            case .list(title: let title):
+                HStack {
+                    BackButton()
+                    Text(title)
+                    Spacer()
+                }
+            case .mypage(title: let title):
+                HStack {
+                    Spacer()
+                    Text(title)
+                        .font(.system(size: 18, weight: .bold))
+                    Spacer()
+                }
             }
+            
         }
         //.padding(.horizontal, 16)   // 좌우 여백
     }
@@ -70,11 +87,11 @@ struct BackButton: View {
                     .foregroundColor(.black)
                     .frame(width: 36, height: 36)
             }
-            Spacer()
         }
     }
 }
 
 #Preview {
-    BackButton()
+    TopBar(style:.mypage(title:"리스트"))
+        .background(Color.red)
 }

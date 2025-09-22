@@ -149,7 +149,9 @@ struct ListingDetailView: View {
                     .navigationBarHidden(true)   // 기본 네비게이션 바 숨김
                     .navigationBarBackButtonHidden(true) // 기본 뒤로가기 숨김
                     .task {
-                        await viewModel.loadListing(id: listingId)
+                        if viewModel.listing == nil {
+                                await viewModel.loadListing(id: listingId)
+                            }
                     }
                 }
             } else {
@@ -164,10 +166,13 @@ struct ListingDetailView: View {
                 .navigationBarHidden(true)
                 .navigationBarBackButtonHidden(true)
                 .task {
-                    await viewModel.loadListing(id: listingId)
+                    if viewModel.listing == nil {
+                            await viewModel.loadListing(id: listingId)
+                        }
                 }
             }
 
+            
             }
             .background(Color.backgroundGray100)
             .navigationBarHidden(true)   // 기본 네비게이션 바 숨김

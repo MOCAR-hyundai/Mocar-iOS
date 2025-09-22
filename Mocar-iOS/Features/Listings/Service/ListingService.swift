@@ -7,7 +7,7 @@
 
 import Foundation
 
-
+//Repository에서 가져온 데이터를 가공
 protocol ListingService {
     func getListingDetail(id: String, allListings: [Listing]) async throws -> (Listing, [Double], Double, Double, Double, Double, [Int])
 }

@@ -9,6 +9,7 @@ import SwiftUI
 
 import FirebaseFirestore
 
+//Firebase에서 데이터 가져옴
 class ListingRepository {
     private let db = Firestore.firestore()
     
@@ -91,5 +92,15 @@ class ListingRepository {
                 throw error
             }
         }
-    
+    func fetchListings(byIds ids: [String]) async throws -> [Listing] {
+        guard !ids.isEmpty else { return [] }
+        
+        let snapshot = try await db.collection("listings")
+            .whereField(FieldPath.documentID(), in: ids)
+            .getDocuments()
+        
+        return snapshot.documents.compactMap { try? $0.data(as: Listing.self) }
+    }
+
+
 }

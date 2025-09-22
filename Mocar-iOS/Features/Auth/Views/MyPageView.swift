@@ -17,45 +17,47 @@ struct MyPageView: View {
     
     var body: some View {
         NavigationView {
+            
             VStack(alignment: .leading) {
-                HStack {
-                    Button(action: {
-                        // 뒤로가기 액션
-                    }) {
-                        Image(systemName: "chevron.left")
-                            .frame(width: 20, height: 20)
-                            .padding(12) // 아이콘 주변 여백
-                            .foregroundColor(.black)
-                            .overlay(
-                                RoundedRectangle(cornerRadius: 50) // 충분히 큰 값이면 원처럼 둥글게
-                                    .stroke(Color.lineGray, lineWidth: 1) // 테두리 색과 두께
-                            )
-                    }
-                    Spacer()
-                    Text("Profile")
-                        .font(.system(size: 18, weight: .bold, design: .default))
-                    
-                    
-                    
-                    Spacer()
-                    
-                    Button(action: {
-                        // 점 세개 액션
-                    }) {
-                        Image("3Dot")
-                            .frame(width: 20, height: 20)
-                            .padding(12) // 아이콘 주변 여백
-                            .overlay(
-                                RoundedRectangle(cornerRadius: 50) // 충분히 큰 값이면 원처럼 둥글게
-                                    .stroke(Color.lineGray, lineWidth: 1) // 테두리 색과 두께
-                            )
-                    }
-                }
-                .padding(.horizontal)
-                .padding(3)
-                .padding(.vertical, 6)
-                .padding(.bottom, 5)
-                .background(Color.backgroundGray100) // <- F8F8F8 배경
+                //TopBar(style: .mypage(title: "Profile"))
+//                HStack {
+//                    Button(action: {
+//                        // 뒤로가기 액션
+//                    }) {
+//                        Image(systemName: "chevron.left")
+//                            .frame(width: 20, height: 20)
+//                            .padding(12) // 아이콘 주변 여백
+//                            .foregroundColor(.black)
+//                            .overlay(
+//                                RoundedRectangle(cornerRadius: 50) // 충분히 큰 값이면 원처럼 둥글게
+//                                    .stroke(Color.lineGray, lineWidth: 1) // 테두리 색과 두께
+//                            )
+//                    }
+//                    Spacer()
+//                    Text("Profile")
+//                        .font(.system(size: 18, weight: .bold, design: .default))
+//                    
+//                    
+//                    
+//                    Spacer()
+//                    
+//                    Button(action: {
+//                        // 점 세개 액션
+//                    }) {
+//                        Image("3Dot")
+//                            .frame(width: 20, height: 20)
+//                            .padding(12) // 아이콘 주변 여백
+//                            .overlay(
+//                                RoundedRectangle(cornerRadius: 50) // 충분히 큰 값이면 원처럼 둥글게
+//                                    .stroke(Color.lineGray, lineWidth: 1) // 테두리 색과 두께
+//                            )
+//                    }
+//                }
+//                .padding(.horizontal)
+//                .padding(3)
+//                .padding(.vertical, 6)
+//                .padding(.bottom, 5)
+//                .background(Color.backgroundGray100) // <- F8F8F8 배경
                 
                 
                 // 상단 사용자 정보
@@ -152,7 +154,12 @@ struct MyPageView: View {
                     
                 
                 VStack(spacing: 0) {
-                    ProfileRow(icon: "heart", title: "나의 찜 매물")
+                    NavigationLink(
+                        destination: VerticalFavoritesView()
+                    ) {
+                        ProfileRow(icon: "heart", title: "나의 찜 매물")
+                    }
+                    //ProfileRow(icon: "heart", title: "나의 찜 매물")
                     ProfileRow(icon: "car.fill", title: "나의 구입 매물")
                     ProfileRow(icon: "dollarsign.circle", title: "나의 등록 매물")
                 }

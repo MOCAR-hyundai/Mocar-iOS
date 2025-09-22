@@ -17,6 +17,7 @@ enum ListingStatus: String, Codable {
     case onSale = "on_sale"
     case reserved = "예약중"
     case soldOut = "판매완료"
+    case draft = "draft"
 }
 
 struct Listing : Identifiable, Codable{
