@@ -10,7 +10,9 @@ import SwiftUI
 struct HomeView: View {
     @StateObject private var favoritesViewModel: FavoritesViewModel
     @StateObject private var homeViewModel: HomeViewModel
+    @StateObject private var brandViewModel = CarBrandViewModel()
     @StateObject private var userSession = UserSession()
+    //@State private var selectedBrand: CarBrand? = nil
     @State private var showLogin = false
     
     init(){
@@ -82,7 +84,7 @@ struct HomeView: View {
                         //리스트
                         ScrollView(.horizontal, showsIndicators: false){
                             HStack(spacing: 16) {
-                                ForEach(favoritesViewModel.favorites) { favorite in
+                                ForEach(favoritesViewModel.favorites,id: \.safeId) { favorite in
                                     if let listing = homeViewModel.listings.first(where: {$0.id == favorite.listingId}){
                                         NavigationLink(
                                             destination: ListingDetailView(
@@ -114,19 +116,21 @@ struct HomeView: View {
                             .font(.headline)
                             .padding(.bottom,8)
                         ScrollView(.horizontal, showsIndicators: false){
-                            HStack(spacing: 20) {
-                                ForEach(homeViewModel.brands, id: \.self) { brand in
-                                    let logo = brandLogoMap[brand] ?? "이미지없음icon"
+                            HStack(spacing: 16) {
+                                ForEach(brandViewModel.brands) { brand in
                                     BrandIconView(
-                                        brand: Brand(name: brand, logo: logo),
-                                        isSelected: homeViewModel.selectedBrand == brand,  // 선택 여부
+                                        brand: brand,
+                                        isSelected: homeViewModel.selectedBrand?.id == brand.id,  // 선택 여부
                                         onSelect: {
-                                            homeViewModel.selectBrand(brand)
+                                            homeViewModel.selectedBrand = brand
                                             print("\(brand) selected")
                                         }
                                     )
                                 }
                             }
+                        }
+                        .task {
+                            await brandViewModel.loadBrands()
                         }
                         .padding(.bottom,16)
                         //브랜드 필터링 리스트
@@ -134,26 +138,43 @@ struct HomeView: View {
                             GridItem(.flexible()), // 첫 번째 열
                             GridItem(.flexible())  // 두 번째 열
                         ], spacing: 16) {
-                            ForEach(homeViewModel.filteredListings.compactMap{$0.id}, id: \.self) { id in
-                                if let listing = homeViewModel.filteredListings.first(where: {$0.id == id}){
-                                    NavigationLink(
-                                        destination: ListingDetailView(
-                                            listingId: id,
-                                            favoritesViewModel: favoritesViewModel,
-                                            service: ListingServiceImpl(repository: ListingRepository())
-                                        )
-                                    ){
-                                        ListingCardView(
-                                            listing: listing,
-                                            isFavorite: favoritesViewModel.isFavorite(listing),
-                                            onToggleFavorite:{
-                                                favoritesViewModel.toggleFavorite(listing)
-                                            }
-                                        )
-                                    }
-                                    .buttonStyle(PlainButtonStyle())
+                            ForEach(homeViewModel.filteredListings, id: \.safeId) { listing in
+                                let detailView = ListingDetailView(
+                                    listingId: listing.id ?? "",
+                                    favoritesViewModel: homeViewModel.favoritesViewModel,
+                                    service: ListingServiceImpl(repository: ListingRepository())
+                                )
+
+                                NavigationLink(destination: detailView) {
+                                    ListingCardView(
+                                        listing: listing,
+                                        isFavorite: favoritesViewModel.isFavorite(listing),
+                                        onToggleFavorite: {
+                                            favoritesViewModel.toggleFavorite(listing)
+                                        }
+                                    )
                                 }
+                                .buttonStyle(PlainButtonStyle())
                             }
+
+//                            ForEach(homeViewModel.filteredListings, id: \.safeId) { listing in
+//                                NavigationLink(
+//                                    destination: ListingDetailView(
+//                                        listingId: listing.id,
+//                                        favoritesViewModel: homeViewModel.favoritesViewModel,
+//                                        service: ListingServiceImpl(repository: ListingRepository())
+//                                    )
+//                                ){
+//                                    ListingCardView(
+//                                        listing: listing,
+//                                        isFavorite: favoritesViewModel.isFavorite(listing),
+//                                        onToggleFavorite:{
+//                                            favoritesViewModel.toggleFavorite(listing)
+//                                        }
+//                                    )
+//                                }
+//                                .buttonStyle(PlainButtonStyle())
+//                            }
                         }
                     }
                 }

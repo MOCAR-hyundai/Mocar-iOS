@@ -12,8 +12,8 @@ import FirebaseAuth
 @MainActor
 final class HomeViewModel: ObservableObject {
     @Published var listings: [Listing] = []
-    @Published var selectedBrand: String? = nil
-    @Published var brands : [String] = []
+    @Published var selectedBrand: CarBrand? = nil
+    @Published var brands : [CarBrand] = []
     
     private let service : HomeService
     let favoritesViewModel: FavoritesViewModel
@@ -35,13 +35,13 @@ final class HomeViewModel: ObservableObject {
         
     }
     
-    func selectBrand(_ brand: String) {
+    func selectBrand(_ brand: CarBrand) {
             selectedBrand = brand
     }
     //브랜드 필터링
     var filteredListings: [Listing] {
         if let brand = selectedBrand {
-            return listings.filter { $0.brand == brand }
+            return listings.filter { $0.brand == brand.name }
         }
         return listings
     }

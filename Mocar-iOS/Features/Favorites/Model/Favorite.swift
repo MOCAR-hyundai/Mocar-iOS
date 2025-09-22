@@ -15,4 +15,8 @@ struct Favorite: Codable, Identifiable {
     var createdAt: Date
 }
 
+extension Favorite {
+    var safeId: String { id ?? UUID().uuidString }
+}
+
 

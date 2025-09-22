@@ -48,3 +48,7 @@ struct Listing : Identifiable, Codable{
     }
     
 }
+
+extension Listing {
+    var safeId: String { id ?? UUID().uuidString }
+}
