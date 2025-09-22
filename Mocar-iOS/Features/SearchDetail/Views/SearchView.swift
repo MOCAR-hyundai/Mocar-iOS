@@ -13,6 +13,7 @@ struct SearchView: View {
     @State private var selectedCategory: String? = "제조사"
     @State private var showRecentSheet: Bool = false
     @State private var path: [SearchDestination] = []
+    var onDismiss: (() -> Void)? = nil
     
     private let categories = ["제조사", "가격", "연식", "주행거리", "차종", "연료", "지역"]
     
@@ -22,12 +23,16 @@ struct SearchView: View {
                 // 상단 검색창
                 HStack {
                     Button(action: {
-                        dismiss()
+                        if let onDismiss = onDismiss {
+                            onDismiss()
+                        } else {
+                           dismiss()
+                        }
                     }) {
-                        Image(systemName: "chevron.left")
-                            .font(.title2)
-                            .foregroundColor(.black)
-                    }
+                            Image(systemName: "chevron.left")
+                                .font(.title2)
+                                .foregroundColor(.black)
+                        }
                     
                     NavigationLink(value: SearchDestination.searchKeyword) {
                         HStack {
