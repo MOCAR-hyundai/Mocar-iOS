@@ -9,6 +9,7 @@ import SwiftUI
 
 struct SearchView: View {
     @Environment(\.dismiss) private var dismiss
+    @StateObject private var favoritesViewModel = FavoritesViewModel()
     @ObservedObject var viewModel: SearchDetailViewModel
     @State private var selectedCategory: String? = "제조사"
     @State private var showRecentSheet: Bool = false
@@ -135,6 +136,12 @@ struct SearchView: View {
                     )
                 case .searchKeyword:
                     SearchKeywordView(viewModel: viewModel)
+                    
+                case .searchResults(let keyword, let filter):
+                    SearchResultsView(keyword: keyword, filter: filter)
+                    
+                case .searchResultDetail(let listingId):
+                    ListingDetailView(listingId: listingId, favoritesViewModel: favoritesViewModel)
                 }
             }
         }
@@ -158,4 +165,6 @@ enum SearchDestination: Hashable {
     case model(makerName: String)
     case trim(makerName: String, modelName: String)
     case searchKeyword
+    case searchResults(keyword: String?, filter: RecentFilter?)
+    case searchResultDetail(listingId: String)
 }

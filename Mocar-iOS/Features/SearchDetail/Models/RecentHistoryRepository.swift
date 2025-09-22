@@ -153,13 +153,26 @@ final class RecentHistoryRepository {
         guard let userId = currentUserId() else { throw NSError(domain: "NoUser", code: 0) }
         let trimmed = keyword.trimmingCharacters(in: .whitespacesAndNewlines)
         guard !trimmed.isEmpty else { return }
-        
-        // setData merge:true로 문서 없으면 생성, 있으면 배열 합침
-        try await db.collection("recent_keyword")
-            .document(userId)
-            .setData([
-                "recentKeyword": FieldValue.arrayUnion([trimmed])
-            ], merge: true)
+
+        let docRef = db.collection("recent_keyword").document(userId)
+        let snapshot = try await docRef.getDocument()
+
+        // 기존 키워드 불러오기
+        var keywords: [String] = snapshot.data()?["recentKeyword"] as? [String] ?? []
+
+        // 중복 제거
+        keywords.removeAll { $0 == trimmed }
+
+        // 가장 앞에 추가
+        keywords.insert(trimmed, at: 0)
+
+        // 최대 10개로 제한
+        if keywords.count > 10 {
+            keywords = Array(keywords.prefix(10))
+        }
+
+        // Firestore에 저장
+        try await docRef.setData(["recentKeyword": keywords], merge: true)
     }
     
     // MARK: - 최근검색 키워드 불러오기

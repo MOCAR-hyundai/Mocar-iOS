@@ -18,23 +18,30 @@ struct SearchKeywordView: View {
     @State private var debounceTask: Task<Void, Never>? = nil
     
     // 검색 결과 (2글자 이상 + 디바운스 적용)
-    private var results: [SearchCar] {
-        guard debouncedQuery.count >= 2 else { return [] }
-        return viewModel.searchCars(keyword: debouncedQuery)
-    }
+    @State private var searchResults: [SearchCar] = []
     
-    // title별 그룹핑
-    private var groupedResults: [String: [SearchCar]] {
-        Dictionary(grouping: results, by: { $0.title })
-    }
-    
-    private var categories: [String] {
-        let set = Set(viewModel.allCars.map { $0.category })
-        return Array(set).sorted()
+    // title별 요약: title, count, 연식 범위
+    private var searchSummary: [(title: String, count: Int, yearText: String)] {
+        var dict: [String: [SearchCar]] = [:]
+        
+        for car in searchResults {
+            dict[car.title, default: []].append(car)
+        }
+        
+        return dict.map { title, cars in
+            let count = cars.count
+            let years = cars.map { $0.year }
+            let minYear = years.min() ?? 0
+            let maxYear = years.max() ?? 0
+            let yearText = minYear != maxYear ? "\(minYear)~\(maxYear)년" : "\(minYear)년"
+            return (title: title, count: count, yearText: yearText)
+        }
+        .sorted { $0.title < $1.title }
     }
     
     var body: some View {
         VStack(spacing: 16) {
+            // 상단 검색창
             HStack {
                 Button {
                     dismiss()
@@ -52,64 +59,59 @@ struct SearchKeywordView: View {
             recentKeywordsSection
                 .padding(.horizontal)
             
+            // 검색 입력이 충분하지 않을 때 안내
             if query.trimmingCharacters(in: .whitespacesAndNewlines).count < 2 {
                 Spacer()
                 Text("모델명을 입력해 차량을 검색하세요.")
                     .foregroundColor(.gray)
                 Spacer()
             } else {
-                if results.isEmpty {
+                // 검색 결과가 없을 때 안내
+                if searchResults.isEmpty {
                     Spacer()
                     Text("일치하는 차량이 없습니다.")
                         .foregroundColor(.gray)
                     Spacer()
                 } else {
-                    // title별로 중복 제거하고 리스트
+                    // 검색 결과 리스트
                     ScrollView {
                         LazyVStack(alignment: .leading, spacing: 0) {
-                            ForEach(groupedResults.keys.sorted(), id: \.self) { title in
-                                if let cars = groupedResults[title], let car = cars.first {
-                                    NavigationLink(destination: SearchResultsView()) {
-                                        HStack {
-                                            VStack(alignment: .leading, spacing: 4) {
-                                                HStack {
-                                                    Text("\(title)")
-                                                        .font(.headline)
-                                                    Spacer()
-                                                }
-                                                HStack(spacing: 12) {
-                                                    Text("연식 \(car.year)년")
-                                                        .font(.subheadline)
-                                                        .foregroundColor(.gray)
-                                                    Text("가격 \(formattedPrice(car.price))만원")
-                                                        .font(.subheadline)
-                                                        .foregroundColor(.gray)
-                                                    Text("주행 \(formattedMileage(car.mileage))km")
-                                                        .font(.subheadline)
-                                                        .foregroundColor(.gray)
-                                                }
+                            ForEach(searchSummary, id: \.title) { item in
+                                NavigationLink(destination: SearchResultsView(keyword: item.title, filter: nil)) {
+                                    HStack {
+                                        VStack(alignment: .leading, spacing: 4) {
+                                            HStack {
+                                                Text(item.title)
+                                                    .font(.headline)
+                                                Spacer()
                                             }
-                                            .padding(.vertical, 8)
-                                            
-                                            Spacer()
-                                            Text("\(cars.count)대")
-                                                .font(.subheadline)
-                                                .foregroundColor(.black)
-                                            Image(systemName: "chevron.right")
-                                                .font(.subheadline)
-                                                .foregroundColor(.gray)
+                                            HStack(spacing: 12) {
+                                                Text("\(item.yearText)")
+                                                    .font(.subheadline)
+                                                    .foregroundColor(.gray)
+                                                Spacer()
+                                            }
                                         }
-                                        .padding()
+                                        .padding(.vertical, 8)
+                                        
+                                        Spacer()
+                                        Text("\(item.count)대")
+                                            .font(.subheadline)
+                                            .foregroundColor(.black)
+                                        Image(systemName: "chevron.right")
+                                            .font(.subheadline)
+                                            .foregroundColor(.gray)
                                     }
-                                    .simultaneousGesture(TapGesture().onEnded {
-                                        viewModel.addKeyword(title)
-                                        viewModel.recentKeyword = ""
-                                        query = ""
-                                    })
-                                    .buttonStyle(.plain)
-                                    
-                                    Divider()
+                                    .padding()
                                 }
+                                .simultaneousGesture(TapGesture().onEnded {
+                                    viewModel.addKeyword(item.title)
+                                    viewModel.recentKeyword = ""
+                                    query = ""
+                                })
+                                .buttonStyle(.plain)
+                                
+                                Divider()
                             }
                         }
                     }
@@ -125,18 +127,29 @@ struct SearchKeywordView: View {
                 isSearchFieldFocused = true
             }
         }
-        // 디바운스 적용
+        // 디바운스 적용 및 검색
         .onChange(of: query) { newValue in
             debounceTask?.cancel()
             debounceTask = Task {
-                try? await Task.sleep(nanoseconds: 300_000_000) // 0.3초 딜레이
+                try? await Task.sleep(nanoseconds: 300_000_000) // 0.3초
                 if !Task.isCancelled {
                     debouncedQuery = newValue
+                    await performSearch(keyword: newValue)
                 }
             }
         }
     }
     
+    // MARK: - 검색 수행
+    private func performSearch(keyword: String) async {
+        guard keyword.count >= 2 else {
+            searchResults = []
+            return
+        }
+        searchResults = viewModel.searchCars(keyword: keyword)
+    }
+    
+    // MARK: - 검색창
     private var searchField: some View {
         HStack(spacing: 8) {
             Image(systemName: "magnifyingglass")
@@ -164,14 +177,7 @@ struct SearchKeywordView: View {
         )
     }
     
-    private func formattedPrice(_ value: Int) -> String {
-        NumberFormatter.decimal.string(from: NSNumber(value: value)) ?? "\(value)"
-    }
-    
-    private func formattedMileage(_ value: Int) -> String {
-        NumberFormatter.decimal.string(from: NSNumber(value: value)) ?? "\(value)"
-    }
-    
+    // MARK: - 최근 키워드
     private var recentKeywordsSection: some View {
         VStack(alignment: .leading, spacing: 12) {
             HStack {
@@ -183,7 +189,7 @@ struct SearchKeywordView: View {
                 Button("전체 삭제") {
                     Task {
                         await viewModel.clearKeywords()
-                        }
+                    }
                 }
                 .font(.footnote)
                 .foregroundColor(.red)

@@ -449,7 +449,7 @@ final class SearchDetailViewModel: ObservableObject {
         Task {
             do {
                 try await recentHistoryRepository.saveFilter(firestoreFilter)
-                
+                applyFilterToListings() // 저장 후 목록 갱신
                 // 저장 후 Firestore에서 최신 목록 갱신
                 self.recentSearches = try await recentHistoryRepository.fetchFilters()
             } catch {
@@ -510,23 +510,7 @@ final class SearchDetailViewModel: ObservableObject {
     }
     
     func searchCars(keyword: String) -> [SearchCar] {
-        let trimmed = keyword.trimmingCharacters(in: .whitespacesAndNewlines)
-        let lowered = trimmed.lowercased()
-        let filtered = allCars.filter { car in
-            car.title.lowercased().contains(lowered)
-        }
-        
-        // title 기준 중복 제거
-        var seenTitles = Set<String>()
-        let uniqueTitle = filtered.filter { car in
-            if seenTitles.contains(car.title) {
-                return false
-            } else {
-                seenTitles.insert(car.title)
-                return true
-            }
-        }
-        return uniqueTitle
+        return allCars.filter { $0.title.contains(keyword) }
     }
     
     private func loadListings() async {
@@ -729,4 +713,13 @@ final class SearchDetailViewModel: ObservableObject {
             }
         }
     }
+    @Published var listings: [SearchCar] = [] // 화면에 보여줄 차량 목록
+
+    func applyFilterToListings() {
+        // 최근 필터 기준으로 필터링
+        listings = allCars.filter { car in
+            matches(car)
+        }
+    }
 }
+
