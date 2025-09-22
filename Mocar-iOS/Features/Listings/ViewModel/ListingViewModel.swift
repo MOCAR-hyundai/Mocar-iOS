@@ -32,23 +32,6 @@ class ListingDetailViewModel: ObservableObject {
     init(favoritesViewModel: FavoritesViewModel){
         self.favoritesViewModel = favoritesViewModel
     }
-
-    //전체 매물 불러오기
-//    func fetchListings() {
-//        db.collection("listings").getDocuments(){ snapshot, error in
-//            if let error = error {
-//                print("Error fetching listings: \(error)")
-//                return
-//            }
-//            if let snapshot = snapshot {
-//                DispatchQueue.main.async {
-//                    self.listings = snapshot.documents.compactMap{doc in
-//                        try? doc.data(as: Listing.self)
-//                    }
-//                }
-//           }
-//        }
-//    }
     
     // 상태 문구
     var statusText: String {
@@ -94,30 +77,6 @@ class ListingDetailViewModel: ObservableObject {
         }
     }
     
-    //listing에 있으면 사용, 없으면 db에서 단일 조회
-//    func loadListing(id: String) {
-//        // 1. 전체 데이터에서 해당 매물 찾기
-//        if let found = Listing.listingData.first(where: { $0.id == id }) {
-//            self.listing = found
-//            self.currentValue = Double(found.price)
-//            
-//            // 2. 동일 모델의 매물들 필터링
-//            let sameModelListings = Listing.listingData.filter { $0.model == found.model }
-//            
-//            // 3. 가격 리스트만 추출
-//            self.prices = sameModelListings.map { Double($0.price) }
-//            
-//            // 4. 최소, 최대 값 계산
-//            self.minPrice = prices.min() ?? 0
-//            self.maxPrice = prices.max() ?? 0
-//            self.ticks = makeTicks(minPrice: minPrice, maxPrice: maxPrice)
-//            
-//            if ticks.count == 6 {
-//                self.safeMin = Double(ticks[1])
-//                self.safeMax = Double(ticks[4])
-//            }
-//        }
-//    }
     
     private func makeTicks(minPrice: Double, maxPrice: Double) -> [Int] {
             guard minPrice < maxPrice else { return [Int(minPrice)] }

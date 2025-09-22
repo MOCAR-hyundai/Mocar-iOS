@@ -9,7 +9,7 @@ import SwiftUI
 
 import FirebaseFirestore
 
-class ListingService {
+class ListingRepository {
     private let db = Firestore.firestore()
     
     // 전체 매물 불러오기
@@ -39,20 +39,22 @@ class ListingService {
             }
         }
         
-        // 단일 매물 불러오기
-        func fetchListing(id: String, completion: @escaping (Result<Listing, Error>) -> Void) {
-            db.collection("listings").document(id).getDocument { doc, error in
-                if let error = error {
+        
+    }
+    
+    // 단일 매물 불러오기
+    func fetchListing(id: String, completion: @escaping (Result<Listing, Error>) -> Void) {
+        db.collection("listings").document(id).getDocument { doc, error in
+            if let error = error {
+                completion(.failure(error))
+                return
+            }
+            if let doc = doc, doc.exists {
+                do {
+                    let listing = try doc.data(as: Listing.self)
+                    completion(.success(listing))
+                } catch {
                     completion(.failure(error))
-                    return
-                }
-                if let doc = doc, doc.exists {
-                    do {
-                        let listing = try doc.data(as: Listing.self)
-                        completion(.success(listing))
-                    } catch {
-                        completion(.failure(error))
-                    }
                 }
             }
         }

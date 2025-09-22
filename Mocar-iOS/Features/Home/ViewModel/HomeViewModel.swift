@@ -10,7 +10,7 @@ import FirebaseFirestore
 import FirebaseAuth
 
 class HomeViewModel: ObservableObject {
-    private let service = ListingService()
+    private let service = ListingRepository()
     
     let favoritesViewModel: FavoritesViewModel
     
