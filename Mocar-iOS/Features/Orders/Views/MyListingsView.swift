@@ -75,7 +75,6 @@ struct MyListingsView: View {
                 }
                 
                 Spacer()
-         
               
             }
             .padding()

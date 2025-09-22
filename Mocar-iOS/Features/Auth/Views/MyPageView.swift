@@ -16,6 +16,12 @@ struct MyPageView: View {
 
     @State private var showLogoutConfirm = false
 
+    @State private var showImagePicker = false
+    @State private var selectedImage: UIImage?
+
+    @State private var showToast = false
+    @State private var toastMessage = ""
+
     
     let UserId = Auth.auth().currentUser?.uid
     
@@ -57,6 +63,7 @@ struct MyPageView: View {
                             // 오른쪽 하단 카메라 버튼
                             Button(action: {
                                 // 사진 변경 액션
+                                showImagePicker = true
 
                             }) {
                                 Image("Camera") // 또는 이미지로 대체 가능
@@ -66,7 +73,31 @@ struct MyPageView: View {
                                     .background(Color.white)
                                     .clipShape(Circle())
                                     .shadow(radius: 1)
+                            }.sheet(isPresented: $showImagePicker) {
+                                SinglePhotoPicker(image: $selectedImage) { img in
+                                    if let img = img {
+                                        viewModel.updateProfileImage(img) { success in
+                                            if success {
+                                                toastMessage = "프로필 사진이 변경되었습니다."
+                                            } else {
+                                                toastMessage = "프로필 사진 변경 실패"
+                                            }
+                                            withAnimation {
+                                                showToast = true
+                                            }
+                                            DispatchQueue.main.asyncAfter(deadline: .now() + 2) {
+                                                withAnimation {
+                                                    showToast = false
+                                                }
+                                            }
+                                        }
+                                    }
+                                }
                             }
+
+                            
+                            
+                            
                         }
                         
                         VStack(alignment: .leading, spacing: 4) {
@@ -164,6 +195,17 @@ struct MyPageView: View {
                 }
             }
             
+            
+            // ✅ 토스트 메시지
+            if showToast {
+                VStack {
+                    Spacer()
+                    ToastView(message: toastMessage)
+                        .padding(.bottom, 50)
+                        .transition(.move(edge: .bottom).combined(with: .opacity))
+                }
+            }
+            
             // ✅ 로그아웃 확인 모달
             if showLogoutConfirm {
                 Color.black.opacity(0.4)
@@ -188,7 +230,6 @@ struct MyPageView: View {
             
             
         }
-        
     }
 }
 
