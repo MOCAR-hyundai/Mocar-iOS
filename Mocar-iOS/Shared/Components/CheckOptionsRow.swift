@@ -53,7 +53,7 @@ struct CheckOptionsRow: View {
                         .font(.footnote)
                 }
             }
-            .frame(height: 50)
+            .frame(maxWidth: .infinity, minHeight: 50)
         }
         .disabled(isDisabled)
         .opacity(isDisabled ? 0.5 : 1)

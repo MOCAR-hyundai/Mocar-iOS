@@ -22,7 +22,7 @@ struct Mocar_iOSApp: App {
         WindowGroup {
 
             BottomBar()
-
+                .environmentObject(userSession)
         }
     }
 

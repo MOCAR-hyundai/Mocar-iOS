@@ -21,6 +21,7 @@ struct LoginView: View {
 
     
     @FocusState private var focusedField: Field?
+    @Environment(\.dismiss) private var dismiss
 
     enum Field {
         case email
@@ -36,6 +37,7 @@ struct LoginView: View {
                     .padding(.leading,5)
                     .background(Color.backgroundGray100)
                 
+
                 
                 Text("로그인")
                     .font(.system(size: 30, weight: .semibold, design: .default))
@@ -181,6 +183,8 @@ struct LoginView: View {
             
         }
         .background(Color.backgroundGray100)
+        .navigationBarBackButtonHidden(true)
+ 
     }
     
     // MARK: - Firebase 로그인 함수
@@ -211,7 +215,8 @@ struct LoginView: View {
                 }
                 // 다음 화면으로 이동 처리 가능
                 navigateToHome = true   // ✅ 로그인 성공 시 홈으로 이동
-                
+//                dismiss()
+
             }
         }
     }

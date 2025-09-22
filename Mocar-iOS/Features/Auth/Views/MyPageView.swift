@@ -11,6 +11,7 @@ import FirebaseFirestore
 
 @MainActor
 struct MyPageView: View {
+    @Binding var selectedTab: Int
     @StateObject private var viewModel = MyPageViewModel()
     @StateObject private var favoritesViewModel = FavoritesViewModel()
 
@@ -224,6 +225,7 @@ struct MyPageView: View {
                     },
                     onCancel: {
                         showLogoutConfirm = false
+                        //selectedTab = 0
                     }
                 )
             }
@@ -265,6 +267,4 @@ struct ProfileRow: View {
     }
 }
 
-#Preview {
-    MyPageView()
-}
+

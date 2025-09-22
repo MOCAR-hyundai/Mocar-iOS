@@ -1,44 +1,45 @@
 //
-//  MileageFilterView.swift
+//  PriceFilterView.swift
 //  Mocar-iOS
 //
-//  Created by wj on 9/17/25.
+//  Created by wj on 9/16/25.
 //
 
 import SwiftUI
 
-struct MileageFilterView: View {
-    @Binding var minMileage: Int
-    @Binding var maxMileage: Int
+struct PriceFilterView: View {
+    @Binding var minPrice: Int
+    @Binding var maxPrice: Int
     
     @State private var minText: String = ""
     @State private var maxText: String = ""
     
-    private let mileageRange: ClosedRange<Int> = 0...200000
+    private let priceRange: ClosedRange<Int> = 0...100000
     
     var body: some View {
         VStack {
             VStack(alignment: .leading, spacing: 20) {
-                Text("주행거리")
-                    .font(.headline)
+                Text("가격")
+                    .font(.footnote)
+                    .fontWeight(.semibold)
                 
                 // 슬라이더: Int ↔ Double 변환
                 RangeSlider(
                     lowerValue: Binding(
-                        get: { Double(minMileage) },
+                        get: { Double(minPrice) },
                         set: { newValue in
                             let intValue = Int(newValue.rounded())
-                            minMileage = min(max(intValue, mileageRange.lowerBound), maxMileage)
-                            minText = String(minMileage)
+                            minPrice = min(max(intValue, priceRange.lowerBound), maxPrice)
+                            minText = String(minPrice)
                         }),
                     upperValue: Binding(
-                        get: { Double(maxMileage) },
+                        get: { Double(maxPrice) },
                         set: { newValue in
                             let intValue = Int(newValue.rounded())
-                            maxMileage = max(min(intValue, mileageRange.upperBound), minMileage)
-                            maxText = String(maxMileage)
+                            maxPrice = max(min(intValue, priceRange.upperBound), minPrice)
+                            maxText = String(maxPrice)
                         }),
-                    range: Double(mileageRange.lowerBound)...Double(mileageRange.upperBound)
+                    range: Double(priceRange.lowerBound)...Double(priceRange.upperBound)
                 )
                 .frame(height: 50)
                 .padding(.horizontal, 16)
@@ -53,15 +54,17 @@ struct MileageFilterView: View {
                     .onChange(of: minText) { newValue, _ in
                         minText = newValue.filter { "0123456789".contains($0) }
                         if let value = Int(minText) {
-                            minMileage = min(max(value, mileageRange.lowerBound), maxMileage)
+                            minPrice = min(max(value, priceRange.lowerBound), maxPrice)
                         }
                     }
                     .onSubmit {
-                        minText = String(minMileage)
+                        minText = String(minPrice)
                     }
                 
-                Text("km")
+                Text("만원")
                 
+                Spacer()
+                Text("~")
                 Spacer()
                 
                 TextField("최대", text: $maxText)
@@ -71,20 +74,20 @@ struct MileageFilterView: View {
                     .onChange(of: maxText) { newValue, _ in
                         maxText = newValue.filter { "0123456789".contains($0) }
                         if let value = Int(maxText) {
-                            maxMileage = max(min(value, mileageRange.upperBound), minMileage)
+                            maxPrice = max(min(value, priceRange.upperBound), minPrice)
                         }
                     }
                     .onSubmit {
-                        maxText = String(maxMileage)
+                        maxText = String(maxPrice)
                     }
                 
-                Text("km")
+                Text("만원")
             }
         }
         .padding(.horizontal, 16)
         .onAppear {
-            minText = String(minMileage)
-            maxText = String(maxMileage)
+            minText = String(minPrice)
+            maxText = String(maxPrice)
         }
         Spacer()
     }
