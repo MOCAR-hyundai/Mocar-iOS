@@ -9,7 +9,8 @@ import SwiftUI
 
 struct BottomBar: View {
     @State private var selectedTab: Int = 0
-    
+    @StateObject private var searchDetailViewModel = SearchDetailViewModel()
+
     @EnvironmentObject var session: UserSession //전역 세션 받아오기
     @State private var showLoginModal = false
      @State private var navigateToLogin = false
@@ -63,7 +64,7 @@ struct BottomBar: View {
             }
             .ignoresSafeArea(.keyboard, edges: .bottom) // 키보드 뜰 때만 safe area 무시
             .fullScreenCover(isPresented: $showSearchFull) {
-                SearchView(onDismiss: {
+                SearchView(viewModel: searchDetailViewModel, onDismiss: {
                     showSearchFull = false
                     selectedTab = lastTabBeforeSearch
                 })

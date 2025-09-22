@@ -9,7 +9,7 @@ import SwiftUI
 
 struct SearchView: View {
     @Environment(\.dismiss) private var dismiss
-    @StateObject private var viewModel = SearchDetailViewModel()
+    @ObservedObject var viewModel: SearchDetailViewModel
     @State private var selectedCategory: String? = "제조사"
     @State private var showRecentSheet: Bool = false
     @State private var path: [SearchDestination] = []
