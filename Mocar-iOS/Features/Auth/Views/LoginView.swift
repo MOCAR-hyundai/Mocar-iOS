@@ -72,8 +72,7 @@ struct LoginView: View {
                                 .padding(.trailing, 50)
                                 .background(
                                     RoundedRectangle(cornerRadius: 10)
-                                        .stroke(focusedField == .password ? Color.keyColorBlue
- : Color.gray, lineWidth: 1)
+                                        .stroke(focusedField == .password ? Color.keyColorBlue : Color.gray, lineWidth: 1)
                                 )
                                 .focused($focusedField, equals: .password)
                         } else {

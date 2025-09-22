@@ -133,7 +133,15 @@ struct MyPageView: View {
                         .padding(.horizontal)
                     
                     VStack(spacing: 0) {
-                        ProfileRow(icon: "gearshape", title: "비밀번호 변경")
+//                        ProfileRow(icon: "gearshape", title: "비밀번호 변경")
+                        
+                        NavigationLink(destination: ChangePasswordView()
+                            .navigationBarHidden(true)
+                        ) {
+                            ProfileRow(icon: "gearshape", title: "비밀번호 변경")
+                        }
+
+                        
                         ProfileRow(icon: "arrow.right.square", title: "Log out")
                         .onTapGesture {
                                 showLogoutConfirm = true
