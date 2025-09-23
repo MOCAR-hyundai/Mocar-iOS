@@ -86,8 +86,8 @@ struct YearFilterView: View {
         }
         .padding(.horizontal, 16)
         .onAppear {
-            minText = String(minYear)
-            maxText = String(maxYear)
+            minText = ""
+            maxText = ""
         }
         Spacer()
     }

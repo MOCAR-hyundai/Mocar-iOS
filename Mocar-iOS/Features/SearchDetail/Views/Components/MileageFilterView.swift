@@ -86,8 +86,8 @@ struct MileageFilterView: View {
         }
         .padding(.horizontal, 16)
         .onAppear {
-            minText = String(minMileage)
-            maxText = String(maxMileage)
+            minText = ""
+            maxText = ""
         }
         Spacer()
     }

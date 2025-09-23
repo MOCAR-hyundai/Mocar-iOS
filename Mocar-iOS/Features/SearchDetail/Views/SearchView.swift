@@ -112,7 +112,7 @@ struct SearchView: View {
                         viewModel.saveCurrentFiltersAsRecent()
                         viewModel.debugLogAppliedFilters()
 
-                        // 🔹 SearchDestination으로 이동
+                        // SearchDestination으로 이동
                         let firestoreFilter = RecentFilter(
                             userId: Auth.auth().currentUser?.uid,
                             brand: viewModel.selectedMaker,

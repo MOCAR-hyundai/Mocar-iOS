@@ -571,7 +571,7 @@ final class SearchDetailViewModel: ObservableObject {
         makerToModels = modelsMap
         makerModelToTrims = trimsMap
         configureFilterOptions(with: cars)
-        normalizeSelectionBounds()
+//        normalizeSelectionBounds()
     }
     
     private func configureFilterOptions(with cars: [SearchCar]) {
@@ -584,24 +584,24 @@ final class SearchDetailViewModel: ObservableObject {
         carTypeOptions = Self.buildOptions(from: cars.map { $0.category }, selected: selectedCarTypeSet)
     }
     
-    private func normalizeSelectionBounds() {
-        let years = allCars.map { $0.year }
-        if let minYearAvailable = years.min(), let maxYearAvailable = years.max() {
-            minYear = max(minYear, minYearAvailable)
-            maxYear = min(maxYear, maxYearAvailable)
-        }
-        let prices = allCars.map { $0.price }
-        if let minPriceAvailable = prices.min(), let maxPriceAvailable = prices.max() {
-            minPrice = max(minPrice, minPriceAvailable)
-            maxPrice = min(maxPrice, maxPriceAvailable)
-        }
-        let mileages = allCars.map { $0.mileage }
-        if let minMileageAvailable = mileages.min(), let maxMileageAvailable = mileages.max() {
-            minMileage = max(minMileage, minMileageAvailable)
-            maxMileage = min(maxMileage, maxMileageAvailable)
-        }
-    }
-    
+//    private func normalizeSelectionBounds() {
+//        let years = allCars.map { $0.year }
+//        if let minYearAvailable = years.min(), let maxYearAvailable = years.max() {
+//            minYear = max(minYear, minYearAvailable)
+//            maxYear = min(maxYear, maxYearAvailable)
+//        }
+//        let prices = allCars.map { $0.price }
+//        if let minPriceAvailable = prices.min(), let maxPriceAvailable = prices.max() {
+//            minPrice = max(minPrice, minPriceAvailable)
+//            maxPrice = min(maxPrice, maxPriceAvailable)
+//        }
+//        let mileages = allCars.map { $0.mileage }
+//        if let minMileageAvailable = mileages.min(), let maxMileageAvailable = mileages.max() {
+//            minMileage = max(minMileage, minMileageAvailable)
+//            maxMileage = min(maxMileage, maxMileageAvailable)
+//        }
+//    }
+//    
     private static func buildOptions(from names: [String], selected: Set<String> = []) -> [CheckableItem] {
         let uniqueNames = Array(Set(names)).sorted()
         return uniqueNames.map { name in

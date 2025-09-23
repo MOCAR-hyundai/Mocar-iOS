@@ -36,7 +36,7 @@ class SearchResultsViewModel: ObservableObject {
         do {
             var query: Query = db.collection("listings")
             
-            // 🔹 Firestore: 가격 필터만 적용
+            // Firestore: 가격 필터만 적용
             if let minPrice = filter.minPrice {
                 query = query.whereField("price", isGreaterThanOrEqualTo: minPrice * 10000)
             }
@@ -48,12 +48,12 @@ class SearchResultsViewModel: ObservableObject {
             let snapshot = try await query.getDocuments()
             var fetched = snapshot.documents.compactMap { try? $0.data(as: Listing.self) }
             
-            // 🔹 normalize 함수
+            // ormalize 함수
             func normalize(_ str: String?) -> String {
                 (str ?? "").trimmingCharacters(in: .whitespacesAndNewlines).lowercased()
             }
             
-            // 🔹 앱 단 필터링
+            // 앱 단 필터링
             fetched = fetched.filter { listing in
                 // 브랜드
                 if let brand = filter.brand, !brand.isEmpty,
@@ -106,10 +106,9 @@ class SearchResultsViewModel: ObservableObject {
                 return true
             }
             
-            // 🔹 최종 결과 적용
             self.listings = fetched
             
-            // 🔹 디버깅
+            // 디버깅
             print("===== 필터 결과 =====")
             print("브랜드:", filter.brand ?? "전체")
             print("모델:", filter.model ?? "전체")
@@ -124,7 +123,7 @@ class SearchResultsViewModel: ObservableObject {
             print("====================")
             
         } catch {
-            print("❌ 필터 검색 실패:", error)
+            print("필터 검색 실패:", error)
         }
     }
 }
