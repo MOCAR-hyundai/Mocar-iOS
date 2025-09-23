@@ -11,7 +11,7 @@ struct VerticalFavoritesListView: View {
     @EnvironmentObject var favoritesVM: FavoritesViewModel
     
     var body: some View {
-        //TopBar(style: .list(title: "\(favoritesViewModel.favoritesCount)대"))
+        TopBar(style: .list(title: "나의 찜 매물"))
         ScrollView(showsIndicators: false){
             //찜한 목록
             VStack(alignment: .leading, spacing: 8){

@@ -21,18 +21,18 @@ struct FavoriteCardView: View{
                         switch phase {
                         case .empty:
                             ProgressView()
-                                .frame( height: 130)
+                                .frame( height: 143)
                                 .frame(maxWidth: .infinity)
                         case .success(let image):
                             image
                                 .resizable()
                                 .scaledToFill()    //  비율 유지 + 꽉 채움
-                                .frame(height: 130)
+                                .frame(height: 143)
                                 .frame(maxWidth: .infinity)
                                 .clipped()         // 프레임 밖 잘라냄
                         case .failure:
                             Image("이미지없음icon") // fallback 이미지
-                                .frame( height: 130)
+                                .frame( height: 143)
                                 .frame(maxWidth: .infinity)
                                 .clipped()
                         @unknown default:
@@ -41,7 +41,7 @@ struct FavoriteCardView: View{
                     }
                 } else {
                     Image("이미지없음icon")
-                        .frame( height: 130)
+                        .frame( height: 143)
                         .frame(maxWidth: .infinity)
                         .clipped()
                 }
@@ -72,8 +72,8 @@ struct FavoriteCardView: View{
             }
             .frame(height: 80)
             .padding(.bottom, 6)
-            .padding(.horizontal, 6)
-            .padding(3)
+            .padding(.horizontal, 12)
+            .padding(4)
             
         }
         .frame(width: 240, height: 240)

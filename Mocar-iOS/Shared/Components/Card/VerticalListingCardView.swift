@@ -21,19 +21,19 @@ struct VerticalListingCardView: View {
                         switch phase {
                         case .empty:
                             ProgressView()
-                                .frame(width: 170, height: 120)
+                                .frame(width: 170, height: 125)
                         case .success(let image):
                             image
                                 .resizable()
                                 .scaledToFill()    //  비율 유지 + 꽉 채움
-                                .frame(width: 170, height: 120)
+                                .frame(width: 170, height: 125)
                                 .clipped()         // 프레임 밖 잘라냄
                         case .failure:
                             Image("이미지없음icon") // fallback 이미지
                                 .resizable()
                                 .scaledToFit()   // 아이콘 비율 유지
                                 .frame(width: 60, height: 60) // 아이콘 크기 (작게)
-                                .frame(width: 170, height: 120) // 이미지 영역 크기 강제
+                                .frame(width: 170, height: 125) // 이미지 영역 크기 강제
                         @unknown default:
                             EmptyView()
                         }
@@ -43,7 +43,7 @@ struct VerticalListingCardView: View {
                         .resizable()
                         .scaledToFit()   // 아이콘 비율 유지
                         .frame(width: 60, height: 60) // 아이콘 크기 (작게)
-                        .frame(width: 170, height: 120) // 이미지 영역 크기 강제
+                        .frame(width: 170, height: 125) // 이미지 영역 크기 강제
                 }
                 // 좋아요 버튼
                 FavoriteButton(

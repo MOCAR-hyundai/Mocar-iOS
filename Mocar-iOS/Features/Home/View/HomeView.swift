@@ -159,7 +159,10 @@ struct HomeView: View {
     @StateObject private var homeViewModel: HomeViewModel
     @EnvironmentObject var favoritesVM: FavoritesViewModel
     @StateObject private var userSession = UserSession()
+    
     @State private var showLogin = false
+    @State private var showSearch = false
+    @State private var showFilter = false
     
     init() {
         let listingRepo = ListingRepository()
@@ -190,22 +193,32 @@ struct HomeView: View {
                 
                 // MARK: - 검색창 + 필터 버튼
                 HStack {
-                    ZStack(alignment: .leading) {
-                        Image("Search")
-                            .padding(.leading, 15)
-                        TextField("Search", text: .constant(""))
-                            .padding(.leading, 30)
-                            .padding()
-                            .frame(height: 50)
-                            .background(
-                                RoundedRectangle(cornerRadius: 8)
-                                    .stroke(Color.gray, lineWidth: 1)
-                            )
+                    // 검색창
+                    Button {
+                        showSearch = true
+                    } label: {
+                        HStack {
+                            Image("Search")
+                                .padding(.leading, 8)
+
+                            Text("Search")
+                                .foregroundColor(.gray)
+                                .padding(.leading, 8)
+
+                            Spacer()
+                        }
+                        .padding()
+                        .frame(height: 50)
+                        .background(
+                            RoundedRectangle(cornerRadius: 8)
+                                .stroke(Color.gray, lineWidth: 1)
+                        )
                     }
-                    
-                    Button(action: {
-                        // TODO: 필터 기능 구현
-                    }) {
+
+                    // 필터 버튼
+                    Button {
+                        showFilter = true
+                    } label: {
                         Image("iconfilter")
                             .resizable()
                             .scaledToFit()
@@ -220,6 +233,15 @@ struct HomeView: View {
                 }
                 .padding(.horizontal)
                 .padding(.bottom, 8)
+
+                // ✅ 네비게이션 전환
+                .navigationDestination(isPresented: $showSearch) {
+                    SearchView()
+                }
+                .navigationDestination(isPresented: $showFilter) {
+                    SearchView()
+                }
+
                 
                 // MARK: - 본문
                 ScrollView(showsIndicators: false) {
