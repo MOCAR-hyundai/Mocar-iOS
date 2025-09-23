@@ -51,12 +51,12 @@ class ListingRepository {
                 do {
                     return try doc.data(as: Listing.self) //Firestore 문서를 Swift의 Listing 모델로 디코딩
                 } catch {
-                    print("Decoding error in \(doc.documentID): \(error)")
+                    print("ERROR MESSAGE -- Decoding error in \(doc.documentID): \(error)")
                     return nil  //디코딩 실패시 nil로 스킵
                 }
             }
         } catch {
-            print("Firestore error: \(error.localizedDescription)")
+            print("ERROR MESSAGE -- Firestore error: \(error.localizedDescription)")
             throw error
         }
     }
@@ -90,7 +90,7 @@ class ListingRepository {
                 }
                 return listing //성공하면 listing 객체 반환
             } catch {
-                print("Firestore error: \(error.localizedDescription)")
+                print("ERROR MESSAGE -- Firestore error: \(error.localizedDescription)")
                 throw error
             }
         }
@@ -105,6 +105,21 @@ class ListingRepository {
             .getDocuments()
         
         return snapshot.documents.compactMap { try? $0.data(as: Listing.self) }
+    }
+    
+    //브랜드별 매물 불러오기
+    func fetchListingsByBrand(brand: String) async throws -> [Listing] {
+        do {
+            let snapshot = try await db.collection("listings")
+                .whereField("brand", isEqualTo: brand)   // Firestore 필드: brand
+                .getDocuments()
+            return snapshot.documents.compactMap { doc in
+                try? doc.data(as: Listing.self)
+            }
+        } catch {
+            print("ERROR MESSAGE -- Firestore error: \(error.localizedDescription)")
+            throw error
+        }
     }
 
 
