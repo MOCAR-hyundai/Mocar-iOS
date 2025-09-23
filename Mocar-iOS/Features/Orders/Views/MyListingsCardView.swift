@@ -38,17 +38,21 @@ struct MyListingsCardView: View {
                     }
                     
                     // 좋아요 버튼
-                    Button(action: {
-                        // TODO: 서버에 찜 상태 업데이트
-                        onToggleFavorite()
-                    }) {
-                        Image(systemName: isFavorite ? "heart.fill" : "heart")
-                            .foregroundColor(isFavorite ? .red : Color.keyColorDarkGray)
-                            .padding(5)
-                            .background(Color.clear)
-                            .clipShape(Circle())
-                            .padding(5)
-                    }
+//                    Button(action: {
+//                        // TODO: 서버에 찜 상태 업데이트
+//                        onToggleFavorite()
+//                    }) {
+//                        Image(systemName: isFavorite ? "heart.fill" : "heart")
+//                            .foregroundColor(isFavorite ? .red : Color.keyColorDarkGray)
+//                            .padding(5)
+//                            .background(Color.clear)
+//                            .clipShape(Circle())
+//                            .padding(5)
+//                    }
+                    FavoriteButton(
+                        isFavorite: isFavorite,
+                        onToggle: onToggleFavorite
+                    )
                 }
                 
                 VStack(alignment: .leading, spacing: 6) {

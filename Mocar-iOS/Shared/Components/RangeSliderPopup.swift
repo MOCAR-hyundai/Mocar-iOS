@@ -25,7 +25,7 @@ struct RangeSliderPopup: View {
        var onConfirm: (() -> Void)? = nil
        
        // 팝업 높이
-       let popupHeight: CGFloat = 450
+       let popupHeight: CGFloat = 350
 
        var body: some View {
            if isPresented {
@@ -62,7 +62,7 @@ struct RangeSliderPopup: View {
                                        isPresented = false   // ← X 버튼 누르면 팝업 닫기
                                    }
                                )
-                               .padding(.bottom, 120)
+                               .padding(.bottom, 30)
                                
                            }
                            .frame(height: popupHeight)

@@ -27,7 +27,7 @@ struct RightOptionView: View {
             } else if selectedCategory == "연료" {
                 FuelFilterView(options: $viewModel.fuelOptions, countProvider: viewModel.countForFuel)
             } else if selectedCategory == "지역" {
-                AreaFilterView(options: $viewModel.areaOptions, countProvider: viewModel.countForArea)
+                AreaFilterView(options: $viewModel.regionOptions, countProvider: viewModel.countForRegion)
             }
         }
         .frame(maxWidth: .infinity)

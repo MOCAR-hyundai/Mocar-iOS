@@ -9,8 +9,7 @@ import SwiftUI
 
 enum TopBarStyle{
     case home(isLoggedIn: Bool)                 // 로고 + 검색
-    case login                   // 로그인
-    case singup                  //회원가입
+    case loginSignup                   // 로그인,회원가입
     case listing(title: String)     // 뒤로가기 + 타이틀
     case MyPage(title: String)      // 뒤로가기 + 타이틀
     case Mylistings(title: String)  // 뒤로가기 + 왼쪽 타이틀
@@ -30,7 +29,7 @@ struct TopBar: View {
                     .resizable()
                     .scaledToFit()
                     .frame(maxWidth: 150)
-                    
+                
                 Spacer()
                 if !isLoggedIn {
                     Button("로그인/회원가입") {
@@ -41,33 +40,16 @@ struct TopBar: View {
                     .padding(.vertical,10)
                 }
                 
-            case .login:
-                ZStack{
+              case .loginSignup:
+                HStack(spacing: 0) {
                     BackButton()
-                        .padding(.leading, 3)
-                    HStack {
-//                        Spacer()
-                        Image("logo")
-                            .resizable()
-                            .scaledToFit()
-                            .frame(maxWidth: 150)
-                            .frame(height: 30)
-                            .padding(.leading, 13)
-                            
-                        Spacer()
-                    }
-                }
-                
-         
-                
-            case .singup:
-//                BackButton()
-                HStack {
+                        .padding(.leading, 5)
                     Image("logo")
                         .resizable()
                         .scaledToFit()
                         .frame(maxWidth: 150)
-                        
+                        .frame(height: 30)
+                        .padding(.leading, -23)
                     Spacer()
                 }
                 
@@ -80,27 +62,20 @@ struct TopBar: View {
                     Text(title)
                 }
             case .MyPage(title: let title):
-                ZStack{
+                HStack {
+                    Spacer()
+                    Text(title)
+                        .font(.system(size: 18, weight: .semibold, design: .default))
+                        .padding(.vertical,5)
+                    Spacer()
+                }
+            case .Mylistings(title: let title):
                     HStack {
                         BackButton()
                             .padding(.leading, 5)
-                        Spacer()
-                    }
-                    Text(title)
-                        .font(.system(size: 18, weight: .semibold, design: .default))
-                }
-                
-            case .Mylistings(title: let title):
-                ZStack{
-                    BackButton()
-                        .padding(.leading, 5)
-                    HStack {
                         Text(title)
                             .font(.system(size: 18, weight: .semibold, design: .default))
-                            .padding(.leading, 45)
                         Spacer()
-                        
-                    }
                 }
 
             case .RestPwd:
@@ -116,8 +91,10 @@ struct TopBar: View {
                         Spacer()
                         
                     }
+
                 }
             }
+            
         }
         //.padding(.horizontal, 16)   // 좌우 여백
     }
@@ -136,11 +113,7 @@ struct BackButton: View {
                     .foregroundColor(.black)
                     .frame(width: 36, height: 36)
             }
-            Spacer()
         }
     }
 }
 
-#Preview {
-    BackButton()
-}

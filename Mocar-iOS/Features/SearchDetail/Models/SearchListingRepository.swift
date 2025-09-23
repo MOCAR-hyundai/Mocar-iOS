@@ -18,7 +18,7 @@ struct SearchCar: Identifiable, Hashable {
     let trim: String
     let category: String
     let fuel: String
-    let area: String
+    let region: String
     let year: Int
     let price: Int
     let mileage: Int
@@ -101,7 +101,7 @@ final class SearchListingRepository {
             trim: trim,
             category: normalizedCarType,
             fuel: normalizedFuel,
-            area: region,
+            region: region,
             year: year,
             price: priceInTenThousands,
             mileage: mileage

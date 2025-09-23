@@ -6,10 +6,11 @@
 //
 
 import SwiftUI
+import FirebaseAuth
 
 struct SearchView: View {
     @Environment(\.dismiss) private var dismiss
-    @StateObject private var favoritesViewModel = FavoritesViewModel()
+    @EnvironmentObject var favoritesViewModel: FavoritesViewModel 
     @ObservedObject var viewModel: SearchDetailViewModel
     @State private var selectedCategory: String? = "제조사"
     @State private var showRecentSheet: Bool = false
@@ -105,10 +106,29 @@ struct SearchView: View {
                                     .stroke(Color.black, lineWidth: 1)
                             )
                     }
-                    
+                   
                     Button(action: {
+                        // 필터 저장
                         viewModel.saveCurrentFiltersAsRecent()
                         viewModel.debugLogAppliedFilters()
+
+                        // SearchDestination으로 이동
+                        let firestoreFilter = RecentFilter(
+                            userId: Auth.auth().currentUser?.uid,
+                            brand: viewModel.selectedMaker,
+                            model: viewModel.selectedModel,
+                            subModels: Array(viewModel.selectedTrims),
+                            carTypes: Array(viewModel.carTypeOptions.filter { $0.checked }.map { $0.name }),
+                            fuels: Array(viewModel.fuelOptions.filter { $0.checked }.map { $0.name }),
+                            regions: Array(viewModel.regionOptions.filter { $0.checked }.map { $0.name }),
+                            minPrice: viewModel.minPrice,
+                            maxPrice: viewModel.maxPrice,
+                            minYear: viewModel.minYear,
+                            maxYear: viewModel.maxYear,
+                            minMileage: viewModel.minMileage,
+                            maxMileage: viewModel.maxMileage
+                        )
+                        path.append(.searchResults(keyword: nil, filter: firestoreFilter))
                     }) {
                         Text("\(formattedResultCount)대 보기")
                             .fontWeight(.bold)
@@ -141,7 +161,10 @@ struct SearchView: View {
                     SearchResultsView(keyword: keyword, filter: filter)
                     
                 case .searchResultDetail(let listingId):
-                    ListingDetailView(listingId: listingId, favoritesViewModel: favoritesViewModel)
+                    ListingDetailView(
+                        service: ListingServiceImpl(repository: ListingRepository()),
+                                    listingId: listingId 
+                    )
                 }
             }
         }

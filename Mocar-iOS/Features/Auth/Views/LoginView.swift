@@ -32,8 +32,8 @@ struct LoginView: View {
         NavigationStack{
             VStack(spacing: 20) {
               
-                TopBar(style: .login)
-                    .padding(.bottom, 65)
+                TopBar(style: .loginSignup)
+                    .padding(.bottom, 70)
                     .padding(.leading,5)
                     .background(Color.backgroundGray100)
                 

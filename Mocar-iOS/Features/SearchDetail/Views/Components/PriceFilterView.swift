@@ -23,21 +23,33 @@ struct PriceFilterView: View {
                     .font(.footnote)
                     .fontWeight(.semibold)
                 
-                // 슬라이더: Int ↔ Double 변환
+                // 슬라이더
                 RangeSlider(
                     lowerValue: Binding(
                         get: { Double(minPrice) },
                         set: { newValue in
                             let intValue = Int(newValue.rounded())
                             minPrice = min(max(intValue, priceRange.lowerBound), maxPrice)
-                            minText = String(minPrice)
+                            
+                            // 🔹 최소가 범위 시작점이면 "전체" 의미 → 빈 문자열
+                            if minPrice == priceRange.lowerBound {
+                                minText = ""
+                            } else {
+                                minText = String(minPrice)
+                            }
                         }),
                     upperValue: Binding(
                         get: { Double(maxPrice) },
                         set: { newValue in
                             let intValue = Int(newValue.rounded())
                             maxPrice = max(min(intValue, priceRange.upperBound), minPrice)
-                            maxText = String(maxPrice)
+                            
+                            // 🔹 최대가 범위 끝이면 "전체" 의미 → 빈 문자열
+                            if maxPrice == priceRange.upperBound {
+                                maxText = ""
+                            } else {
+                                maxText = String(maxPrice)
+                            }
                         }),
                     range: Double(priceRange.lowerBound)...Double(priceRange.upperBound)
                 )
@@ -45,6 +57,7 @@ struct PriceFilterView: View {
                 .padding(.horizontal, 16)
             }
             .padding(.top, 20)
+            
             // 텍스트 입력
             HStack {
                 TextField("최소", text: $minText)
@@ -55,10 +68,9 @@ struct PriceFilterView: View {
                         minText = newValue.filter { "0123456789".contains($0) }
                         if let value = Int(minText) {
                             minPrice = min(max(value, priceRange.lowerBound), maxPrice)
+                        } else {
+                            minPrice = priceRange.lowerBound // 빈 문자열 → 전체
                         }
-                    }
-                    .onSubmit {
-                        minText = String(minPrice)
                     }
                 
                 Text("만원")
@@ -75,10 +87,9 @@ struct PriceFilterView: View {
                         maxText = newValue.filter { "0123456789".contains($0) }
                         if let value = Int(maxText) {
                             maxPrice = max(min(value, priceRange.upperBound), minPrice)
+                        } else {
+                            maxPrice = priceRange.upperBound // 빈 문자열 → 전체
                         }
-                    }
-                    .onSubmit {
-                        maxText = String(maxPrice)
                     }
                 
                 Text("만원")
@@ -86,8 +97,8 @@ struct PriceFilterView: View {
         }
         .padding(.horizontal, 16)
         .onAppear {
-            minText = String(minPrice)
-            maxText = String(maxPrice)
+            minText = ""
+            maxText = ""
         }
         Spacer()
     }

@@ -7,160 +7,198 @@
 
 import SwiftUI
 
-struct HomeView: View {
-    @StateObject private var favoritesViewModel: FavoritesViewModel
-    @StateObject private var homeViewModel: HomeViewModel
-    @StateObject private var userSession = UserSession()
-    @State private var showLogin = false
-    
-    init(){
-        //FavoritesviewModel을 먼저 만들고 HomeViewModel에 주입
-        let favVM = FavoritesViewModel()
-            _favoritesViewModel = StateObject(wrappedValue: favVM)
-            _homeViewModel = StateObject(wrappedValue: HomeViewModel(favoriteViewModel: favVM))
-   }
 
+struct HomeView: View {
+    @StateObject private var homeViewModel: HomeViewModel
+    @EnvironmentObject var favoritesVM: FavoritesViewModel
+    @StateObject private var userSession = UserSession()
+    
+    @State private var showLogin = false
+    @State private var showSearch = false
+    @State private var showFilter = false
+    
+    init() {
+        let listingRepo = ListingRepository()
+        
+        _homeViewModel = StateObject(
+            wrappedValue: HomeViewModel(
+                service: HomeServiceImpl(listingRepository: listingRepo)
+            )
+        )
+    }
+    
     var body: some View {
-        NavigationStack{
+        NavigationStack {
             VStack {
+                // MARK: - TopBar + 로그인 이동
                 TopBar(
                     style: .home(isLoggedIn: userSession.user != nil),
-                    onLoginTap:{showLogin = true}
+                    onLoginTap: { showLogin = true }
                 )
+                .padding(12)
+                
                 NavigationLink(
                     destination: LoginView()
-                        .navigationBarHidden(true)       // 기본 네비게이션 바 숨김
+                        .navigationBarHidden(true)
                         .navigationBarBackButtonHidden(true),
                     isActive: $showLogin
-                ) {
-                    EmptyView()
-                }
+                ) { EmptyView() }
                 
-                HStack{
-                    //검색 창
-                    ZStack(alignment: .leading){
-                        Image("Search")
-                            .padding(.leading,15)
-                        TextField("Search", text: .constant(""))
-                            .padding(.leading, 30)
-                            .padding()
-                            .frame(height: 50)
-                            .background(RoundedRectangle(cornerRadius: 8)
+                // MARK: - 검색창 + 필터 버튼
+                HStack {
+                    // 검색창
+                    Button {
+                        showSearch = true
+                    } label: {
+                        HStack {
+                            Image("Search")
+                                .padding(.leading, 8)
+
+                            Text("Search")
+                                .foregroundColor(.gray)
+                                .padding(.leading, 8)
+
+                            Spacer()
+                        }
+                        .padding()
+                        .frame(height: 50)
+                        .background(
+                            RoundedRectangle(cornerRadius: 8)
                                 .stroke(Color.gray, lineWidth: 1)
-                            )
+                        )
                     }
-                    //검색 필터 버튼
-                    Button(action:{
-                        
-                    }){
+
+                    // 필터 버튼
+                    Button {
+                        showFilter = true
+                    } label: {
                         Image("iconfilter")
                             .resizable()
                             .scaledToFit()
-                            .frame(width: 20, height: 20) // 아이콘 크기
+                            .frame(width: 20, height: 20)
                             .foregroundColor(.white)
                             .padding()
                     }
                     .frame(height: 50)
                     .background(
-                        RoundedRectangle(cornerRadius: 8)
-                            .fill(Color.blue)
+                        RoundedRectangle(cornerRadius: 8).fill(Color.blue)
                     )
                 }
-                .padding(.vertical,16)
+                .padding(.horizontal)
+                .padding(.bottom, 8)
+
+                //  네비게이션 전환
+                .navigationDestination(isPresented: $showSearch) {
+                    SearchView(viewModel: SearchDetailViewModel())
+                }
+                .navigationDestination(isPresented: $showFilter) {
+                    SearchView(viewModel: SearchDetailViewModel())
+                }
+
                 
-                ScrollView(showsIndicators: false){
-                    //찜한 목록
-                    VStack(alignment: .leading, spacing: 8){
-                        Text("찜한 목록")
-                            .font(.headline)
-                        Text("Available")
-                            .foregroundColor(.gray)
-                            .font(.subheadline)
+                // MARK: - 본문
+                ScrollView(showsIndicators: false) {
+                    VStack(alignment: .leading, spacing: 24) {
                         
-                        //리스트
-                        ScrollView(.horizontal, showsIndicators: false){
-                            HStack(spacing: 16) {
-                                ForEach(favoritesViewModel.favorites) { favorite in
-                                    if let listing = homeViewModel.listings.first(where: {$0.id == favorite.listingId}){
-                                        NavigationLink(
-                                            destination: ListingDetailView(
-                                                listingId: favorite.listingId,
-                                                favoritesViewModel: favoritesViewModel
-                                            )
-                                        ) {
-                                            FavoriteCardView(
-                                                listing: listing,
-                                                isFavorite: favoritesViewModel.isFavorite(listing),
-                                                onToggleFavorite:{
-                                                    favoritesViewModel.toggleFavorite(listing)
-                                                }
-                                            )
+                        // 찜한 매물 섹션
+                        if !favoritesVM.favoriteListings.isEmpty {
+                            VStack(alignment: .leading, spacing: 8) {
+                                Text("찜한 목록")
+                                    .font(.headline)
+                                Text("Available")
+                                    .foregroundColor(.gray)
+                                    .font(.subheadline)
+                                
+                                ScrollView(.horizontal, showsIndicators: false) {
+                                    HStack(spacing: 16) {
+                                        ForEach(favoritesVM.favoriteListings, id: \.safeId) { listing in
+                                            NavigationLink(
+                                                destination: ListingDetailView(
+                                                    service: ListingServiceImpl(repository: ListingRepository()),
+                                                    listingId: listing.id ?? ""
+                                                )
+                                            ) {
+                                                FavoriteCardView(
+                                                    listing: listing,
+                                                    isFavorite: favoritesVM.isFavorite(listing),
+                                                    onToggleFavorite: {
+                                                        Task { await favoritesVM.toggleFavorite(listing) }
+                                                    }
+                                                )
+                                            }
+                                            .buttonStyle(PlainButtonStyle())
                                         }
-                                         .buttonStyle(PlainButtonStyle())
                                     }
-                                    
                                 }
                             }
                         }
-                    }
-                    .padding(.bottom,16)
-                    
-                    //브랜드 스크롤
-                    VStack(alignment: .leading, spacing: 8){
-                        Text("Brands")
-                            .font(.headline)
-                            .padding(.bottom,8)
-                        ScrollView(.horizontal, showsIndicators: false){
-                            HStack(spacing: 20) {
-                                ForEach(homeViewModel.brands, id: \.self) { brand in
-                                    let logo = brandLogoMap[brand] ?? "이미지없음icon"
-                                    BrandIconView(
-                                        brand: Brand(name: brand, logo: logo),
-                                        isSelected: homeViewModel.selectedBrand == brand,  // 선택 여부
-                                        onSelect: {
-                                            homeViewModel.selectBrand(brand)
-                                            print("\(brand) selected")
-                                        }
-                                    )
-                                }
-                            }
-                        }
-                        .padding(.bottom,16)
-                        //브랜드 필터링 리스트
-                        LazyVGrid(columns: [
-                            GridItem(.flexible()), // 첫 번째 열
-                            GridItem(.flexible())  // 두 번째 열
-                        ], spacing: 16) {
-                            ForEach(homeViewModel.filteredListings.compactMap{$0.id}, id: \.self) { id in
-                                if let listing = homeViewModel.filteredListings.first(where: {$0.id == id}){
-                                    NavigationLink(
-                                        destination: ListingDetailView(
-                                        listingId: id,
-                                        favoritesViewModel: favoritesViewModel)
-                                    ){
-                                        ListingCardView(
-                                            listing: listing,
-                                            isFavorite: favoritesViewModel.isFavorite(listing),
-                                            onToggleFavorite:{
-                                                favoritesViewModel.toggleFavorite(listing)
+                        
+                        //  브랜드 섹션
+                        VStack(alignment: .leading, spacing: 8) {
+                            Text("Brands")
+                                .font(.headline)
+                                .padding(.bottom, 8)
+                            
+                            ScrollView(.horizontal, showsIndicators: false) {
+                                HStack(spacing: 16) {
+                                    ForEach(homeViewModel.brands) { brand in
+                                        BrandIconView(
+                                            brand: brand,
+                                            isSelected: homeViewModel.selectedBrand?.id == brand.id,
+                                            onSelect: {
+                                                Task { await homeViewModel.loadListings(for: brand) }
                                             }
                                         )
                                     }
-                                    .buttonStyle(PlainButtonStyle())
+                                }
+                            }
+                            .padding(.bottom, 16)
+                            
+                            // 브랜드별 매물 리스트
+                            if homeViewModel.isLoading {
+                                ProgressView("불러오는 중...")
+                                    .frame(maxWidth: .infinity, alignment: .center)
+                            } else {
+                                LazyVGrid(
+                                    columns: [
+                                        GridItem(.flexible()),
+                                        GridItem(.flexible())
+                                    ],
+                                    spacing: 16
+                                ) {
+                                    ForEach(homeViewModel.brandListings, id: \.safeId) { listing in
+                                        NavigationLink(
+                                            destination: ListingDetailView(
+                                                service: ListingServiceImpl(repository: ListingRepository()),
+                                                listingId: listing.id ?? ""
+                                            )
+                                        ) {
+                                            VerticalListingCardView(
+                                                listing: listing,
+                                                isFavorite: favoritesVM.isFavorite(listing),
+                                                onToggleFavorite: {
+                                                    Task { await favoritesVM.toggleFavorite(listing) }
+                                                }
+                                            )
+                                        }
+                                        .buttonStyle(PlainButtonStyle())
+                                    }
                                 }
                             }
                         }
                     }
+                    .padding()
+                    .background(Color.backgroundGray100)
+                    .onAppear {
+                        if homeViewModel.brands.isEmpty {
+                            Task { await homeViewModel.loadBrands() }
+                        }
+                    }
                 }
-                
+                .navigationBarHidden(true)
+                .background(Color.backgroundGray100)
             }
-            .padding()
-            .background(Color.backgroundGray100)
         }
-        .navigationBarHidden(true)
         .background(Color.backgroundGray100)
-        
     }
-   
 }
-

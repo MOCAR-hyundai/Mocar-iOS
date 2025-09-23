@@ -34,9 +34,9 @@ struct SignUpView: View {
         ScrollView{
             VStack (spacing: 20) {
                 
-            TopBar(style: .singup)
-                .padding(.bottom, 25)
-                .padding(.leading, 10)
+
+            TopBar(style: .loginSignup)
+                .padding(.bottom, 30)
                 .background(Color.backgroundGray100)
                 
                // 제목

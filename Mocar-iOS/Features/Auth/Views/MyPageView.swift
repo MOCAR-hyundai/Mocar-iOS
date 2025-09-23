@@ -13,7 +13,7 @@ import FirebaseFirestore
 struct MyPageView: View {
     @Binding var selectedTab: Int
     @StateObject private var viewModel = MyPageViewModel()
-    @StateObject private var favoritesViewModel = FavoritesViewModel()
+    @EnvironmentObject var favoritesVM: FavoritesViewModel
 
     @State private var showLogoutConfirm = false
 
@@ -130,13 +130,13 @@ struct MyPageView: View {
                         
                     
                     VStack(spacing: 0) {
-                        ProfileRow(icon: "heart", title: "나의 찜 매물")
-                        
                         NavigationLink(
-                            destination: MyOrdersView(
-                                currentUserId: UserId ?? "",
-                                favoritesViewModel: favoritesViewModel // 외부에서 만든 뷰모델 주입
-                            )
+                            destination: VerticalFavoritesListView()
+                        ) {
+                            ProfileRow(icon: "heart", title: "나의 찜 매물")
+                        }
+                        NavigationLink(
+                            destination: MyOrdersView(currentUserId: UserId ?? "")
                             .navigationBarHidden(true)   // 기본 네비게이션 바 숨김
                         ) {
                             ProfileRow(icon: "car.fill", title: "나의 구입 매물")
@@ -145,10 +145,7 @@ struct MyPageView: View {
                         
                         
                         NavigationLink(
-                            destination: MyListingsView(
-                                currentUserId: UserId ?? "",
-                                favoritesViewModel: favoritesViewModel // 외부에서 만든 뷰모델 주입
-                            )
+                            destination: MyListingsView(currentUserId: UserId ?? "")
                             .navigationBarHidden(true)   // 기본 네비게이션 바 숨김
                         ) {
                            ProfileRow(icon: "dollarsign.circle", title: "나의 등록 매물")
@@ -188,8 +185,9 @@ struct MyPageView: View {
                     }
                     .padding(.horizontal)
                     .padding(.bottom, 4)
-                    
+                  
                     Spacer()
+
                 }
                 .onAppear {
                     viewModel.fetchUser()

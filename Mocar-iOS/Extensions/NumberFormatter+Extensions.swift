@@ -1,3 +1,4 @@
+
 import Foundation
 
 extension NumberFormatter {
@@ -26,8 +27,6 @@ extension NumberFormatter {
                return "\(decimal.string(from: NSNumber(value: 만)) ?? "\(만)")만원"
            }
        }
-    
-    
 }
 
 // MARK: - 숫자 포맷 Extension
