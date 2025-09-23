@@ -23,6 +23,13 @@ extension Date {
         formatter.dateFormat = format
         return formatter.string(from: self)
     }
+    
+    func toISO8601String() -> String {
+          let formatter = ISO8601DateFormatter()
+          formatter.timeZone = TimeZone(secondsFromGMT: 0)  // UTC로 저장
+          formatter.formatOptions = [.withInternetDateTime, .withDashSeparatorInDate, .withColonSeparatorInTime]
+          return formatter.string(from: self)
+      }
 }
 
 func formatDateString(_ dateString: String?, format: String = "yyyy년 MM월 dd일") -> String {

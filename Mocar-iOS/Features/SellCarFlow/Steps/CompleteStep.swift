@@ -24,7 +24,15 @@ struct CompleteStep: View {
             
             Spacer()
             
-            Button(action: {}
+            Button(action: {
+                viewModel.step = .carNumber   // 첫 단계로 이동
+                viewModel.carNumber = ""
+                viewModel.ownerName = ""
+                viewModel.mileage = ""
+                viewModel.price = ""
+                viewModel.additionalInfo = ""
+                viewModel.photos = []
+            }
             ) {
                 Text("처음으로")
                     .frame(maxWidth: .infinity)

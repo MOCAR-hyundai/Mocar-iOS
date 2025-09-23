@@ -18,14 +18,17 @@ struct CarInfoStep: View {
                 .fontWeight(.bold)
                 .padding(.bottom, 16)
             
-            // 수정 필요
-            Image("car-img")
-                .resizable()
-                .scaledToFit()
-                .frame(height: 150)
-            
-            // 수정 필요
-            Text("현대 싼타페 CM 2WD(2.0 VGT) CLX 고급형")
+            if !viewModel.firstImageUrl.isEmpty {
+                AsyncImage(url: URL(string: viewModel.firstImageUrl)) { image in
+                    image.resizable()
+                        .scaledToFit()
+                        .frame(height: 150)
+                } placeholder: {
+                    ProgressView()
+                }
+            }
+                        
+            Text(viewModel.title)
                 .font(.caption)
                 .foregroundColor(.secondary)
                 .padding(.bottom)
@@ -33,9 +36,11 @@ struct CarInfoStep: View {
             VStack {
                 CarInfoRow(label: "차량 번호", value: viewModel.carNumber)
                 
+                CarInfoRow(label: "모델명", value: viewModel.title)
+                CarInfoRow(label: "연식", value: viewModel.year)
                 // 수정 필요
-                CarInfoRow(label: "모델명", value: "현대 싼타페 CM 2WD(2.0 VGT) CLX 고급형")
-                CarInfoRow(label: "연식", value: "2015년식")
+//                CarInfoRow(label: "모델명", value: "현대 싼타페 CM 2WD(2.0 VGT) CLX 고급형")
+//                CarInfoRow(label: "연식", value: "2015년식")
             }
             .padding()
             .background(
@@ -67,6 +72,9 @@ struct CarInfoStep: View {
                 }
                 .disabled(viewModel.ownerName.isEmpty)
             }
+        }
+        .onAppear {
+            viewModel.fetchCarInfo()
         }
     }
 }
