@@ -322,34 +322,34 @@ struct SearchListingDetailView: View {
     let listing: Listing
     
     var body: some View {
-//        VStack {
-//            if listing.images.count > 1 {
-//                Image(listing.images[1])
-//                    .resizable()
-//                    .scaledToFit()
-//                    .frame(height: 120)
-//                    .clipped()
-//            } else {
-//                Color.gray.opacity(0.2)
-//                    .frame(height: 120)
-//            }
-//
-//            Text(listing.title)
-//                .font(.title2)
-//                .bold()
-//                .padding()
-//            
-//            Text("가격: \(listing.price.formattedWithSeparator())원")
-//                .font(.headline)
-//            
-//            Text("연식: \(listing.year)년 | 주행거리: \(listing.mileage) km | 연료: \(listing.fuel)")
-//                .font(.subheadline)
-//                .foregroundColor(.secondary)
-//                .padding(.top, 8)
-//            
-//            Spacer()
-//        }
-//        .navigationTitle("차량 상세")
+        VStack {
+            if listing.images.count > 1 {
+                Image(listing.images[1])
+                    .resizable()
+                    .scaledToFit()
+                    .frame(height: 120)
+                    .clipped()
+            } else {
+                Color.gray.opacity(0.2)
+                    .frame(height: 120)
+            }
+
+            Text(listing.title)
+                .font(.title2)
+                .bold()
+                .padding()
+            
+            Text("가격: \(listing.price.formattedWithSeparator())원")
+                .font(.headline)
+            
+            Text("연식: \(listing.year)년 | 주행거리: \(listing.mileage) km | 연료: \(listing.fuel)")
+                .font(.subheadline)
+                .foregroundColor(.secondary)
+                .padding(.top, 8)
+            
+            Spacer()
+        }
+        .navigationTitle("차량 상세")
     }
 }
 

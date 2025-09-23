@@ -34,7 +34,3 @@ struct CarInfoView: View {
         .padding(10)
     }
 }
-
-#Preview {
-    //CarInfoView()
-}

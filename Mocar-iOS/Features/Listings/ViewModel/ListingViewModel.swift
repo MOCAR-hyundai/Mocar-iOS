@@ -50,37 +50,7 @@ final class ListingDetailViewModel: ObservableObject {
             print("Error Message -- fail to load listing: \(error)")
         }
     }
-    
-    //선택된 매물, 그래프 데이터
-//    private func applyListing(_ found: Listing){
-//        self.listing = found
-//        self.currentValue = Double(found.price)
-//        
-//        //동일 모델의 매물들 필터링
-//        let sameModelListings = listings.filter {$0.model == found.model}
-//        //가격 리스트만 추출
-//        self.prices = sameModelListings.map { Double($0.price)}
-//        
-//        // 최소, 최대 값 계산
-//        self.minPrice = prices.min() ?? 0
-//        self.maxPrice = prices.max() ?? 0
-//        self.ticks = makeTicks(minPrice: minPrice, maxPrice: maxPrice)
-//        
-//        //시세 안전 구간 범위
-//        if ticks.count == 6 {
-//            self.safeMin = Double(ticks[1])
-//            self.safeMax = Double(ticks[4])
-//        }
-//    }
-    
-    
-//    private func makeTicks(minPrice: Double, maxPrice: Double) -> [Int] {
-//            guard minPrice < maxPrice else { return [Int(minPrice)] }
-//            let step = (maxPrice - minPrice) / 5.0
-//            return (0...5).map {i in
-//                Int(minPrice + Double(i) * step) }
-//    }
-    
+
     // MARK: - 안전 구간 계산 X좌표
     func safeStartX(width: CGFloat) -> CGFloat {
         guard let data = detailData, data.maxPrice > data.minPrice else { return 0 }
