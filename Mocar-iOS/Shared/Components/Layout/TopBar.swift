@@ -8,12 +8,12 @@
 import SwiftUI
 
 enum TopBarStyle{
-    case home(isLoggedIn: Bool)                 // 로고 + 검색
-    case loginSignup                   // 로그인,회원가입
-    case listing(title: String)     // 뒤로가기 + 타이틀
-    case MyPage(title: String)      // 뒤로가기 + 타이틀
-    case Mylistings(title: String)  // 뒤로가기 + 왼쪽 타이틀
-    case RestPwd  // 뒤로가기 + 왼쪽 로고
+    case home(isLoggedIn: Bool)                             // 로고 + 검색
+    case loginSignup                                        // 로그인,회원가입
+    case listing(title: String, status: ListingStatus)      // 뒤로가기 + 타이틀
+    case MyPage(title: String)                              // 뒤로가기 + 타이틀
+    case Mylistings(title: String)                          // 뒤로가기 + 왼쪽 타이틀
+    case RestPwd                                            // 뒤로가기 + 왼쪽 로고
     //case chat(title: String)   // 뒤로가기 + 채팅방 이름
 }
 
@@ -53,13 +53,17 @@ struct TopBar: View {
                     Spacer()
                 }
                 
-            case .listing(title: let title):
-                ZStack{
-                    HStack {
-                        BackButton()
-                        Spacer()
-                    }
+            case .listing(title: let title, status: let status):
+                HStack {
+                    BackButton()
+                    Spacer()
                     Text(title)
+                    Spacer()
+                    Text(status.displayText)
+                        .font(.system(size: 14))
+                        .foregroundColor(status.displayColor)
+                        .padding(.trailing,10)
+                   
                 }
             case .MyPage(title: let title):
                 HStack {

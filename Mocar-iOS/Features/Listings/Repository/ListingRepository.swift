@@ -75,6 +75,39 @@ class ListingRepository {
             throw error
         }
     }
+    
+
+    func updateListingAndOrders(listingId: String, newStatus: ListingStatus) async throws {
+        // 1) listings 상태 변경
+        try await db.collection("listings")
+            .document(listingId)
+            .updateData(["status": newStatus.rawValue])
+
+        // 2) orders 상태 변경 (필요한 경우만)
+        let snapshot = try await db.collection("orders")
+            .whereField("listingId", isEqualTo: listingId)
+            .getDocuments()
+
+        for doc in snapshot.documents {
+            var updateData: [String: Any] = [:]
+
+            if newStatus == .reserved {
+                updateData["status"] = OrderStatus.reserved.rawValue
+                updateData["reservedAt"] = ISO8601DateFormatter().string(from: Date())
+            } else if newStatus == .soldOut {
+                updateData["status"] = OrderStatus.sold.rawValue
+                updateData["soldAt"] = ISO8601DateFormatter().string(from: Date())
+            }
+
+            if !updateData.isEmpty {
+                try await db.collection("orders")
+                    .document(doc.documentID)
+                    .updateData(updateData)
+            }
+        }
+    }
+    
+
 
 
 }

@@ -191,7 +191,8 @@ struct SearchResultsView: View {
                           ], spacing: 12) {
                               ForEach(viewModel.listings) { listing in
                                   NavigationLink(destination: ListingDetailView(
-                                    service: ListingServiceImpl(repository: ListingRepository()),
+                                    service: ListingServiceImpl(repository: ListingRepository(),
+                                        userStore: UserStore()),
                                     listingId: listing.id ?? ""
                                     )
                                   ) {

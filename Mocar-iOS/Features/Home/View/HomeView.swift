@@ -114,7 +114,7 @@ struct HomeView: View {
                                         ForEach(favoritesVM.favoriteListings, id: \.safeId) { listing in
                                             NavigationLink(
                                                 destination: ListingDetailView(
-                                                    service: ListingServiceImpl(repository: ListingRepository()),
+                                                    service: ListingServiceImpl(repository: ListingRepository(),                         userStore: UserStore()                         ),
                                                     listingId: listing.id ?? ""
                                                 )
                                             ) {
@@ -169,7 +169,8 @@ struct HomeView: View {
                                     ForEach(homeViewModel.brandListings, id: \.safeId) { listing in
                                         NavigationLink(
                                             destination: ListingDetailView(
-                                                service: ListingServiceImpl(repository: ListingRepository()),
+                                                service: ListingServiceImpl(repository: ListingRepository(),
+                                                     userStore: UserStore()),
                                                 listingId: listing.id ?? ""
                                             )
                                         ) {

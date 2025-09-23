@@ -92,7 +92,9 @@ struct MyListingsView: View {
                     ForEach(filteredListings) { item in
                         NavigationLink(
                             destination: ListingDetailView(
-                                service: ListingServiceImpl(repository: ListingRepository()),
+                                service: ListingServiceImpl(repository: ListingRepository(),
+                                    userStore: UserStore()
+                                ),
                                             listingId: item.id ?? ""
                             )
                         ) {
@@ -117,8 +119,4 @@ struct MyListingsView: View {
         }
         .background(Color.backgroundGray100)
     }
-}
-
-#Preview {
-//    MyListingsView()
 }

@@ -11,12 +11,28 @@ import Foundation
 
 struct ListingDetailData {
     let listing: Listing        // 단일 매물
+    let seller: User?           // 판매자 정보 추가
     let prices: [Double]        // 같은 모델 매물들의 가격 리스트
     let minPrice: Double        // 최저가
     let maxPrice: Double        // 최고가
     let safeMin: Double         // 시세 안전 구간 최소값
     let safeMax: Double         // 시세 안전 구간 최대값
     let ticks: [Int]            // 가격 구간 눈금
+}
+
+extension ListingDetailData {
+    func withStatus(_ status: ListingStatus) -> ListingDetailData {
+        ListingDetailData(
+            listing: listing.with(status: status),
+            seller: seller,
+            prices: prices,
+            minPrice: minPrice,
+            maxPrice: maxPrice,
+            safeMin: safeMin,
+            safeMax: safeMax,
+            ticks: ticks
+        )
+    }
 }
 
 //프로토콜 인터페이스 역할
@@ -29,14 +45,19 @@ protocol ListingService {
 
     // 매물 상세 분석 데이터 (상세 화면 전용)
     func getListingDetail(id: String, allListings: [Listing]) async throws -> ListingDetailData
+    
+    //차량 상태 업데이트
+    func updateListingAndOrders(listingId: String, status: ListingStatus) async throws
 }
 
 
 final class ListingServiceImpl: ListingService {
     private let repository: ListingRepository
+    private let userStore: UserStore
     
-    init(repository: ListingRepository) {
+    init(repository: ListingRepository, userStore: UserStore) {
         self.repository = repository
+        self.userStore = userStore
     }
 
     func getAllListings() async throws -> [Listing] {
@@ -49,6 +70,15 @@ final class ListingServiceImpl: ListingService {
 
     func getListingDetail(id: String, allListings: [Listing]) async throws -> ListingDetailData {
         let found = try await repository.fetchListing(id: id)
+        
+        //유저 정보 가져오기
+        var seller: User? = nil
+        if let cachedUser = userStore.getUser(userId: found.sellerId) {
+            seller = cachedUser
+        } else {
+            await userStore.fetchUser(userId: found.sellerId)
+            seller = userStore.getUser(userId: found.sellerId)
+        }
         
         // 동일 모델 매물들 필터링
         let sameModelListings = allListings.filter { $0.model == found.model }
@@ -65,6 +95,7 @@ final class ListingServiceImpl: ListingService {
 
         return ListingDetailData(
             listing: found,
+            seller: seller,
             prices: prices,
             minPrice: minPrice,
             maxPrice: maxPrice,
@@ -78,6 +109,10 @@ final class ListingServiceImpl: ListingService {
         guard minPrice < maxPrice else { return [Int(minPrice)] }
         let step = (maxPrice - minPrice) / 5.0
         return (0...5).map { i in Int(minPrice + Double(i) * step) }
+    }
+    
+    func updateListingAndOrders(listingId: String, status: ListingStatus) async throws {
+        try await repository.updateListingAndOrders(listingId: listingId, newStatus: status)
     }
 }
 

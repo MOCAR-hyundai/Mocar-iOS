@@ -83,4 +83,28 @@ final class ListingDetailViewModel: ObservableObject {
         
         return pos
     }
+    
+    //MARK: - 유저 정보
+    var sellerName: String {
+           detailData?.seller?.name ?? "알 수 없음"
+    }
+       
+   var sellerProfileImageUrl: String? {
+       detailData?.seller?.photoUrl
+   }
+    
+    //MARK: - 매물 상태 변경
+    func changeStatus(to status: ListingStatus) async {
+        guard let listingId = detailData?.listing.id else { return }
+        
+        do {
+            try await service.updateListingAndOrders(listingId: listingId, status: status)
+            if let current = detailData {
+                self.detailData = current.withStatus(status) // UI 즉시 반영
+            }
+        } catch {
+            print("EROOR MESAAGE -- Failed to update status: \(error)")
+        }
+    }
+
 }

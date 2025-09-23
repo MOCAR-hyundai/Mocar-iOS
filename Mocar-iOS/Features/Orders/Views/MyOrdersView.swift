@@ -48,8 +48,10 @@ struct MyOrdersView: View {
                         ForEach(vm.myOrders) { item in
                             NavigationLink(
                                 destination: ListingDetailView(
-                                    service: ListingServiceImpl(repository: ListingRepository()),
-                                                listingId: item.id ?? ""
+                                    service: ListingServiceImpl(repository: ListingRepository(),
+                                        userStore: UserStore()
+                                    ),
+                                    listingId: item.listing.id ?? ""
                                 )
                             ) {
                                 OrdersCardView(

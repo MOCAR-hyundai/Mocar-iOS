@@ -51,8 +51,41 @@ struct ListingDetailView: View {
     // MARK: - 본문 UI
     private func content(detailData: ListingDetailData) -> some View {
         VStack {
-            TopBar(style: .listing(title: detailData.listing.plateNo))
-                .padding()
+            TopBar(
+                style: .listing(
+                    title: detailData.listing.plateNo,
+                    status: detailData.listing.status
+                )
+            )
+            .padding()
+            .overlay(alignment: .trailing) {
+                HStack{  // 상태와 버튼 사이 간격
+                    if let currentUserId = Auth.auth().currentUser?.uid,
+                       currentUserId == detailData.listing.sellerId {
+                        Menu {
+                            Button("판매중") {
+                                Task { await viewModel.changeStatus(to: .onSale) }
+                            }
+                            Button("예약중") {
+                                Task { await viewModel.changeStatus(to: .reserved) }
+                            }
+                            Button("판매완료") {
+                                Task { await viewModel.changeStatus(to: .soldOut) }
+                            }
+                        } label: {
+                            Image(systemName: "ellipsis")
+                                .rotationEffect(.degrees(90))
+                                .font(.system(size: 16))
+                                .foregroundColor(.black)
+                                .padding(.trailing, 8)
+                        }
+                    }
+                }
+            }
+
+
+
+            
             
             ScrollView {
                 VStack {
@@ -69,7 +102,7 @@ struct ListingDetailView: View {
                     
                     basicInfo(detailData.listing)
                     
-                    ProfileInfoView()
+                    ProfileInfoView(seller: detailData.seller)
                         .padding(.horizontal)
                     
                     vehicleInfo(detailData.listing)
