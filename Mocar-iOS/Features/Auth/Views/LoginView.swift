@@ -38,7 +38,6 @@ struct LoginView: View {
                     .background(Color.backgroundGray100)
                 
 
-                
                 Text("로그인")
                     .font(.system(size: 30, weight: .semibold, design: .default))
                     .frame(maxWidth: .infinity, alignment: .leading)
@@ -123,10 +122,10 @@ struct LoginView: View {
                         Toggle("로그인 상태 유지", isOn: $keepLoggedIn)
                             .toggleStyle(CheckboxToggleStyle())
                         Spacer()
-                        Button("비밀번호 재설정") {
-                            // 비밀번호 재설정 액션
-                        }
-                        .foregroundColor(.blue)
+                        
+                        NavigationLink("비밀번호를 잃어버리셨나요? ", destination: ResetPasswordView())
+                            .foregroundColor(.blue)
+                        
                     }
                     .font(.system(size: 14, weight: .regular, design: .default))
                     .padding(.top, 6)
