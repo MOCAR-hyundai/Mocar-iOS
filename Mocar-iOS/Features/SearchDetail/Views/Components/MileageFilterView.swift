@@ -57,9 +57,6 @@ struct MileageFilterView: View {
                             minMileage = min(max(value, mileageRange.lowerBound), maxMileage)
                         }
                     }
-                    .onSubmit {
-                        minText = String(minMileage)
-                    }
                 
                 Text("km")
                 
@@ -76,9 +73,6 @@ struct MileageFilterView: View {
                         if let value = Int(maxText) {
                             maxMileage = max(min(value, mileageRange.upperBound), minMileage)
                         }
-                    }
-                    .onSubmit {
-                        maxText = String(maxMileage)
                     }
                 
                 Text("km")

@@ -57,9 +57,9 @@ struct YearFilterView: View {
                             minYear = min(max(value, yearRange.lowerBound), maxYear)
                         }
                     }
-                    .onSubmit {
-                        minText = String(minYear)
-                    }
+//                    .onSubmit {
+//                        minText = String(minYear)
+//                    }
                 
                 Text("년")
                 
@@ -77,9 +77,9 @@ struct YearFilterView: View {
                             maxYear = max(min(value, yearRange.upperBound), minYear)
                         }
                     }
-                    .onSubmit {
-                        maxText = String(maxYear)
-                    }
+//                    .onSubmit {
+//                        maxText = String(maxYear)
+//                    }
                 
                 Text("년")
             }
