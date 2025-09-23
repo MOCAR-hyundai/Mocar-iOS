@@ -13,7 +13,7 @@ import FirebaseFirestore
 class ListingRepository {
     private let db = Firestore.firestore()
     
-    
+    //전체 매물 데이터
     func fetchListings() async throws -> [Listing] {
         do {
             //Firestore에서 listings 컬렉션의 모든 문서를 가져옴
@@ -32,11 +32,12 @@ class ListingRepository {
         }
     }
     
-    
+    //단일 매물 데이터
     func fetchListing(id: String) async throws -> Listing {
             do {
                 //특정 document id에 해당하는 매물을 가져옴.
                 let doc = try await db.collection("listings").document(id).getDocument()
+                print("매물 id: \(doc.documentID)")
                 guard let listing = try? doc.data(as: Listing.self) else { //디코딩 실패 → 404 Not Found 에러 throw
                     throw NSError(domain: "ListingRepository",
                                   code: 404,
@@ -76,7 +77,7 @@ class ListingRepository {
         }
     }
     
-
+    //차량 상태 불러오기
     func updateListingAndOrders(listingId: String, newStatus: ListingStatus) async throws {
         // 1) listings 상태 변경
         try await db.collection("listings")
@@ -107,7 +108,27 @@ class ListingRepository {
         }
     }
     
-
-
-
+    //가격 범위 불러오기
+    func fetchListingWithPrice(id: String) async throws -> (Listing, PriceIndex?) {
+        let listing = try await fetchListing(id: id) //기존 함수 재사용
+        
+        let queryId = "\(listing.brand)_\(listing.model)_\(listing.year)"
+        let snapshot = try await db.collection("priceIndex")
+            .whereField("id", isEqualTo: queryId)
+            .getDocuments()
+        
+        let priceIndex = try? snapshot.documents.first?.data(as: PriceIndex.self)
+        
+        //let priceDoc = try await db.collection("priceIndex").document(id).getDocument()
+        //let priceIndex = try? priceDoc.data(as: PriceIndex.self)
+        
+        if let priceIndex = priceIndex {
+            print(" PriceIndex 디코딩 성공: \(priceIndex)")
+        } else {
+            print("PriceIndex 문서 없음 (queryId: \(queryId))")
+        }
+        
+        return (listing, priceIndex)
+        
+    }
 }

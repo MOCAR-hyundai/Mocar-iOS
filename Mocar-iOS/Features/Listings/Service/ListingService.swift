@@ -17,7 +17,7 @@ struct ListingDetailData {
     let maxPrice: Double        // 최고가
     let safeMin: Double         // 시세 안전 구간 최소값
     let safeMax: Double         // 시세 안전 구간 최대값
-    let ticks: [Int]            // 가격 구간 눈금
+    let ticks: [Double]          // 가격 구간 눈금
 }
 
 extension ListingDetailData {
@@ -69,30 +69,60 @@ final class ListingServiceImpl: ListingService {
     }
 
     func getListingDetail(id: String, allListings: [Listing]) async throws -> ListingDetailData {
-        let found = try await repository.fetchListing(id: id)
+        //Listing + PriceIndex 가져오기
+        let (found, priceIndex) = try await repository.fetchListingWithPrice(id: id)
         
         //유저 정보 가져오기
         var seller: User? = nil
         if let cachedUser = userStore.getUser(userId: found.sellerId) {
             seller = cachedUser
         } else {
-            await userStore.fetchUser(userId: found.sellerId)
+            //await userStore.fetchUser(userId: found.sellerId)
             seller = userStore.getUser(userId: found.sellerId)
         }
         
-        // 동일 모델 매물들 필터링
-        let sameModelListings = allListings.filter { $0.model == found.model }
-        let prices = sameModelListings.map { Double($0.price) }
-        
-        // 최소, 최대 값 계산
-        let minPrice = prices.min() ?? 0
-        let maxPrice = prices.max() ?? 0
-        let ticks = makeTicks(minPrice: minPrice, maxPrice: maxPrice)
-        
-        // 시세 안전 구간 범위
-        let safeMin = ticks.count > 1 ? Double(ticks[1]) : minPrice
-        let safeMax = ticks.count > 4 ? Double(ticks[4]) : maxPrice
+        //값을 담을 변수
+        let prices: [Double]
+        let minPrice: Double
+        let maxPrice: Double
+        let safeMin: Double
+        let safeMax: Double
+        let ticks: [Double]
 
+        if let index = priceIndex {
+            // PriceIndex 테이블 값 활용
+            prices = [Double(index.avgPrice), Double(index.minPrice), Double(index.maxPrice)]
+            minPrice = Double(index.minPrice)
+            maxPrice = Double(index.maxPrice)
+            
+            ticks = makeTicks(minPrice: minPrice, maxPrice: maxPrice)
+            safeMin = ticks.count > 1 ? ticks[1] : minPrice
+            safeMax = ticks.count > 4 ? ticks[4] : maxPrice
+        } else {
+            // fallback: 동일 모델 기반
+            let sameModelListings = allListings.filter { $0.model == found.model }
+            prices = sameModelListings.map { Double($0.price) }
+            minPrice = prices.min() ?? 0
+            maxPrice = prices.max() ?? 0
+            
+            ticks = makeTicks(minPrice: minPrice, maxPrice: maxPrice)
+            safeMin = ticks.count > 1 ? ticks[1] : minPrice
+            safeMax = ticks.count > 4 ? ticks[4] : maxPrice
+        }
+        
+//        // 동일 모델 매물들 필터링
+//        let sameModelListings = allListings.filter { $0.model == found.model }
+//        let prices = sameModelListings.map { Double($0.price) }
+//        
+//        // 최소, 최대 값 계산
+//        let minPrice = prices.min() ?? 0
+//        let maxPrice = prices.max() ?? 0
+//        let ticks = makeTicks(minPrice: minPrice, maxPrice: maxPrice)
+//        
+//        // 시세 안전 구간 범위
+//        let safeMin = ticks.count > 1 ? Double(ticks[1]) : minPrice
+//        let safeMax = ticks.count > 4 ? Double(ticks[4]) : maxPrice\
+        
         return ListingDetailData(
             listing: found,
             seller: seller,
@@ -103,12 +133,13 @@ final class ListingServiceImpl: ListingService {
             safeMax: safeMax,
             ticks: ticks
         )
+
     }
 
-    private func makeTicks(minPrice: Double, maxPrice: Double) -> [Int] {
-        guard minPrice < maxPrice else { return [Int(minPrice)] }
+    private func makeTicks(minPrice: Double, maxPrice: Double) -> [Double] {
+        guard minPrice < maxPrice else { return [minPrice] }
         let step = (maxPrice - minPrice) / 5.0
-        return (0...5).map { i in Int(minPrice + Double(i) * step) }
+        return (0...5).map { i in minPrice + Double(i) * step }
     }
     
     func updateListingAndOrders(listingId: String, status: ListingStatus) async throws {

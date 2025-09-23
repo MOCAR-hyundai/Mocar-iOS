@@ -35,7 +35,7 @@ final class ListingDetailViewModel: ObservableObject {
     var statusText: String {
         guard let data = detailData else { return "" }
         if Double(data.listing.price) < data.safeMin { return "낮음" }
-        if Double(data.listing.price) > data.safeMax { return "높음" }
+        if Double(data.listing.price) > data.safeMax { return "낮음" }
         return "적정"
     }
     
@@ -63,8 +63,13 @@ final class ListingDetailViewModel: ObservableObject {
         guard let data = detailData, data.maxPrice > data.minPrice else { return 0 }
         let start = clamped(data.safeMin, min: data.minPrice, max: data.maxPrice)
         let end   = clamped(data.safeMax, min: data.minPrice, max: data.maxPrice)
-        return CGFloat((end - start) / (data.maxPrice - data.minPrice)) * width
+
+        let startRatio = (start - data.minPrice) / (data.maxPrice - data.minPrice)
+        let endRatio = (end - data.minPrice) / (data.maxPrice - data.minPrice)
+
+        return width * CGFloat(endRatio - startRatio)
     }
+
     
     // MARK: - Util
     private func clamped(_ value: Double, min: Double, max: Double) -> Double {

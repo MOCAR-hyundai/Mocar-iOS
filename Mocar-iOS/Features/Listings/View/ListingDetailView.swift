@@ -39,13 +39,15 @@ struct ListingDetailView: View {
                     await viewModel.loadListing(id: listingId)
                 }
             }
+            buyButton
+                .padding()
         }
         .background(Color.backgroundGray100)
         .navigationBarHidden(true)
         .navigationBarBackButtonHidden(true)
-        .overlay(alignment: .bottom) {
-            buyButton
-        }
+//        .overlay(alignment: .bottom) {
+//            buyButton
+//        }
     }
     
     // MARK: - 본문 UI
@@ -161,7 +163,8 @@ struct ListingDetailView: View {
             }
             .hidden()
         }
-        .padding()
+        .padding(.vertical, 8) // 버튼 위/아래 여백
+        .background(Color.backgroundGray100) // 버튼 바 배경 (스크롤과 구분)
     }
     
     // MARK: - Subviews
@@ -232,14 +235,22 @@ struct ListingDetailView: View {
                 .padding(.bottom, 8)
             
             VStack {
-                Text("시세안전구간")
-                    .foregroundStyle(.gray)
-                Text("\(Int(detailData.safeMin)) ~ \(Int(detailData.safeMax))만원")
-                    .font(.title3)
-                    .fontWeight(.semibold)
-                    .padding(.bottom, 15)
+                if detailData.minPrice == 0 && detailData.maxPrice == 0 {
+                    //  시세 데이터 없음 처리
+                    Text("시세 정보 없음")
+                        .foregroundStyle(.gray)
+                        .padding(.bottom, 15)
+                } else {
+                    //  정상 데이터 출력
+                    Text("시세구간")
+                        .foregroundStyle(.gray)
+                    Text("\(NumberFormatter.koreanPriceString(from: Int(detailData.safeMin))) ~ \(NumberFormatter.koreanPriceString(from: Int(detailData.safeMax)))")
+                        .font(.title3)
+                        .fontWeight(.semibold)
+                        .padding(.bottom, 15)
+                    PriceRangeView(viewModel: viewModel)
+                }
                 
-                PriceRangeView(viewModel: viewModel)
             }
         }
         .padding()
