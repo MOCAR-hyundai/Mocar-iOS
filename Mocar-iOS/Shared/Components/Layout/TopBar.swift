@@ -14,7 +14,7 @@ enum TopBarStyle{
     case listing(title: String)     // 뒤로가기 + 타이틀
     case MyPage(title: String)      // 뒤로가기 + 타이틀
     case Mylistings(title: String)  // 뒤로가기 + 왼쪽 타이틀
-    case RestPwd  // 뒤로가기 + 왼쪽 로고
+    case RestPwd                    // 뒤로가기 + 왼쪽 로고
     //case chat(title: String)   // 뒤로가기 + 채팅방 이름
 }
 

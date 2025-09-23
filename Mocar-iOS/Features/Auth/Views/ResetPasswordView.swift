@@ -21,7 +21,7 @@ struct ResetPasswordView: View {
               .ignoresSafeArea()
 
           VStack(spacing: 20) {
-              TopBar(style: .RestPwd)
+              TopBar(style: .login)
                   .padding(.top)   // 안전 영역 고려해서 위쪽 붙이기
                   .padding(.leading, 5)
               Spacer().frame(height: 10)
@@ -51,9 +51,9 @@ struct ResetPasswordView: View {
                   Text("비밀번호 재설정 메일 보내기")
                       .frame(maxWidth: .infinity)
                       .padding()
-                      .background(Color.keyColorBlue)
+                      .background(Color.keyColorDarkGray)
                       .foregroundColor(.white)
-                      .cornerRadius(8)
+                      .cornerRadius(62)
                       .padding(.horizontal)
               }
 
@@ -64,6 +64,20 @@ struct ResetPasswordView: View {
               }
 
               Spacer()
+             
+              
+              Button(action: {
+                  dismiss()
+              }) {
+                  Text("로그인 화면으로 돌아가기")
+                      .frame(maxWidth: .infinity)
+                      .padding()
+                      .font(.system(size: 16))
+                      .foregroundColor(.textGray200)
+                      .padding(.horizontal)
+              }
+              
+              
           }
       }
       .navigationBarBackButtonHidden(true) // 기본 back 버튼 숨기기
