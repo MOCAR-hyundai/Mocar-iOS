@@ -13,6 +13,8 @@ import FirebaseAuth
 struct ListingDetailView: View {
     @StateObject private var viewModel: ListingDetailViewModel
     @EnvironmentObject var favoritesVM: FavoritesViewModel
+    @State private var navigateToLogin = false
+    @State private var showLoginModal : Bool = false
     let listingId: String
     
     init(service: ListingService, listingId: String) {
@@ -45,9 +47,29 @@ struct ListingDetailView: View {
         .background(Color.backgroundGray100)
         .navigationBarHidden(true)
         .navigationBarBackButtonHidden(true)
-//        .overlay(alignment: .bottom) {
-//            buyButton
-//        }
+        .navigationDestination(isPresented: $navigateToLogin){
+            LoginView()
+        }
+        .overlay{
+            if showLoginModal {
+                Color.black.opacity(0.4).ignoresSafeArea()
+                ConfirmModalView(
+                    message: "로그인 이후 사용 가능합니다.",
+                    confirmTitle: "로그인",
+                    cancelTitle: "취소",
+                    onConfirm: {
+                        showLoginModal = false
+                        navigateToLogin = true
+                    },
+                    onCancel: {
+                        showLoginModal = false
+                    }
+                )
+                .background(Color.clear) // 배경 투명
+                .transition(.opacity) // 부드럽게 등장
+                .animation(.easeInOut, value: showLoginModal)
+            }
+        }
     }
     
     // MARK: - 본문 UI
@@ -97,7 +119,15 @@ struct ListingDetailView: View {
                         FavoriteButton(
                             isFavorite: favoritesVM.isFavorite(detailData.listing),
                             onToggle: {
-                                Task { await favoritesVM.toggleFavorite(detailData.listing) }
+                                if let _ = Auth.auth().currentUser {   // ✅ 로그인 되어 있으면
+                                    Task {
+                                        await favoritesVM.toggleFavorite(detailData.listing)
+                                    }
+                                } else {   // ✅ 로그인 안 되어 있으면 모달 띄우기
+                                    withAnimation {
+                                        showLoginModal = true
+                                    }
+                                }
                             }
                         )
                     }
