@@ -320,7 +320,7 @@ struct ListingCard: View {
                     .multilineTextAlignment(.leading) // 왼쪽 정렬
  
                 
-                Text("\(listing.price.formattedWithSeparator())원")
+                Text("\(listing.price)원")
 //                Text("1억 3,860만원")
                     .font(.system(size: 16, weight: .semibold))
                     .foregroundColor(Color.keyColorBlue)
