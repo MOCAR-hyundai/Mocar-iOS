@@ -30,14 +30,24 @@ struct MileageFilterView: View {
                         set: { newValue in
                             let intValue = Int(newValue.rounded())
                             minMileage = min(max(intValue, mileageRange.lowerBound), maxMileage)
-                            minText = String(minMileage)
+
+                            if minMileage == mileageRange.lowerBound {
+                                minText = ""
+                            } else {
+                                minText = String(minMileage)
+                            }
                         }),
                     upperValue: Binding(
                         get: { Double(maxMileage) },
                         set: { newValue in
                             let intValue = Int(newValue.rounded())
                             maxMileage = max(min(intValue, mileageRange.upperBound), minMileage)
-                            maxText = String(maxMileage)
+
+                            if maxMileage == mileageRange.lowerBound {
+                                maxText = ""
+                            } else {
+                                maxText = String(maxMileage)
+                            }
                         }),
                     range: Double(mileageRange.lowerBound)...Double(mileageRange.upperBound)
                 )
@@ -55,6 +65,8 @@ struct MileageFilterView: View {
                         minText = newValue.filter { "0123456789".contains($0) }
                         if let value = Int(minText) {
                             minMileage = min(max(value, mileageRange.lowerBound), maxMileage)
+                        } else {
+                            minMileage = mileageRange.lowerBound // 빈 문자열 → 전체
                         }
                     }
                 
@@ -72,6 +84,8 @@ struct MileageFilterView: View {
                         maxText = newValue.filter { "0123456789".contains($0) }
                         if let value = Int(maxText) {
                             maxMileage = max(min(value, mileageRange.upperBound), minMileage)
+                        } else {
+                            maxMileage = mileageRange.upperBound 
                         }
                     }
                 

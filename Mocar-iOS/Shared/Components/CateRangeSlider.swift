@@ -141,7 +141,7 @@ struct CateRangeSlider: View {
                                     .onChanged { value in
                                         let pos = max(min(width, value.location.x), lowerPos)
                                         upperValue = Double(pos / width) * (maxValue - minValue) + minValue
-                                        upperText = String(Int(upperValue))
+                                        upperText = (Int(upperValue) == Int(maxValue)) ? "" : String(Int(upperValue))
                                     }
                             )
                     }
