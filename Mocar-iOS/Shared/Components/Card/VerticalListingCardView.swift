@@ -1,57 +1,57 @@
 //
-//  FavoriteCarListView.swift
+//  VerticalListingCardView.swift
 //  Mocar-iOS
 //
-//  Created by Admin on 9/18/25.
+//  Created by Admin on 9/22/25.
 //
 
 import SwiftUI
 
-struct FavoriteCardView: View{
+struct VerticalListingCardView: View {
     let listing: Listing
     let isFavorite: Bool
     let onToggleFavorite: () -> Void
     
     var body: some View {
         VStack(alignment: .leading, spacing: 4) {
+            
             ZStack(alignment: .topTrailing) {
-                
                 if let imageUrl = listing.images.first, let url = URL(string: imageUrl) {
                     AsyncImage(url: url) { phase in
                         switch phase {
                         case .empty:
                             ProgressView()
-                                .frame( height: 143)
-                                .frame(maxWidth: .infinity)
+                                .frame(width: 170, height: 125)
                         case .success(let image):
                             image
                                 .resizable()
                                 .scaledToFill()    //  비율 유지 + 꽉 채움
-                                .frame(height: 143)
-                                .frame(maxWidth: .infinity)
+                                .frame(width: 170, height: 125)
                                 .clipped()         // 프레임 밖 잘라냄
                         case .failure:
                             Image("이미지없음icon") // fallback 이미지
-                                .frame( height: 143)
-                                .frame(maxWidth: .infinity)
-                                .clipped()
+                                .resizable()
+                                .scaledToFit()   // 아이콘 비율 유지
+                                .frame(width: 60, height: 60) // 아이콘 크기 (작게)
+                                .frame(width: 170, height: 125) // 이미지 영역 크기 강제
                         @unknown default:
                             EmptyView()
                         }
                     }
                 } else {
                     Image("이미지없음icon")
-                        .frame( height: 143)
-                        .frame(maxWidth: .infinity)
-                        .clipped()
+                        .resizable()
+                        .scaledToFit()   // 아이콘 비율 유지
+                        .frame(width: 60, height: 60) // 아이콘 크기 (작게)
+                        .frame(width: 170, height: 125) // 이미지 영역 크기 강제
                 }
-                
-                
+                // 좋아요 버튼
                 FavoriteButton(
                     isFavorite: isFavorite,
                     onToggle: onToggleFavorite
                 )
             }
+            
             VStack(alignment: .leading, spacing: 6) {
                 Text(listing.title)
                     .font(.system(size: 13, weight: .semibold))
@@ -72,17 +72,16 @@ struct FavoriteCardView: View{
             }
             .frame(height: 80)
             .padding(.bottom, 6)
-            .padding(.horizontal, 12)
-            .padding(4)
-            
+            .padding(.horizontal, 6)
+            .padding(3)
         }
-        .frame(width: 240, height: 240)
+        .frame(height: 223)
+        .background(Color.white)
+        .cornerRadius(12)
         .overlay(
             RoundedRectangle(cornerRadius: 12)
-                .stroke(Color.gray, lineWidth: 0.5)
+                .stroke(Color.lineGray, lineWidth: 1) // 회색 테두리, 두께 1
         )
-        .background(Color.white)  // 카드 내부 색 지정
-        .cornerRadius(12)
-
     }
 }
+

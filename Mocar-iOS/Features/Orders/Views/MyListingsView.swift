@@ -11,7 +11,7 @@ struct MyListingsView: View {
     let currentUserId: String
     
     @StateObject private var vm = MyListingsViewModel()
-    @ObservedObject var favoritesViewModel: FavoritesViewModel   // 외부에서 주입
+    @EnvironmentObject var favoritesViewModel: FavoritesViewModel
     
     @Environment(\.dismiss) private var dismiss
     
@@ -92,15 +92,15 @@ struct MyListingsView: View {
                     ForEach(filteredListings) { item in
                         NavigationLink(
                             destination: ListingDetailView(
-                                listingId: item.id ?? "",             // 또는 Listing 자체를 전달하도록 뷰를 바꿀 수 있음
-                                favoritesViewModel: favoritesViewModel
+                                service: ListingServiceImpl(repository: ListingRepository()),
+                                            listingId: item.id ?? ""
                             )
                         ) {
                             MyListingsCardView(
                                 listing: item,
                                 isFavorite: favoritesViewModel.isFavorite(item),
                                 onToggleFavorite: {
-                                    favoritesViewModel.toggleFavorite(item)
+                                    Task { await favoritesViewModel.toggleFavorite(item) }
                                 }
                             )
                         }

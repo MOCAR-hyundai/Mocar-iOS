@@ -10,7 +10,7 @@ import SwiftUI
 struct MyOrdersView: View {
     let currentUserId: String
     @StateObject private var vm = MyOrdersViewModel()
-    @ObservedObject var favoritesViewModel: FavoritesViewModel   // 외부에서 주입
+    @EnvironmentObject var favoritesViewModel: FavoritesViewModel
     
     @Environment(\.dismiss) private var dismiss
     
@@ -48,8 +48,8 @@ struct MyOrdersView: View {
                         ForEach(vm.myOrders) { item in
                             NavigationLink(
                                 destination: ListingDetailView(
-                                    listingId: item.listing.id ?? "",
-                                    favoritesViewModel: favoritesViewModel
+                                    service: ListingServiceImpl(repository: ListingRepository()),
+                                                listingId: item.id ?? ""
                                 )
                             ) {
                                 OrdersCardView(
@@ -57,7 +57,7 @@ struct MyOrdersView: View {
                                     listing: item.listing,
                                     isFavorite: favoritesViewModel.isFavorite(item.listing),
                                     onToggleFavorite: {
-                                        favoritesViewModel.toggleFavorite(item.listing)
+                                        Task { await favoritesViewModel.toggleFavorite(item.listing) }
                                     }
                                 )
                             }

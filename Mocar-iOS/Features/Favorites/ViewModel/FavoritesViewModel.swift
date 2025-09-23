@@ -9,75 +9,53 @@ import Foundation
 import FirebaseFirestore
 import FirebaseAuth
 
-class FavoritesViewModel: ObservableObject {
-    @Published var favorites: [Favorite] = []
+@MainActor
+final class FavoritesViewModel: ObservableObject {
+    @Published var favorites: [Favorite] = []          // 찜한 원본 데이터
+    @Published var favoriteListings: [Listing] = []    // 찜한 매물 상세
+    @Published var isLoading: Bool = false
     
-    private let db = Firestore.firestore()
+    private let service: FavoriteService
     private var userId: String? {
         Auth.auth().currentUser?.uid
     }
     
-    init() {
-        listenFavorites()
+    init(service: FavoriteService) {
+        self.service = service
+        observeFavorites()
     }
     
-    //실시간 업데이트
-    func listenFavorites() {
-        guard let userId = userId else { return }
-        
-        db.collection("favorites")
-            .whereField("userId", isEqualTo: userId)
-            .addSnapshotListener { snapshot, error in
-                if let docs = snapshot?.documents {
-                    DispatchQueue.main.async {
-                        self.favorites = docs.compactMap { try? $0.data(as: Favorite.self) }
+    // 실시간 구독 시작
+    func observeFavorites() {
+        guard let userId else { return }
+        Task {
+            for await favorites in service.listenFavorites(userId: userId) {
+                //중복 호출 방지
+                if self.favorites.map(\.id) != favorites.map(\.id){
+                    self.favorites = favorites
+                    // 동시에 listing 데이터도 가져오기
+                    do {
+                        self.favoriteListings = try await service.getFavoriteListings(userId: userId)
+                    } catch {
+                        print("ERROR MESSAGE -- Failed to fetch favorite listings: \(error)")
                     }
                 }
-            }
-    }
-    
-    // 찜 토글
-    func toggleFavorite(_ listing: Listing) {
-        guard let userId = userId, let listingId = listing.id else { return }
-        
-        let favId = "\(userId)_\(listingId)"
-        let favRef = db.collection("favorites").document(favId)
-        let listingRef = db.collection("listings").document(listingId)
-        
-        if favorites.contains(where: { $0.listingId == listingId }) {
-            // 찜 해제
-            favRef.delete { error in
-                if error == nil {
-                    listingRef.updateData([
-                        "favoriteCount": FieldValue.increment(Int64(-1))
-                    ])
-                }
-            }
-        } else {
-            // 찜 추가
-            let newFavorite = Favorite(
-                id: favId,
-                userId: userId,
-                listingId: listingId,
-                createdAt: Date()
-            )
-            do {
-                try favRef.setData(from: newFavorite) { error in
-                    if error == nil {
-                        listingRef.updateData([
-                            "favoriteCount": FieldValue.increment(Int64(1))
-                        ])
-                    }
-                }
-            } catch {
-                print("Encoding error: \(error)")
             }
         }
     }
     
-    // 찜 여부 확인
+    // 매물이 찜 상태인지 확인
     func isFavorite(_ listing: Listing) -> Bool {
-        return favorites.contains(where: { $0.listingId == listing.id })
+        favorites.contains(where: { $0.listingId == listing.id })
+    }
+    
+    // 찜/찜 해제 토글
+    func toggleFavorite(_ listing: Listing) async {
+        guard let userId else { return }
+        do {
+            try await service.toggleFavorite(userId: userId, listingId: listing.id ?? "")
+        } catch {
+            print("ERROR MESSAGE -- toggleFavorite error: \(error)")
+        }
     }
 }
-

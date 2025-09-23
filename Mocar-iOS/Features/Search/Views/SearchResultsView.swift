@@ -8,8 +8,9 @@
 import SwiftUI
 
 struct SearchResultsView: View {
+
     @StateObject private var viewModel = SearchResultsViewModel()
-    @StateObject private var favoritesViewModel = FavoritesViewModel()
+    @EnvironmentObject var favoritesViewModel: FavoritesViewModel
     
     let keyword: String?
     let filter: RecentFilter?
@@ -189,8 +190,18 @@ struct SearchResultsView: View {
                               GridItem(.fixed(cardWidth), spacing: 12)
                           ], spacing: 12) {
                               ForEach(viewModel.listings) { listing in
-                                  NavigationLink(destination: ListingDetailView(listingId: listing.id ?? "", favoritesViewModel: favoritesViewModel)) {
-                                      ListingCard(listing: listing, favoritesViewModel: favoritesViewModel)
+                                  NavigationLink(destination: ListingDetailView(
+                                    service: ListingServiceImpl(repository: ListingRepository()),
+                                    listingId: listing.id ?? ""
+                                    )
+                                  ) {
+                                      ListingCard(
+                                        listing: listing,
+                                        isFavorite: favoritesViewModel.isFavorite(listing),
+                                        onToggleFavorite: {
+                                            Task { await favoritesViewModel.toggleFavorite(listing) }
+                                        }
+                                      )
                                         .frame(width: cardWidth) // 카드 폭 고정
                                   }
                                   .buttonStyle(PlainButtonStyle())
@@ -205,6 +216,7 @@ struct SearchResultsView: View {
                               await viewModel.fetchListings(forFilter: filter)
                           }
                       }
+
                   }
                 // MARK: - RangeSliderPopup
                   .background(Color.backgroundGray100)
@@ -249,8 +261,8 @@ struct SearchResultsView: View {
 
 struct ListingCard: View {
     let listing: Listing
-    @State private var isFavorite: Bool = false
-    @ObservedObject var favoritesViewModel: FavoritesViewModel
+    let isFavorite: Bool
+    let onToggleFavorite: () -> Void
     
     let cardWidth = (UIScreen.main.bounds.width - 12*3) / 2 // 좌우 패딩 12, 그리드 간격 12
 
@@ -291,16 +303,20 @@ struct ListingCard: View {
                 }
                   
                 // 좋아요 버튼
-                Button(action: {
-                    favoritesViewModel.toggleFavorite(listing)
-                }) {
-                    Image(systemName: favoritesViewModel.isFavorite(listing) ? "heart.fill" : "heart")
-                        .foregroundColor(favoritesViewModel.isFavorite(listing) ? .red : Color.keyColorDarkGray)
-                        .padding(5)
-                        .background(Color.clear)
-                        .clipShape(Circle())
-                        .padding(5)
-                }
+//                Button(action: {
+//                    favoritesViewModel.toggleFavorite(listing)
+//                }) {
+//                    Image(systemName: favoritesViewModel.isFavorite(listing) ? "heart.fill" : "heart")
+//                        .foregroundColor(favoritesViewModel.isFavorite(listing) ? .red : Color.keyColorDarkGray)
+//                        .padding(5)
+//                        .background(Color.clear)
+//                        .clipShape(Circle())
+//                        .padding(5)
+//                }
+                FavoriteButton(
+                    isFavorite: isFavorite,
+                    onToggle: onToggleFavorite
+                )
             }
             
             // 차량 정보
@@ -345,34 +361,34 @@ struct SearchListingDetailView: View {
     let listing: Listing
     
     var body: some View {
-//        VStack {
-//            if listing.images.count > 1 {
-//                Image(listing.images[1])
-//                    .resizable()
-//                    .scaledToFit()
-//                    .frame(height: 120)
-//                    .clipped()
-//            } else {
-//                Color.gray.opacity(0.2)
-//                    .frame(height: 120)
-//            }
-//
-//            Text(listing.title)
-//                .font(.title2)
-//                .bold()
-//                .padding()
-//            
-//            Text("가격: \(listing.price.formattedWithSeparator())원")
-//                .font(.headline)
-//            
-//            Text("연식: \(listing.year)년 | 주행거리: \(listing.mileage) km | 연료: \(listing.fuel)")
-//                .font(.subheadline)
-//                .foregroundColor(.secondary)
-//                .padding(.top, 8)
-//            
-//            Spacer()
-//        }
-//        .navigationTitle("차량 상세")
+        VStack {
+            if listing.images.count > 1 {
+                Image(listing.images[1])
+                    .resizable()
+                    .scaledToFit()
+                    .frame(height: 120)
+                    .clipped()
+            } else {
+                Color.gray.opacity(0.2)
+                    .frame(height: 120)
+            }
+
+            Text(listing.title)
+                .font(.title2)
+                .bold()
+                .padding()
+            
+            Text("가격: \(NumberFormatter.koreanPriceString(from:listing.price))")
+                .font(.headline)
+            
+            Text("연식: \(listing.year)년 | 주행거리: \(listing.mileage) km | 연료: \(listing.fuel)")
+                .font(.subheadline)
+                .foregroundColor(.secondary)
+                .padding(.top, 8)
+            
+            Spacer()
+        }
+        .navigationTitle("차량 상세")
     }
 }
 

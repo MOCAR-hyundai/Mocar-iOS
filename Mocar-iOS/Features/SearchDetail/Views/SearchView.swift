@@ -10,7 +10,7 @@ import FirebaseAuth
 
 struct SearchView: View {
     @Environment(\.dismiss) private var dismiss
-    @StateObject private var favoritesViewModel = FavoritesViewModel()
+    @EnvironmentObject var favoritesViewModel: FavoritesViewModel 
     @ObservedObject var viewModel: SearchDetailViewModel
     @State private var selectedCategory: String? = "제조사"
     @State private var showRecentSheet: Bool = false
@@ -161,7 +161,10 @@ struct SearchView: View {
                     SearchResultsView(keyword: keyword, filter: filter)
                     
                 case .searchResultDetail(let listingId):
-                    ListingDetailView(listingId: listingId, favoritesViewModel: favoritesViewModel)
+                    ListingDetailView(
+                        service: ListingServiceImpl(repository: ListingRepository()),
+                                    listingId: listingId 
+                    )
                 }
             }
         }
