@@ -197,22 +197,32 @@ import SwiftUI
 //   
 //}
 
-import SwiftUI
-
 struct HomeView: View {
     @StateObject private var homeViewModel: HomeViewModel
+    @StateObject private var favoritesVM: FavoritesViewModel
     @StateObject private var userSession = UserSession()
     @State private var showLogin = false
     
     init() {
-        let repository = ListingRepository()
-        let service = HomeServiceImpl(listingRepository: repository)
-        _homeViewModel = StateObject(wrappedValue: HomeViewModel(service: service))
+        let listingRepo = ListingRepository()
+        let favoriteRepo = FavoriteRepository()
+        let favoriteService = FavoriteServiceImpl(
+            favoriteRepository: favoriteRepo,
+            listingRepository: listingRepo
+        )
+        
+        _favoritesVM = StateObject(wrappedValue: FavoritesViewModel(service: favoriteService))
+        _homeViewModel = StateObject(
+            wrappedValue: HomeViewModel(
+                service: HomeServiceImpl(listingRepository: listingRepo)
+            )
+        )
     }
     
     var body: some View {
         NavigationStack {
             VStack {
+                // MARK: - TopBar + 로그인 이동
                 TopBar(
                     style: .home(isLoggedIn: userSession.user != nil),
                     onLoginTap: { showLogin = true }
@@ -224,7 +234,7 @@ struct HomeView: View {
                     isActive: $showLogin
                 ) { EmptyView() }
                 
-                //검색창 + 필터 버튼
+                // MARK: - 검색창 + 필터 버튼
                 HStack {
                     ZStack(alignment: .leading) {
                         Image("Search")
@@ -256,69 +266,110 @@ struct HomeView: View {
                 }
                 .padding(.vertical, 16)
                 
+                // MARK: - 본문
                 ScrollView(showsIndicators: false) {
-                    // 브랜드 선택
-                    VStack(alignment: .leading, spacing: 8) {
-                        Text("Brands")
-                            .font(.headline)
-                            .padding(.bottom, 8)
+                    VStack(alignment: .leading, spacing: 24) {
                         
-                        ScrollView(.horizontal, showsIndicators: false) {
-                            HStack(spacing: 16) {
-                                ForEach(homeViewModel.brands) { brand in
-                                    BrandIconView(
-                                        brand: brand,
-                                        isSelected: homeViewModel.selectedBrand?.id == brand.id,
-                                        onSelect: {
-                                            Task { await homeViewModel.loadListings(for: brand) }
+                        // ✅ 찜한 매물 섹션
+                        if !favoritesVM.favoriteListings.isEmpty {
+                            VStack(alignment: .leading, spacing: 8) {
+                                Text("찜한 목록")
+                                    .font(.headline)
+                                Text("Available")
+                                    .foregroundColor(.gray)
+                                    .font(.subheadline)
+                                
+                                ScrollView(.horizontal, showsIndicators: false) {
+                                    HStack(spacing: 16) {
+                                        ForEach(favoritesVM.favoriteListings, id: \.safeId) { listing in
+                                            NavigationLink(
+                                                destination: ListingDetailView(
+                                                    service: ListingServiceImpl(repository: ListingRepository()),
+                                                    favoritesVM: favoritesVM,
+                                                    listingId: listing.id ?? ""
+                                                )
+                                            ) {
+                                                ListingCardView(
+                                                    listing: listing,
+                                                    isFavorite: favoritesVM.isFavorite(listing),
+                                                    onToggleFavorite: {
+                                                        Task { await favoritesVM.toggleFavorite(listing) }
+                                                    }
+                                                )
+                                            }
+                                            .buttonStyle(PlainButtonStyle())
                                         }
-                                    )
+                                    }
                                 }
                             }
                         }
-                        .padding(.bottom, 16)
                         
-                        // 브랜드별 매물 리스트
-                        if homeViewModel.isLoading {
-                            ProgressView("불러오는 중...")
-                                .frame(maxWidth: .infinity, alignment: .center)
-                        } else {
-                            LazyVGrid(
-                                columns: [
-                                    GridItem(.flexible()),
-                                    GridItem(.flexible())
-                                ],
-                                spacing: 16
-                            ) {
-                                ForEach(homeViewModel.brandListings, id: \.safeId) { listing in
-                                    NavigationLink(
-                                        destination: ListingDetailView(
-                                            service: ListingServiceImpl(repository: ListingRepository()),
-                                            listingId: listing.id ?? ""
-                                        )
-                                    ) {
-                                        ListingCardView(
-                                            listing: listing,
-                                            isFavorite: false,   // 아직 찜하기 미구현
-                                            onToggleFavorite: {
-                                                print("찜 버튼 눌림: \(listing.title)")
+                        // ✅ 브랜드 섹션
+                        VStack(alignment: .leading, spacing: 8) {
+                            Text("Brands")
+                                .font(.headline)
+                                .padding(.bottom, 8)
+                            
+                            ScrollView(.horizontal, showsIndicators: false) {
+                                HStack(spacing: 16) {
+                                    ForEach(homeViewModel.brands) { brand in
+                                        BrandIconView(
+                                            brand: brand,
+                                            isSelected: homeViewModel.selectedBrand?.id == brand.id,
+                                            onSelect: {
+                                                Task { await homeViewModel.loadListings(for: brand) }
                                             }
                                         )
                                     }
-                                    .buttonStyle(PlainButtonStyle())
+                                }
+                            }
+                            .padding(.bottom, 16)
+                            
+                            // 브랜드별 매물 리스트
+                            if homeViewModel.isLoading {
+                                ProgressView("불러오는 중...")
+                                    .frame(maxWidth: .infinity, alignment: .center)
+                            } else {
+                                LazyVGrid(
+                                    columns: [
+                                        GridItem(.flexible()),
+                                        GridItem(.flexible())
+                                    ],
+                                    spacing: 16
+                                ) {
+                                    ForEach(homeViewModel.brandListings, id: \.safeId) { listing in
+                                        NavigationLink(
+                                            destination: ListingDetailView(
+                                                service: ListingServiceImpl(repository: ListingRepository()),
+                                                favoritesVM: favoritesVM,
+                                                listingId: listing.id ?? ""
+                                            )
+                                        ) {
+                                            ListingCardView(
+                                                listing: listing,
+                                                isFavorite: favoritesVM.isFavorite(listing),
+                                                onToggleFavorite: {
+                                                    Task { await favoritesVM.toggleFavorite(listing) }
+                                                }
+                                            )
+                                        }
+                                        .buttonStyle(PlainButtonStyle())
+                                    }
                                 }
                             }
                         }
                     }
+                    .padding()
+                    .background(Color.backgroundGray100)
+                    .onAppear {
+                        if homeViewModel.brands.isEmpty {
+                            Task { await homeViewModel.loadBrands() }
+                        }
+                    }
                 }
-            }
-            .padding()
-            .background(Color.backgroundGray100)
-            .task {
-                await homeViewModel.loadBrands()   // 앱 시작 시 브랜드와 첫 브랜드 매물 로드
+                .navigationBarHidden(true)
+                .background(Color.backgroundGray100)
             }
         }
-        .navigationBarHidden(true)
-        .background(Color.backgroundGray100)
     }
 }

@@ -8,8 +8,6 @@
 import SwiftUI
 
 struct FavoriteButton: View {
-    //@ObservedObject var favoritesViewModel: FavoritesViewModel
-    //let listing: Listing
     let isFavorite: Bool
     let onToggle: () -> Void
     

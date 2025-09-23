@@ -8,75 +8,63 @@
 import Foundation
 import FirebaseFirestore
 
-class FavoriteRepository {
+final class FavoriteRepository {
     private let db = Firestore.firestore()
     
-    // 특정 유저의 찜 목록 실시간 구독
-    func listenFavorites(userId: String, completion: @escaping ([Favorite]) -> Void) {
-        //        db.collection("favorites")
-        //            .whereField("userId", isEqualTo: userId)
-        //            .addSnapshotListener { snapshot, error in
-        //                if let docs = snapshot?.documents {
-        //                    let favorites = docs.compactMap { try? $0.data(as: Favorite.self) }
-        //                    //항상 MainActor에서 실행
-        //                    DispatchQueue.main.async {
-        //                        completion(favorites)
-        //                    }
-        //                } else {
-        //                    DispatchQueue.main.async {
-        //                        completion([])
-        //                    }
-        //                }
-        //            }
-        db.collection("favorites")
-            .whereField("userId", isEqualTo: userId)
-            .addSnapshotListener { snapshot, error in
-                if let docs = snapshot?.documents {
-                    let favorites = docs.compactMap { try? $0.data(as: Favorite.self) }
-                    // ✅ 메인 스레드에서 completion 호출
-                    DispatchQueue.main.async {
-                        completion(favorites)
+    // MARK: - 실시간 구독 (AsyncStream)
+    //Firestore의 addSnapshotListener을 사용하여 실시간 구독
+    func listenFavorites(userId: String) -> AsyncStream<[Favorite]> {
+        AsyncStream { continuation in
+            let listener = db.collection("favorites")
+                .whereField("userId", isEqualTo: userId)
+                .addSnapshotListener { snapshot, error in
+                    if let error = error {
+                        print("ERROR MESSAGE -- listenFavorites error: \(error)")
+                        continuation.yield([])
+                        return
                     }
-                } else {
-                    DispatchQueue.main.async {
-                        completion([])
-                    }
+                    
+                    let favorites = snapshot?.documents.compactMap {
+                        try? $0.data(as: Favorite.self)
+                    } ?? []
+                    
+                    continuation.yield(favorites)
+                    print("Firestore에 favorites 가져오기 성공")
                 }
-            }
-    }
-        // 찜 추가
-    func addFavorite(_ favorite: Favorite, completion: ((Error?) -> Void)? = nil) {
-        guard let favId = favorite.id else { return }
-        //        do {
-        //            try db.collection("favorites").document(favId).setData(from: favorite) { error in
-        //                completion?(error)
-        //            }
-        //        } catch {
-        //            completion?(error)
-        //        }
-        do {
-            try db.collection("favorites").document(favId).setData(from: favorite) { error in
-                DispatchQueue.main.async {
-                    completion?(error)
-                }
-            }
-        } catch {
-            DispatchQueue.main.async {
-                completion?(error)
+            
+            // Task가 취소되면 Firestore 리스너 해제
+            continuation.onTermination = { _ in
+                listener.remove()
             }
         }
     }
     
-    // 찜 삭제
-    func removeFavorite(favId: String, completion: ((Error?) -> Void)? = nil) {
-        //        db.collection("favorites").document(favId).delete { error in
-        //            completion?(error)
-        //        }
-        db.collection("favorites").document(favId).delete { error in
-            DispatchQueue.main.async {
-                completion?(error)
-            }
-        }
+    // MARK: - 단발 조회
+    func fetchFavorites(userId: String) async throws -> [Favorite] {
+        let snapshot = try await db.collection("favorites")
+            .whereField("userId", isEqualTo: userId)
+            .getDocuments()
+        print("favorites 단발 조회 성공")
+        
+        return snapshot.documents.compactMap { try? $0.data(as: Favorite.self) }
+    }
+    
+    func isFavorite(userId: String, listingId: String) async throws -> Bool {
+        let snapshot = try await db.collection("favorites")
+            .whereField("userId", isEqualTo: userId)
+            .whereField("listingId", isEqualTo: listingId)
+            .getDocuments()
+        print("isFavorites 단발 조회 성공")
+        return !snapshot.documents.isEmpty
+    }
+    
+    // MARK: - 추가
+    func addFavorite(_ favorite: Favorite) async throws {
+        _ = try db.collection("favorites").addDocument(from: favorite)
+    }
+    
+    // MARK: - 삭제
+    func removeFavorite(favId: String) async throws {
+        try await db.collection("favorites").document(favId).delete()
     }
 }
-

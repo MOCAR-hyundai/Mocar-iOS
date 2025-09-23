@@ -285,20 +285,21 @@ import FirebaseAuth
 
 struct ListingDetailView: View {
     @StateObject private var viewModel: ListingDetailViewModel
+    @ObservedObject private var favoritesVM: FavoritesViewModel
     let listingId: String
     
-    init(service: ListingService, listingId: String) {
-        _viewModel = StateObject( //wrappedValue에 직접 만든 ListingDetailViewModel 인스턴스를 넣어주고 이렇게 해야 SwiftUI가 해당 뷰 생명주기 동안 ViewModel을 딱 한 번만 생성해서 관리
+    init(service: ListingService, favoritesVM: FavoritesViewModel, listingId: String) {
+        _viewModel = StateObject(
             wrappedValue: ListingDetailViewModel(service: service)
         )
+        self.favoritesVM = favoritesVM
         self.listingId = listingId
     }
 
-    /** 채팅방 관련 상태 */
+    // 채팅 관련 상태
     @StateObject private var userStore = UserStore()
     @State private var selectedChat: Chat? = nil
     @State private var isChatActive = false
-    /** 채팅방 관련 상태 */
     
     var body: some View {
         NavigationStack {
@@ -318,7 +319,9 @@ struct ListingDetailView: View {
         .background(Color.backgroundGray100)
         .navigationBarHidden(true)
         .navigationBarBackButtonHidden(true)
-        buyButton
+        .overlay(alignment: .bottom) {
+            buyButton
+        }
     }
     
     // MARK: - 본문 UI
@@ -329,12 +332,17 @@ struct ListingDetailView: View {
             
             ScrollView {
                 VStack {
-                    // 차량 이미지 + 찜 버튼 자리
+                    // 차량 이미지 + 찜 버튼
                     ZStack(alignment: .topTrailing) {
                         CarImageTabView(images: detailData.listing.images)
+                        FavoriteButton(
+                            isFavorite: favoritesVM.isFavorite(detailData.listing),
+                            onToggle: {
+                                Task { await favoritesVM.toggleFavorite(detailData.listing) }
+                            }
+                        )
                     }
                     
-                    // 기본 정보
                     basicInfo(detailData.listing)
                     
                     ProfileInfoView()
@@ -431,7 +439,7 @@ struct ListingDetailView: View {
                 InfoRow(label: "차량 번호", value: listing.plateNo ?? "번호 없음")
                 InfoRow(label: "연식", value: "\(listing.year)")
                 InfoRow(label: "변속기", value: listing.transmission ?? "-")
-                InfoRow(label: "차종", value: listing.carType ?? "-")
+                InfoRow(label: "차종", value: listing.carType)
                 InfoRow(label: "주행거리", value: "\(listing.mileage)km")
                 InfoRow(label: "연료", value: listing.fuel)
             }
@@ -511,7 +519,7 @@ struct ListingDetailView: View {
     }
 }
 
-
+// MARK: - 재사용 InfoRow
 struct InfoRow: View{
     let label: String
     let value: String
