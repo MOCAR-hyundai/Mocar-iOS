@@ -417,7 +417,8 @@ struct ListingDetailView: View {
                 .padding(.leading, 8)
                 .foregroundStyle(.gray)
             
-            Text("\(listing.priceInManwon)만원")
+            
+            Text("\(NumberFormatter.koreanPriceString(from:listing.price))만원")
                 .padding(.leading, 8)
                 .font(.title2)
                 .fontWeight(.bold)

@@ -44,9 +44,6 @@ struct Listing : Identifiable, Codable{
     var updatedAt: String?
     var carType: String
     
-    var priceInManwon: Int {
-            return price / 10000
-    }
     
 }
 

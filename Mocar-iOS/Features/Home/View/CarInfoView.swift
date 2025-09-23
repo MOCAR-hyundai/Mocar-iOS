@@ -24,7 +24,7 @@ struct CarInfoView: View {
                 Text(listing.region)
                     .foregroundColor(.textGray100)
             }
-            Text("\(listing.priceInManwon)만원")
+            Text("\(NumberFormatter.koreanPriceString(from:listing.price))만원")
                 .padding(.top,4)
                 .font(.title3)
                 .fontWeight(.bold)

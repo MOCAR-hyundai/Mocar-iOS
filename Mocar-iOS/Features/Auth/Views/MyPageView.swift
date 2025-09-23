@@ -155,7 +155,7 @@ struct MyPageView: View {
                 
                 VStack(spacing: 0) {
                     NavigationLink(
-                        destination: VerticalFavoritesView()
+                        destination: VerticalFavoritesListView()
                     ) {
                         ProfileRow(icon: "heart", title: "나의 찜 매물")
                     }

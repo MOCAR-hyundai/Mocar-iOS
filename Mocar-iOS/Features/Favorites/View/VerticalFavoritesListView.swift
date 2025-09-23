@@ -1,5 +1,5 @@
 //
-//  VerticalFavoritesView.swift
+//  VerticalFavoritesListView.swift
 //  Mocar-iOS
 //
 //  Created by Admin on 9/22/25.
@@ -7,7 +7,7 @@
 
 import SwiftUI
 
-struct VerticalFavoritesView: View {
+struct VerticalFavoritesListView: View {
     @EnvironmentObject var favoritesVM: FavoritesViewModel
     
     var body: some View {

@@ -25,16 +25,15 @@ struct VerticalListingCardView: View {
                         case .success(let image):
                             image
                                 .resizable()
-                                .scaledToFill()
+                                .scaledToFill()    //  비율 유지 + 꽉 채움
                                 .frame(width: 170, height: 120)
-                                .clipped()
+                                .clipped()         // 프레임 밖 잘라냄
                         case .failure:
                             Image("이미지없음icon") // fallback 이미지
                                 .resizable()
-                               .scaledToFill()    // 비율 유지 + 꽉 채움
-                               .frame(width: 170, height: 120)
-                               .clipped()         // 프레임 밖 잘라냄
-                               .cornerRadius(12)
+                                .scaledToFit()   // 아이콘 비율 유지
+                                .frame(width: 60, height: 60) // 아이콘 크기 (작게)
+                                .frame(width: 170, height: 120) // 이미지 영역 크기 강제
                         @unknown default:
                             EmptyView()
                         }
@@ -42,9 +41,9 @@ struct VerticalListingCardView: View {
                 } else {
                     Image("이미지없음icon")
                         .resizable()
-                        .scaledToFill()
-                        .frame(width: 170, height: 120, alignment: .top)  // 상단 맞춤
-                        .clipped()
+                        .scaledToFit()   // 아이콘 비율 유지
+                        .frame(width: 60, height: 60) // 아이콘 크기 (작게)
+                        .frame(width: 170, height: 120) // 이미지 영역 크기 강제
                 }
                 // 좋아요 버튼
                 FavoriteButton(

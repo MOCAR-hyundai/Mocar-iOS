@@ -83,31 +83,7 @@ import SwiftUI
 //                        
 //                        //리스트
 //                        ScrollView(.horizontal, showsIndicators: false){
-////                            HStack(spacing: 16) {
-////                                ForEach(favoritesViewModel.favorites,id: \.safeId) { favorite in
-////                                    if let listing = homeViewModel.listings.first(where: {$0.id == favorite.listingId}){
-////                                        NavigationLink(
-////                                            destination: ListingDetailView(
-////                                                    viewModel: ListingDetailViewModel(
-////                                                        service: ListingServiceImpl(repository: ListingRepository()),
-////                                                        favoritesViewModel: favoritesViewModel
-////                                                    ),
-////                                                    listingId: listing.id ?? ""
-////                                                )
-////                                        ) {
-////                                            FavoriteCardView(
-////                                                listing: listing,
-////                                                isFavorite: favoritesViewModel.isFavorite(listing),
-////                                                onToggleFavorite:{
-////                                                    favoritesViewModel.toggleFavorite(listing)
-////                                                }
-////                                            )
-////                                        }
-////                                         .buttonStyle(PlainButtonStyle())
-////                                    }
-////                                    
-////                                }
-////                            }
+//
 //                        }
 //                    }
 //                    .padding(.bottom,16)
@@ -140,25 +116,7 @@ import SwiftUI
 //                            GridItem(.flexible()), // 첫 번째 열
 //                            GridItem(.flexible())  // 두 번째 열
 //                        ], spacing: 16) {
-////                            ForEach(homeViewModel.filteredListings, id: \.safeId) { listing in
-////                                let detailView = ListingDetailView(
-////                                    listingId: listing.id ?? "",
-////                                    favoritesViewModel: homeViewModel.favoritesViewModel,
-////                                    service: ListingServiceImpl(repository: ListingRepository())
-////                                )
-////
-////                                NavigationLink(destination: detailView) {
-////                                    VerticalListingCardView(
-////                                        listing: listing,
-////                                        isFavorite: favoritesViewModel.isFavorite(listing),
-////                                        onToggleFavorite: {
-////                                            favoritesViewModel.toggleFavorite(listing)
-////                                        }
-////                                    )
-////                                }
-////                                .buttonStyle(PlainButtonStyle())
-////                            }
-//                            
+//            
 //                            
 //                            
 //
@@ -221,6 +179,8 @@ struct HomeView: View {
                     style: .home(isLoggedIn: userSession.user != nil),
                     onLoginTap: { showLogin = true }
                 )
+                .padding(12)
+                
                 NavigationLink(
                     destination: LoginView()
                         .navigationBarHidden(true)
@@ -258,7 +218,8 @@ struct HomeView: View {
                         RoundedRectangle(cornerRadius: 8).fill(Color.blue)
                     )
                 }
-                .padding(.vertical, 16)
+                .padding(.horizontal)
+                .padding(.bottom, 8)
                 
                 // MARK: - 본문
                 ScrollView(showsIndicators: false) {
@@ -282,7 +243,7 @@ struct HomeView: View {
                                                     listingId: listing.id ?? ""
                                                 )
                                             ) {
-                                                ListingCardView(
+                                                FavoriteCardView(
                                                     listing: listing,
                                                     isFavorite: favoritesVM.isFavorite(listing),
                                                     onToggleFavorite: {
@@ -363,5 +324,6 @@ struct HomeView: View {
                 .background(Color.backgroundGray100)
             }
         }
+        .background(Color.backgroundGray100)
     }
 }
