@@ -9,10 +9,13 @@ import SwiftUI
 
 struct BottomBar: View {
     @State private var selectedTab: Int = 0
-    
+    @StateObject private var searchDetailViewModel = SearchDetailViewModel()
+
     @EnvironmentObject var session: UserSession //전역 세션 받아오기
     @State private var showLoginModal = false
      @State private var navigateToLogin = false
+    @State private var showSearchFull = false
+    @State private var lastTabBeforeSearch: Int = 0
     
     var body: some View {
         NavigationStack{
@@ -22,8 +25,7 @@ struct BottomBar: View {
 
                     HomeView().tag(0)
                     SellCarFlowView().tag(1)
-                    SearchView().tag(2)
-                    
+
                    // ChatListView에 currentUserId 전달
                     if let user = session.user {
                        ChatListView(currentUserId: user.id ?? " ")
@@ -47,7 +49,10 @@ struct BottomBar: View {
                     HStack(spacing: 5) {
                         bottomBarItem(icon: "Home", title: "내차사기", index: 0)
                         bottomBarItem(icon: "Car", title: "내차팔기", index: 1)
-                        bottomBarItem(icon: "Search", title: "검색", index: 2)
+                        bottomBarItem(icon: "Search", title: "검색", index: -1) {
+                            lastTabBeforeSearch = selectedTab
+                            showSearchFull = true
+                        }
                         bottomBarItem(icon: "Chat", title: "채팅", index: 3,requiresLogin: true)
                         bottomBarItem(icon: "User", title: "마이", index: 4,requiresLogin: true)
                     }
@@ -58,6 +63,12 @@ struct BottomBar: View {
                 }
             }
             .ignoresSafeArea(.keyboard, edges: .bottom) // 키보드 뜰 때만 safe area 무시
+            .fullScreenCover(isPresented: $showSearchFull) {
+                SearchView(viewModel: searchDetailViewModel, onDismiss: {
+                    showSearchFull = false
+                    selectedTab = lastTabBeforeSearch
+                })
+            }
             .navigationDestination(isPresented: $navigateToLogin){
                 LoginView()
             }
@@ -87,14 +98,17 @@ struct BottomBar: View {
     }
     
     @ViewBuilder
-    private func bottomBarItem(icon: String, title: String, index: Int,requiresLogin: Bool = false) -> some View {
+    private func bottomBarItem(icon: String, title: String, index: Int,requiresLogin: Bool = false, action: (() -> Void)? = nil) -> some View {
         Button {
             if requiresLogin && session.user == nil {
                 // 로그인 필요 → 모달 표시
                 showLoginModal = true
             } else {
                 withAnimation(.spring()) {
-                    selectedTab = index
+                    if index != -1 {
+                        selectedTab = index
+                    }
+                    action?()
                 }
             }
         } label: {
