@@ -17,7 +17,7 @@ struct LoginView: View {
     @State private var loginErrorMessage: String? = nil
     @State private var isLoading: Bool = false
 
-    @State private var navigateToHome = false
+    //@State private var navigateToHome = false
 
     
     @FocusState private var focusedField: Field?
@@ -175,9 +175,9 @@ struct LoginView: View {
                 .padding(.bottom, 50)
             }
             .padding(.top)
-            .navigationDestination(isPresented: $navigateToHome) {
-                HomeView()
-            }
+//            .navigationDestination(isPresented: $navigateToHome) {
+//                HomeView()
+//            }
             .background(Color.backgroundGray100)
             
         }
@@ -213,8 +213,8 @@ struct LoginView: View {
                     UserDefaults.standard.set(true, forKey: "keepLoggedIn")
                 }
                 // 다음 화면으로 이동 처리 가능
-                navigateToHome = true   // ✅ 로그인 성공 시 홈으로 이동
-//                dismiss()
+//                navigateToHome = true   // ✅ 로그인 성공 시 홈으로 이동
+                dismiss()
 
             }
         }
