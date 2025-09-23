@@ -9,10 +9,12 @@ import SwiftUI
 
 struct SearchView: View {
     @Environment(\.dismiss) private var dismiss
-    @StateObject private var viewModel = SearchDetailViewModel()
+    @EnvironmentObject var favoritesViewModel: FavoritesViewModel 
+    @ObservedObject var viewModel: SearchDetailViewModel
     @State private var selectedCategory: String? = "제조사"
     @State private var showRecentSheet: Bool = false
     @State private var path: [SearchDestination] = []
+    var onDismiss: (() -> Void)? = nil
     
     private let categories = ["제조사", "가격", "연식", "주행거리", "차종", "연료", "지역"]
     
@@ -22,12 +24,16 @@ struct SearchView: View {
                 // 상단 검색창
                 HStack {
                     Button(action: {
-                        dismiss()
+                        if let onDismiss = onDismiss {
+                            onDismiss()
+                        } else {
+                           dismiss()
+                        }
                     }) {
-                        Image(systemName: "chevron.left")
-                            .font(.title2)
-                            .foregroundColor(.black)
-                    }
+                            Image(systemName: "chevron.left")
+                                .font(.title2)
+                                .foregroundColor(.black)
+                        }
                     
                     NavigationLink(value: SearchDestination.searchKeyword) {
                         HStack {
@@ -77,7 +83,7 @@ struct SearchView: View {
                     RightOptionView(
                         selectedCategory: $selectedCategory,
                         viewModel: viewModel,
-                        path: $path // ✅ path 전달
+                        path: $path
                     )
                 }
                 
@@ -130,10 +136,22 @@ struct SearchView: View {
                     )
                 case .searchKeyword:
                     SearchKeywordView(viewModel: viewModel)
+                    
+                case .searchResults(let keyword, let filter):
+                    SearchResultsView(keyword: keyword, filter: filter)
+                    
+                case .searchResultDetail(let listingId):
+                    ListingDetailView(
+                        service: ListingServiceImpl(repository: ListingRepository()),
+                                    listingId: listingId 
+                    )
                 }
             }
         }
         .navigationBarHidden(true)
+        .onAppear {
+            viewModel.loadRecentFilters()
+        }
     }
 }
 
@@ -150,4 +168,6 @@ enum SearchDestination: Hashable {
     case model(makerName: String)
     case trim(makerName: String, modelName: String)
     case searchKeyword
+    case searchResults(keyword: String?, filter: RecentFilter?)
+    case searchResultDetail(listingId: String)
 }

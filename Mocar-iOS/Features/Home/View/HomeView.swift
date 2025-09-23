@@ -89,10 +89,10 @@ struct HomeView: View {
 
                 //  네비게이션 전환
                 .navigationDestination(isPresented: $showSearch) {
-                    SearchView()
+                    SearchView(viewModel: SearchDetailViewModel())
                 }
                 .navigationDestination(isPresented: $showFilter) {
-                    SearchView()
+                    SearchView(viewModel: SearchDetailViewModel())
                 }
 
                 

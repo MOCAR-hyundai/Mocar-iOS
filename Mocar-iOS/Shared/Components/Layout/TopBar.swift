@@ -9,11 +9,11 @@ import SwiftUI
 
 enum TopBarStyle{
     case home(isLoggedIn: Bool)                 // 로고 + 검색
-    case login                   // 로그인
-    case singup                  //회원가입
-    case listing(title: String) // 뒤로가기 + 타이틀
-    case list(title: String)    // 뒤로가기 + 타이틀
-    case mypage(title: String)
+    case loginSignup                   // 로그인,회원가입
+    case listing(title: String)     // 뒤로가기 + 타이틀
+    case MyPage(title: String)      // 뒤로가기 + 타이틀
+    case Mylistings(title: String)  // 뒤로가기 + 왼쪽 타이틀
+    case RestPwd  // 뒤로가기 + 왼쪽 로고
     //case chat(title: String)   // 뒤로가기 + 채팅방 이름
 }
 
@@ -40,12 +40,19 @@ struct TopBar: View {
                     .padding(.vertical,10)
                 }
                 
-            case .login:
-                BackButton()
-                Spacer()
-            case .singup:
-                BackButton()
-                Spacer()
+              case .loginSignup:
+                HStack(spacing: 0) {
+                    BackButton()
+                        .padding(.leading, 5)
+                    Image("logo")
+                        .resizable()
+                        .scaledToFit()
+                        .frame(maxWidth: 150)
+                        .frame(height: 30)
+                        .padding(.leading, -23)
+                    Spacer()
+                }
+                
             case .listing(title: let title):
                 ZStack{
                     HStack {
@@ -54,18 +61,37 @@ struct TopBar: View {
                     }
                     Text(title)
                 }
-            case .list(title: let title):
+            case .MyPage(title: let title):
                 HStack {
-                    BackButton()
+                    Spacer()
                     Text(title)
+                        .font(.system(size: 18, weight: .semibold, design: .default))
+                        .padding(.vertical,5)
                     Spacer()
                 }
-            case .mypage(title: let title):
-                HStack {
-                    Spacer()
-                    Text(title)
-                        .font(.system(size: 18, weight: .bold))
-                    Spacer()
+            case .Mylistings(title: let title):
+                    HStack {
+                        BackButton()
+                            .padding(.leading, 5)
+                        Text(title)
+                            .font(.system(size: 18, weight: .semibold, design: .default))
+                        Spacer()
+                }
+
+            case .RestPwd:
+                ZStack{
+                    BackButton()
+                        .padding(.leading, 3)
+                    HStack {
+                        Image("logo")
+                            .resizable()
+                            .scaledToFit()
+                            .frame(maxWidth: 150)
+                            .padding(.leading, 40)
+                        Spacer()
+                        
+                    }
+
                 }
             }
             
@@ -91,7 +117,3 @@ struct BackButton: View {
     }
 }
 
-#Preview {
-    TopBar(style:.mypage(title:"리스트"))
-        .background(Color.red)
-}

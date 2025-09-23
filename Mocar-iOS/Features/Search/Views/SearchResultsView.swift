@@ -8,8 +8,12 @@
 import SwiftUI
 
 struct SearchResultsView: View {
-    @StateObject private var viewModel = SearchViewModel()
-    //@ObservedObject private var favoritesViewModel = DIContainer.shared.favoritesVM
+
+    @StateObject private var viewModel = SearchResultsViewModel()
+    @EnvironmentObject var favoritesViewModel: FavoritesViewModel
+    
+    let keyword: String?
+    let filter: RecentFilter?
     
     @State private var selectedCategory: String = "" // 선택된 카테고리 저장
     
@@ -25,10 +29,11 @@ struct SearchResultsView: View {
     @State private var upperPlaceholder: String = ""
     @State private var unit: String = ""
     
-    
+    let cardWidth = (UIScreen.main.bounds.width - 12*3) / 2 // 좌우 패딩 12, 그리드 간격 12
+
     let columns = [
-        GridItem(.flexible(minimum: 160, maximum: 200), spacing: 12),
-        GridItem(.flexible(minimum: 160, maximum: 200), spacing: 12)
+        GridItem(.flexible(), spacing: 12),
+        GridItem(.flexible(), spacing: 12)
     ]
 
     
@@ -179,28 +184,39 @@ struct SearchResultsView: View {
                       .padding(.leading,3)
                       
                       // MARK: - 검색 결과 그리드
-//                      ScrollView {
-//                          LazyVGrid(columns: columns, spacing: 25) {
-//                              ForEach(viewModel.listings) { listing in
-//                                  if let id = listing.id {
-//                                      NavigationLink(
-//                                        destination: ListingDetailView(
-//                                            listingId: id,
-//                                            favoritesViewModel: favoritesViewModel,
-//                                            service: ListingServiceImpl(repository: ListingRepository())
-//                                        )
-//                                        .navigationBarBackButtonHidden(true)
-//                                      ) {
-//                                          ListingCard(listing: listing)
-//                                      }
-//                                      .buttonStyle(PlainButtonStyle())
-//                                  }
-//                                  
-//                              }
-//                          }
-//                          .padding(.horizontal)
-//                          .padding(.top, 10)
-//                      }
+                      ScrollView {
+                          LazyVGrid(columns: [
+                              GridItem(.fixed(cardWidth), spacing: 12),
+                              GridItem(.fixed(cardWidth), spacing: 12)
+                          ], spacing: 12) {
+                              ForEach(viewModel.listings) { listing in
+                                  NavigationLink(destination: ListingDetailView(
+                                    service: ListingServiceImpl(repository: ListingRepository()),
+                                    listingId: listing.id ?? ""
+                                    )
+                                  ) {
+                                      ListingCard(
+                                        listing: listing,
+                                        isFavorite: favoritesViewModel.isFavorite(listing),
+                                        onToggleFavorite: {
+                                            Task { await favoritesViewModel.toggleFavorite(listing) }
+                                        }
+                                      )
+                                        .frame(width: cardWidth) // 카드 폭 고정
+                                  }
+                                  .buttonStyle(PlainButtonStyle())
+                              }
+                          }
+                          .padding()
+                      }
+                      .task {
+                          if let keyword = keyword {
+                              await viewModel.fetchListings(forKeyword: keyword)
+                          } else if let filter = filter {
+                              await viewModel.fetchListings(forFilter: filter)
+                          }
+                      }
+
                   }
                 // MARK: - RangeSliderPopup
                   .background(Color.backgroundGray100)
@@ -245,42 +261,65 @@ struct SearchResultsView: View {
 
 struct ListingCard: View {
     let listing: Listing
-    @State private var isFavorite: Bool = false
+    let isFavorite: Bool
+    let onToggleFavorite: () -> Void
     
+    let cardWidth = (UIScreen.main.bounds.width - 12*3) / 2 // 좌우 패딩 12, 그리드 간격 12
+
     var body: some View {
         VStack(alignment: .leading, spacing: 4) {
             
             ZStack(alignment: .topTrailing) {
                 // 이미지 배경 통일
                 Color.cardBgGray // 배경색
+                    .frame(height: 124)
                     .frame(maxWidth: .infinity)
-                  
+                
                   // 실제 이미지
-                  if listing.images.count > 0 {
-                      Image(listing.images[0])
-                          .resizable()
-                          .scaledToFit()
-                          .padding(5)
-                          .frame(height: 124)
-                          .clipped()
-                  }
+                if let first = listing.images.first, let url = URL(string: first) {
+                    AsyncImage(url: url) { phase in
+                        switch phase {
+                        case .empty:
+                            ProgressView()
+                                .frame(width: cardWidth, height: 124)
+                        case .success(let image):
+                            image
+                                .resizable()
+                                .scaledToFill()    // 꽉 채우기
+                                .frame(width: cardWidth, height: 124)
+                                .frame(maxWidth: .infinity, alignment: .center)
+                                .clipped()         // 넘치는 부분 잘라냄
+                        case .failure:
+                            Image(systemName: "car.fill")
+                                .resizable()
+                                .scaledToFit()
+                                .frame(width: cardWidth, height: 124)
+                                .frame(maxWidth: .infinity, alignment: .center)
+                                .foregroundColor(.gray)
+                        @unknown default:
+                            EmptyView()
+                        }
+                    }
+                }
                   
                 // 좋아요 버튼
-                Button(action: {
-                    isFavorite.toggle()
-                    // TODO: 서버에 찜 상태 업데이트
-                    
-                    
-                }) {
-                    Image(systemName: isFavorite ? "heart.fill" : "heart")
-                        .foregroundColor(isFavorite ? .red : Color.keyColorDarkGray)
-                        .padding(5)
-                        .background(Color.clear)
-                        .clipShape(Circle())
-                        .padding(5)
-                }
+//                Button(action: {
+//                    favoritesViewModel.toggleFavorite(listing)
+//                }) {
+//                    Image(systemName: favoritesViewModel.isFavorite(listing) ? "heart.fill" : "heart")
+//                        .foregroundColor(favoritesViewModel.isFavorite(listing) ? .red : Color.keyColorDarkGray)
+//                        .padding(5)
+//                        .background(Color.clear)
+//                        .clipShape(Circle())
+//                        .padding(5)
+//                }
+                FavoriteButton(
+                    isFavorite: isFavorite,
+                    onToggle: onToggleFavorite
+                )
             }
             
+            // 차량 정보
             VStack(alignment: .leading, spacing: 6) {
                 Text(listing.title)
 //                Text("23/02식(23년형) ・ 23,214km · 하이브리드(가솔린) ・ 경기")
@@ -289,16 +328,16 @@ struct ListingCard: View {
                     .lineLimit(2)
                     .multilineTextAlignment(.leading) // 왼쪽 정렬
                 
-//                Text("\(listing.year)식 · \(listing.mileage) km · \(listing.fuel)")
-                Text("23/02식(23년형) ・ 23,214km · 하이브리드(가솔린) ・ 경기")
+                Text("\(listing.year)년 · \(listing.mileage)km · \(listing.fuel) · \(listing.region)")
+//                Text("23/02식(23년형) ・ 23,214km · 하이브리드(가솔린) ・ 경기")
                     .foregroundColor(.secondary)
                     .font(.system(size: 11, weight: .regular))
                     .lineLimit(2)          // 최대 2줄까지 허용
                     .multilineTextAlignment(.leading) // 왼쪽 정렬
  
                 
-//                Text("\(listing.price.formattedWithSeparator())원")
-                Text("1억 3,860만원")
+                Text("\(listing.price)원")
+//                Text("1억 3,860만원")
                     .font(.system(size: 16, weight: .semibold))
                     .foregroundColor(Color.keyColorBlue)
             }
@@ -339,7 +378,7 @@ struct SearchListingDetailView: View {
                 .bold()
                 .padding()
             
-            Text("가격: \(listing.price.formattedWithSeparator())원")
+            Text("가격: \(NumberFormatter.koreanPriceString(from:listing.price))")
                 .font(.headline)
             
             Text("연식: \(listing.year)년 | 주행거리: \(listing.mileage) km | 연료: \(listing.fuel)")
@@ -353,13 +392,3 @@ struct SearchListingDetailView: View {
     }
 }
 
-// MARK: - 숫자 포맷 Extension
-extension Int {
-    func formattedWithSeparator() -> String {
-        let formatter = NumberFormatter()
-        formatter.numberStyle = .decimal
-        return formatter.string(from: NSNumber(value: self)) ?? "\(self)"
-    }
-}
-
-//

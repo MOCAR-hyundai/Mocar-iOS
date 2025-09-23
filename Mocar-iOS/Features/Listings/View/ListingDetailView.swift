@@ -51,7 +51,7 @@ struct ListingDetailView: View {
     // MARK: - 본문 UI
     private func content(detailData: ListingDetailData) -> some View {
         VStack {
-            TopBar(style: .listing(title: detailData.listing.plateNo ?? ""))
+            TopBar(style: .listing(title: detailData.listing.plateNo))
                 .padding()
             
             ScrollView {
@@ -145,7 +145,7 @@ struct ListingDetailView: View {
                 .foregroundStyle(.gray)
             
             
-            Text("\(NumberFormatter.koreanPriceString(from:listing.price))만원")
+            Text("\(NumberFormatter.koreanPriceString(from:listing.price))")
                 .padding(.leading, 8)
                 .font(.title2)
                 .fontWeight(.bold)

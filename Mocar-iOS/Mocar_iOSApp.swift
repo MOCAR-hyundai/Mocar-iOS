@@ -20,6 +20,7 @@ struct Mocar_iOSApp: App {
     }
     var body: some Scene {
         WindowGroup {
+
             BottomBar()
                 .environmentObject(userSession)
         }

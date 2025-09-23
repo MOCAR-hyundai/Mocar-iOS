@@ -16,6 +16,9 @@ struct LoginView: View {
     
     @State private var loginErrorMessage: String? = nil
     @State private var isLoading: Bool = false
+
+    @State private var navigateToHome = false
+
     
     @FocusState private var focusedField: Field?
     @Environment(\.dismiss) private var dismiss
@@ -26,10 +29,15 @@ struct LoginView: View {
     }
     
     var body: some View {
-        VStack(spacing: 20) {
-            TopBar(style: .login)
-                Spacer().frame(height: 80)
+        NavigationStack{
+            VStack(spacing: 20) {
+              
+                TopBar(style: .loginSignup)
+                    .padding(.bottom, 70)
+                    .padding(.leading,5)
+                    .background(Color.backgroundGray100)
                 
+
                 Text("로그인")
                     .font(.system(size: 30, weight: .semibold, design: .default))
                     .frame(maxWidth: .infinity, alignment: .leading)
@@ -54,7 +62,7 @@ struct LoginView: View {
                                 .stroke(focusedField == .email ? Color.keyColorBlue : Color.gray, lineWidth: 1)
                         )
                         .focused($focusedField, equals: .email)
-                    
+                        .background(Color.white)
                     // 비밀번호
                     Text("비밀번호")
                         .font(.system(size: 14))
@@ -70,10 +78,10 @@ struct LoginView: View {
                                 .padding(.trailing, 50)
                                 .background(
                                     RoundedRectangle(cornerRadius: 10)
-                                        .stroke(focusedField == .password ? Color.keyColorBlue
- : Color.gray, lineWidth: 1)
+                                        .stroke(focusedField == .password ? Color.keyColorBlue : Color.gray, lineWidth: 1)
                                 )
                                 .focused($focusedField, equals: .password)
+                                .background(Color.white)
                         } else {
                             TextField("8자 이상의 비밀번호", text: $password)
                                 .autocapitalization(.none)   // 자동 대문자 방지
@@ -85,6 +93,7 @@ struct LoginView: View {
                                     RoundedRectangle(cornerRadius: 8)
                                         .stroke(Color.gray, lineWidth: 1)
                                 )
+                                .background(Color.white)
                         }
                         HStack {
                             Spacer()
@@ -113,10 +122,10 @@ struct LoginView: View {
                         Toggle("로그인 상태 유지", isOn: $keepLoggedIn)
                             .toggleStyle(CheckboxToggleStyle())
                         Spacer()
-                        Button("비밀번호 재설정") {
-                            // 비밀번호 재설정 액션
-                        }
-                        .foregroundColor(.blue)
+                        
+                        NavigationLink("비밀번호를 잃어버리셨나요? ", destination: ResetPasswordView())
+                            .foregroundColor(.blue)
+                        
                     }
                     .font(.system(size: 14, weight: .regular, design: .default))
                     .padding(.top, 6)
@@ -163,9 +172,17 @@ struct LoginView: View {
                         .foregroundColor(.blue)
                 }
                 .font(.footnote)
+                .padding(.bottom, 50)
             }
             .padding(.top)
-            .navigationBarBackButtonHidden(true) 
+            .navigationDestination(isPresented: $navigateToHome) {
+                HomeView()
+            }
+            .background(Color.backgroundGray100)
+            
+        }
+        .background(Color.backgroundGray100)
+        .navigationBarBackButtonHidden(true)
  
     }
     
@@ -196,7 +213,9 @@ struct LoginView: View {
                     UserDefaults.standard.set(true, forKey: "keepLoggedIn")
                 }
                 // 다음 화면으로 이동 처리 가능
-                dismiss()
+                navigateToHome = true   // ✅ 로그인 성공 시 홈으로 이동
+//                dismiss()
+
             }
         }
     }

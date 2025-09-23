@@ -14,185 +14,221 @@ struct MyPageView: View {
     @Binding var selectedTab: Int
     @StateObject private var viewModel = MyPageViewModel()
     @EnvironmentObject var favoritesVM: FavoritesViewModel
+
+    @State private var showLogoutConfirm = false
+
+    @State private var showImagePicker = false
+    @State private var selectedImage: UIImage?
+
+    @State private var showToast = false
+    @State private var toastMessage = ""
+
+    
+    let UserId = Auth.auth().currentUser?.uid
     
     var body: some View {
-        NavigationView {
-            
-            VStack(alignment: .leading) {
-                //TopBar(style: .mypage(title: "Profile"))
-//                HStack {
-//                    Button(action: {
-//                        // 뒤로가기 액션
-//                    }) {
-//                        Image(systemName: "chevron.left")
-//                            .frame(width: 20, height: 20)
-//                            .padding(12) // 아이콘 주변 여백
-//                            .foregroundColor(.black)
-//                            .overlay(
-//                                RoundedRectangle(cornerRadius: 50) // 충분히 큰 값이면 원처럼 둥글게
-//                                    .stroke(Color.lineGray, lineWidth: 1) // 테두리 색과 두께
-//                            )
-//                    }
-//                    Spacer()
-//                    Text("Profile")
-//                        .font(.system(size: 18, weight: .bold, design: .default))
-//                    
-//                    
-//                    
-//                    Spacer()
-//                    
-//                    Button(action: {
-//                        // 점 세개 액션
-//                    }) {
-//                        Image("3Dot")
-//                            .frame(width: 20, height: 20)
-//                            .padding(12) // 아이콘 주변 여백
-//                            .overlay(
-//                                RoundedRectangle(cornerRadius: 50) // 충분히 큰 값이면 원처럼 둥글게
-//                                    .stroke(Color.lineGray, lineWidth: 1) // 테두리 색과 두께
-//                            )
-//                    }
-//                }
-//                .padding(.horizontal)
-//                .padding(3)
-//                .padding(.vertical, 6)
-//                .padding(.bottom, 5)
-//                .background(Color.backgroundGray100) // <- F8F8F8 배경
-                
-                
-                // 상단 사용자 정보
-                HStack(alignment: .center, spacing: 16) {
-                    ZStack(alignment: .bottomTrailing) {
-                        // 프로필 사진
-//                        Image("user1sample")
-//                            .resizable()
-//                            .scaledToFill()
-//                            .frame(width: 80, height: 80)
-//                            .clipShape(Circle())
-                    if let photoString = viewModel.photoURL, let url = URL(string: photoString) {
-                        AsyncImage(url: url) { image in
-                            image
-                                .resizable()
-                                .scaledToFill()
-                        } placeholder: {
-                            // placeholder 생략
-                            Image("user1sample")
-                                .resizable()
-                                .scaledToFill()
-                        }
-                        .frame(width: 80, height: 80)
-                        .clipShape(Circle())
-                    } else {
-                        Image("user1sample")
-                            .resizable()
-                            .scaledToFill()
-                            .frame(width: 80, height: 80)
-                            .clipShape(Circle())
-                    }
-                        
-                        
-                        // 오른쪽 하단 카메라 버튼
-                        Button(action: {
-                            // 사진 변경 액션
-                        }) {
-                            Image("Camera") // 또는 이미지로 대체 가능
-                                .resizable()
-                                .scaledToFit()
-                                .frame(width: 26, height: 26)
-                                .background(Color.white)
+        ZStack {
+            NavigationView {
+                VStack(alignment: .leading) {
+                    
+                    TopBar(style: .MyPage(title: "Profile"))
+                        .padding(.bottom)
+                        .background(Color.backgroundGray100)
+                    
+                    
+                    // 상단 사용자 정보
+                    HStack(alignment: .center, spacing: 16) {
+                        ZStack(alignment: .bottomTrailing) {
+                            
+                            if let photoString = viewModel.photoURL, let url = URL(string: photoString) {
+                                AsyncImage(url: url) { image in
+                                    image
+                                        .resizable()
+                                        .scaledToFill()
+                                } placeholder: {
+                                    // placeholder 생략
+                                    Image("user1sample")
+                                        .resizable()
+                                        .scaledToFill()
+                                }
+                                .frame(width: 80, height: 80)
                                 .clipShape(Circle())
-                                .shadow(radius: 1)
+                            } else {
+                                Image("user1sample")
+                                    .resizable()
+                                    .scaledToFill()
+                                    .frame(width: 80, height: 80)
+                                    .clipShape(Circle())
+                            }
+                            
+                            // 오른쪽 하단 카메라 버튼
+                            Button(action: {
+                                // 사진 변경 액션
+                                showImagePicker = true
+
+                            }) {
+                                Image("Camera") // 또는 이미지로 대체 가능
+                                    .resizable()
+                                    .scaledToFit()
+                                    .frame(width: 26, height: 26)
+                                    .background(Color.white)
+                                    .clipShape(Circle())
+                                    .shadow(radius: 1)
+                            }.sheet(isPresented: $showImagePicker) {
+                                SinglePhotoPicker(image: $selectedImage) { img in
+                                    if let img = img {
+                                        viewModel.updateProfileImage(img) { success in
+                                            if success {
+                                                toastMessage = "프로필 사진이 변경되었습니다."
+                                            } else {
+                                                toastMessage = "프로필 사진 변경 실패"
+                                            }
+                                            withAnimation {
+                                                showToast = true
+                                            }
+                                            DispatchQueue.main.asyncAfter(deadline: .now() + 2) {
+                                                withAnimation {
+                                                    showToast = false
+                                                }
+                                            }
+                                        }
+                                    }
+                                }
+                            }
+
+                            
+                            
+                            
                         }
                         
-                    }
-                    VStack(alignment: .leading, spacing: 4) {
-                        Text(viewModel.displayName)
-                            .font(.system(size: 16, weight: .semibold))
-                        if !viewModel.email.isEmpty {
-                            Text(viewModel.email)
-                                .font(.system(size: 14))
-                                .foregroundColor(.gray)
+                        VStack(alignment: .leading, spacing: 4) {
+                            Text(viewModel.displayName)
+                                .font(.system(size: 16, weight: .semibold))
+                            if !viewModel.email.isEmpty {
+                                Text(viewModel.email)
+                                    .font(.system(size: 14))
+                                    .foregroundColor(.gray)
+                            }
                         }
+                        
+
+                        
+                        Spacer()
+                        
+
                     }
+                    .padding(.horizontal)
+                    .padding(.vertical,4)
                     
-//                    VStack(alignment: .leading, spacing: 4) {
-//                        Text("Benjamin Jack")
-//                            .font(.system(size: 16, weight: .semibold, design: .default))
-//                        
-//                        Text("benjaminJack@gmail.com")
-//                            .font(.system(size: 14))
-//                            .foregroundColor(.gray)
-//                    }
                     
+                    Spacer().frame(height: 23)
+                    
+                    // My Section
+                    Text("My")
+                        .font(.system(size: 16, weight: .semibold, design: .default))
+                        .padding(.horizontal)
+                        
+                    
+                    VStack(spacing: 0) {
+                        NavigationLink(
+                            destination: VerticalFavoritesListView()
+                        ) {
+                            ProfileRow(icon: "heart", title: "나의 찜 매물")
+                        }
+                        NavigationLink(
+                            destination: MyOrdersView(currentUserId: UserId ?? "")
+                            .navigationBarHidden(true)   // 기본 네비게이션 바 숨김
+                        ) {
+                            ProfileRow(icon: "car.fill", title: "나의 구입 매물")
+                        }
+                        
+                        
+                        
+                        NavigationLink(
+                            destination: MyListingsView(currentUserId: UserId ?? "")
+                            .navigationBarHidden(true)   // 기본 네비게이션 바 숨김
+                        ) {
+                           ProfileRow(icon: "dollarsign.circle", title: "나의 등록 매물")
+                       }
+                    }
+                    .padding(.horizontal)
+                    .padding(.bottom, 4)
+                    
+                    
+                    
+                    // Account Section
+                    Text("Account")
+                        .font(.headline)
+                        .padding(.horizontal)
+                    
+                    VStack(spacing: 0) {
+//                        ProfileRow(icon: "gearshape", title: "비밀번호 변경")
+                        
+                        NavigationLink(destination: ChangePasswordView()
+                            .navigationBarHidden(true)
+                        ) {
+                            ProfileRow(icon: "gearshape", title: "비밀번호 변경")
+                        }
+
+                        
+                        ProfileRow(icon: "arrow.right.square", title: "Log out")
+                        .onTapGesture {
+                                showLogoutConfirm = true
+                            }
+                        
+    //                    .onTapGesture {
+    //                        viewModel.logout()
+    //                    }
+                        
+                        ProfileRow(icon: "person.fill.xmark", title: "회원 탈퇴")
+                        
+                    }
+                    .padding(.horizontal)
+                    .padding(.bottom, 4)
+                  
                     Spacer()
-                    
-//                    Button(action: {
-//                        // Edit profile action
-//                    }) {
-//                        VStack{
-//                             Image("edit")
-//                                 .resizable()           // 이미지 크기 조절 가능하게
-//                                 .scaledToFit()         // 비율 유지
-//                                 .frame(width: 18, height: 18) // 원하는 크기
-//
-//                             Text("Edit profile")
-//                                 .font(.footnote)
-//                                 .foregroundColor(.gray)
-//                         }
-//                    }
+
                 }
-                .padding(.horizontal)
-                .padding(.vertical,4)
-                
-                
-                Spacer().frame(height: 23)
-                
-                // My Section
-                Text("My")
-                    .font(.system(size: 16, weight: .semibold, design: .default))
-                    .padding(.horizontal)
-                    
-                
-                VStack(spacing: 0) {
-                    NavigationLink(
-                        destination: VerticalFavoritesListView()
-                    ) {
-                        ProfileRow(icon: "heart", title: "나의 찜 매물")
-                    }
-                    //ProfileRow(icon: "heart", title: "나의 찜 매물")
-                    ProfileRow(icon: "car.fill", title: "나의 구입 매물")
-                    ProfileRow(icon: "dollarsign.circle", title: "나의 등록 매물")
+                .onAppear {
+                    viewModel.fetchUser()
                 }
-                .padding(.horizontal)
-                .padding(.bottom, 4)
+            }
+            
+            
+            // ✅ 토스트 메시지
+            if showToast {
+                VStack {
+                    Spacer()
+                    ToastView(message: toastMessage)
+                        .padding(.bottom, 50)
+                        .transition(.move(edge: .bottom).combined(with: .opacity))
+                }
+            }
+            
+            // ✅ 로그아웃 확인 모달
+            if showLogoutConfirm {
+                Color.black.opacity(0.4)
+                    .ignoresSafeArea()
+                    .onTapGesture { showLogoutConfirm = false }
                 
-                
-                
-                // Support Section
-                Text("Account")
-                    .font(.headline)
-                    .padding(.horizontal)
-                
-                VStack(spacing: 0) {
-                    ProfileRow(icon: "gearshape", title: "회원 정보 수정")
-                    ProfileRow(icon: "arrow.right.square", title: "Log out")
-                    .onTapGesture {
+                ConfirmModalView(
+                    message: "정말 로그아웃 하시겠습니까?",
+                    confirmTitle: "로그아웃",
+                    cancelTitle: "취소",
+                    onConfirm: {
                         viewModel.logout()
-                        selectedTab = 0
+                        showLogoutConfirm = false
+                        // 여기서 홈 화면으로 이동시키고 싶다면,
+                        // 예: root 뷰를 LoginView로 교체하는 로직 필요
+                    },
+                    onCancel: {
+                        showLogoutConfirm = false
+                        //selectedTab = 0
                     }
-                    
-                    ProfileRow(icon: "person.fill.xmark", title: "회원 탈퇴")
-                    ProfileRow(icon: "person.badge.minus", title: "회원 탈퇴")
-                    
-                }
-                .padding(.horizontal)
-                .padding(.bottom, 4)
-                
-                Spacer()
+                )
             }
-            .onAppear {
-                viewModel.fetchUser()
-            }
+            
+            
         }
     }
 }
