@@ -71,15 +71,15 @@
       <BreakpointProxy
          BreakpointExtensionID = "Xcode.Breakpoint.FileBreakpoint">
          <BreakpointContent
-            uuid = "116DBA28-2757-4A97-827C-7FC7A5F7BB55"
+            uuid = "A575BDDD-F550-4E0D-8399-CD5D0261E408"
             shouldBeEnabled = "No"
             ignoreCount = "0"
             continueAfterRunningActions = "No"
-            filePath = "Mocar-iOS/Features/Search/Views/SearchResultsView.swift"
+            filePath = "Mocar-iOS/Features/SearchDetail/Views/Components/YearFilterView.swift"
             startingColumnNumber = "9223372036854775807"
             endingColumnNumber = "9223372036854775807"
-            startingLineNumber = "298"
-            endingLineNumber = "298"
+            startingLineNumber = "90"
+            endingLineNumber = "90"
             landmarkName = "body"
             landmarkType = "24">
          </BreakpointContent>
