@@ -49,7 +49,7 @@ struct MyOrdersView: View {
                             NavigationLink(
                                 destination: ListingDetailView(
                                     service: ListingServiceImpl(repository: ListingRepository()),
-                                                listingId: item.id ?? ""
+                                    listingId: item.listing.id ?? ""
                                 )
                             ) {
                                 OrdersCardView(
