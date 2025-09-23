@@ -30,7 +30,7 @@ struct ListingDetailView: View {
     /** 채팅방과 연결  **/
     
     var body: some View {
-        NavigationStack{
+        Group{
             if let listing = viewModel.listing {
                 VStack{
                     TopBar(style: .listing(title:viewModel.listing?.plateNo ?? ""))
@@ -44,9 +44,7 @@ struct ListingDetailView: View {
                                     favoritesViewModel: viewModel.favoritesViewModel,
                                         listing: listing
                                 )
-                                
                             }
-                            
                             
                             //차량 기본 정보
                             VStack(alignment: .leading){
@@ -104,6 +102,7 @@ struct ListingDetailView: View {
                                     .cornerRadius(12)
                             }
                             .padding()
+                            
                             VStack{
                                 Text("시세")
                                     .font(.title3)
@@ -129,32 +128,16 @@ struct ListingDetailView: View {
                         .padding(.bottom, 90)
                         .onAppear {
                             viewModel.loadListing(id: listingId)
-                            }
                         }
-//                    HStack{
-//                        Button(action:{
-//                            
-//                        }){
-//                            Text("구매 문의")
-//                                .foregroundStyle(.white)
-//                                .fontWeight(.bold)
-//                            
-//                        }
-//                        .frame(maxWidth: .infinity, minHeight: 50)
-//                        .background(
-//                            RoundedRectangle(cornerRadius: 8)
-//                                .fill(Color.blue)
-//                        )
-//                        
-//                    }
-//                    .padding()
+                    }
+
                 }
                 .background(Color.backgroundGray100)
                 .navigationBarHidden(true)   // 기본 네비게이션 바 숨김
                 .navigationBarBackButtonHidden(true) // 기본 뒤로가기 숨김
-                .onAppear {
-                    viewModel.loadListing(id: listingId)
-                }
+//                .onAppear {
+//                    viewModel.loadListing(id: listingId)
+//                }
             } else {
                 VStack {
                     ProgressView()
@@ -166,9 +149,9 @@ struct ListingDetailView: View {
                 .background(Color.backgroundGray100)
                 .navigationBarHidden(true)
                 .navigationBarBackButtonHidden(true)
-                .onAppear {
-                    viewModel.loadListing(id: listingId)
-                }
+//                .onAppear {
+//                    viewModel.loadListing(id: listingId)
+//                }
             }
 
             
@@ -177,23 +160,10 @@ struct ListingDetailView: View {
                 viewModel.loadListing(id: listingId)
             }
             .background(Color.backgroundGray100)
-            .navigationBarHidden(true)   // 기본 네비게이션 바 숨김
-            .navigationBarBackButtonHidden(true) // 기본 뒤로가기 숨김
+            //.navigationBarHidden(true)   // 기본 네비게이션 바 숨김
+            //.navigationBarBackButtonHidden(true) // 기본 뒤로가기 숨김
+        
             HStack{
-//                Button(action:{
-//                    
-//                }){
-//                    Text("구매 문의")
-//                        .foregroundStyle(.white)
-//                        .fontWeight(.bold)
-//                    
-//                }
-//                .frame(maxWidth: .infinity, minHeight: 50)
-//                .background(
-//                    RoundedRectangle(cornerRadius: 8)
-//                        .fill(Color.blue)
-//                )
-                
                 /**채팅방과 연결 */
                 Button(action: {
                     createOrFetchChat()
@@ -230,8 +200,6 @@ struct ListingDetailView: View {
                     EmptyView()
                 }
                 .hidden()
-
-
                 
                 /** 채팅방과 연결  */
                 

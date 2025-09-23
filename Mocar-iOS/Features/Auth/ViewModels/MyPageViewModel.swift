@@ -8,6 +8,7 @@
 import Foundation
 import FirebaseAuth
 import FirebaseFirestore
+import FirebaseStorage
 
 @MainActor
 class MyPageViewModel: ObservableObject {
@@ -53,5 +54,58 @@ class MyPageViewModel: ObservableObject {
               print("로그아웃 실패: \(error.localizedDescription)")
           }
       }
+    
+    func updateProfileImage(_ image: UIImage, completion: @escaping (Bool) -> Void) {
+        guard let uid = Auth.auth().currentUser?.uid else { return }
+        let storageRef = Storage.storage().reference().child("profile_images/\(uid).jpg")
+        
+        if let imageData = image.jpegData(compressionQuality: 0.8) {
+            storageRef.putData(imageData, metadata: nil) { _, error in
+                if let error = error {
+                    print("❌ 업로드 실패: \(error.localizedDescription)")
+                    completion(false)
+                    return
+                }
+                storageRef.downloadURL { url, _ in
+                    if let url = url {
+                        Firestore.firestore().collection("users").document(uid).updateData([
+                            "photoUrl": url.absoluteString
+                        ])
+                        DispatchQueue.main.async {
+                            self.photoURL = url.absoluteString
+                            completion(true)  // ✅ 성공
+                        }
+                    } else {
+                        completion(false)
+                    }
+                }
+            }
+        }
+    }
+
+//    func updateProfileImage(_ image: UIImage) {
+//        guard let uid = Auth.auth().currentUser?.uid else { return }
+//        let storageRef = Storage.storage().reference().child("profile_images/\(uid).jpg")
+//        
+//        if let imageData = image.jpegData(compressionQuality: 0.8) {
+//            storageRef.putData(imageData, metadata: nil) { _, error in
+//                if let error = error {
+//                    print("❌ 업로드 실패: \(error.localizedDescription)")
+//                    return
+//                }
+//                storageRef.downloadURL { url, _ in
+//                    if let url = url {
+//                        // Firestore에 photoURL 업데이트
+//                        Firestore.firestore().collection("users").document(uid).updateData([
+//                            "photoUrl": url.absoluteString
+//                        ])
+//                        DispatchQueue.main.async {
+//                            self.photoURL = url.absoluteString
+//                        }
+//                    }
+//                }
+//            }
+//        }
+//    }
     
 }
