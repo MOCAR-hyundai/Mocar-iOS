@@ -47,8 +47,8 @@ final class SearchDetailViewModel: ObservableObject {
     @Published var minMileage: Int
     @Published var maxMileage: Int
     @Published var fuelOptions: [CheckableItem]
-    @Published var areaOptions: [CheckableItem]
     @Published var carTypeOptions: [CheckableItem]
+    @Published var regionOptions: [CheckableItem]
     @Published var isLoading: Bool = false
     @Published var loadErrorMessage: String?
     
@@ -64,7 +64,7 @@ final class SearchDetailViewModel: ObservableObject {
     private enum FilterDimension: Hashable {
         case carType
         case fuel
-        case area
+        case region
     }
     
     init() {
@@ -81,8 +81,8 @@ final class SearchDetailViewModel: ObservableObject {
         minMileage = mileageRange.lowerBound
         maxMileage = mileageRange.upperBound
         fuelOptions = []
-        areaOptions = []
         carTypeOptions = []
+        regionOptions = []
         
         Task {
             await loadListings()
@@ -199,8 +199,8 @@ final class SearchDetailViewModel: ObservableObject {
         allCars.filter { $0.fuel == name && matches($0, ignoring: [.fuel]) }.count
     }
     
-    func countForArea(_ name: String) -> Int {
-        allCars.filter { $0.area == name && matches($0, ignoring: [.area]) }.count
+    func countForRegion(_ name: String) -> Int {
+        allCars.filter { $0.region == name && matches($0, ignoring: [.region]) }.count
     }
     
     func selectMaker(_ maker: String) {
@@ -305,7 +305,7 @@ final class SearchDetailViewModel: ObservableObject {
         case "연료":
             return !selectedFuels.isEmpty
         case "지역":
-            return !selectedAreas.isEmpty
+            return !selectedRegions.isEmpty
         default:
             return false
         }
@@ -322,7 +322,7 @@ final class SearchDetailViewModel: ObservableObject {
         minMileage = mileageRange.lowerBound
         maxMileage = mileageRange.upperBound
         fuelOptions = fuelOptions.map { CheckableItem(name: $0.name, checked: false) }
-        areaOptions = areaOptions.map { CheckableItem(name: $0.name, checked: false) }
+        regionOptions = regionOptions.map { CheckableItem(name: $0.name, checked: false) }
         carTypeOptions = carTypeOptions.map { CheckableItem(name: $0.name, checked: false) }
     }
     
@@ -330,8 +330,8 @@ final class SearchDetailViewModel: ObservableObject {
         Set(fuelOptions.filter { $0.checked }.map { $0.name })
     }
     
-    private var selectedAreas: Set<String> {
-        Set(areaOptions.filter { $0.checked }.map { $0.name })
+    private var selectedRegions: Set<String> {
+        Set(regionOptions.filter { $0.checked }.map { $0.name })
     }
     
     private var selectedCarTypes: Set<String> {
@@ -343,7 +343,7 @@ final class SearchDetailViewModel: ObservableObject {
         let model = selectedModel ?? "없음"
         let trims = selectedTrims.isEmpty ? "없음" : selectedTrims.joined(separator: "\n\t")
         let fuels = Array(selectedFuels).sorted()
-        let areas = Array(selectedAreas).sorted()
+        let regions = Array(selectedRegions).sorted()
         let carTypes = Array(selectedCarTypes).sorted()
         
         print("===== 검색 필터 =====")
@@ -354,7 +354,7 @@ final class SearchDetailViewModel: ObservableObject {
         print("연식: \(minYear)년 ~ \(maxYear)년")
         print("주행거리: \(minMileage)km ~ \(maxMileage)km")
         print("연료: \(fuels.isEmpty ? "없음" : fuels.joined(separator: ", "))")
-        print("지역: \(areas.isEmpty ? "없음" : areas.joined(separator: ", "))")
+        print("지역: \(regions.isEmpty ? "없음" : regions.joined(separator: ", "))")
         print("차종: \(carTypes.isEmpty ? "없음" : carTypes.joined(separator: ", "))")
         print("총 결과 수: \(filteredCount)")
         print("====================")
@@ -391,6 +391,7 @@ final class SearchDetailViewModel: ObservableObject {
         var trims: Set<String>
         var carTypes: Set<String>
         var fuels: Set<String>
+        var regions: Set<String>
         var minPrice: Int?
         var maxPrice: Int?
         var minYear: Int?
@@ -405,6 +406,7 @@ final class SearchDetailViewModel: ObservableObject {
             lhs.trims == rhs.trims &&
             lhs.carTypes == rhs.carTypes &&
             lhs.fuels == rhs.fuels &&
+            lhs.regions == rhs.regions &&
             lhs.minPrice == rhs.minPrice &&
             lhs.maxPrice == rhs.maxPrice &&
             lhs.minYear == rhs.minYear &&
@@ -419,6 +421,7 @@ final class SearchDetailViewModel: ObservableObject {
             hasher.combine(trims)
             hasher.combine(carTypes)
             hasher.combine(fuels)
+            hasher.combine(regions)
             hasher.combine(minPrice)
             hasher.combine(maxPrice)
             hasher.combine(minYear)
@@ -437,7 +440,7 @@ final class SearchDetailViewModel: ObservableObject {
             subModels: Array(selectedTrims),
             carTypes: Array(carTypeOptions.filter { $0.checked }.map { $0.name }),
             fuels: Array(fuelOptions.filter { $0.checked }.map { $0.name }),
-            regions: [],
+            regions: Array(regionOptions.filter { $0.checked }.map { $0.name }),
             minPrice: minPrice,
             maxPrice: maxPrice,
             minYear: minYear,
@@ -464,6 +467,7 @@ final class SearchDetailViewModel: ObservableObject {
         selectedTrims = Set(filter.subModels ?? [])
         carTypeOptions = carTypeOptions.map { CheckableItem(name: $0.name, checked: filter.carTypes?.contains($0.name) ?? false) }
         fuelOptions = fuelOptions.map { CheckableItem(name: $0.name, checked: filter.fuels?.contains($0.name) ?? false) }
+        regionOptions = regionOptions.map { CheckableItem(name: $0.name, checked: filter.regions?.contains($0.name) ?? false) }
         minPrice = filter.minPrice ?? priceRange.lowerBound
         maxPrice = filter.maxPrice ?? priceRange.upperBound
         minYear = filter.minYear ?? yearRange.lowerBound
@@ -472,36 +476,70 @@ final class SearchDetailViewModel: ObservableObject {
         maxMileage = filter.maxMileage ?? mileageRange.upperBound
     }
     
+    private func normalize(_ str: String?) -> String {
+        (str ?? "").trimmingCharacters(in: .whitespacesAndNewlines).lowercased()
+    }
+
     private func matches(
         _ car: SearchCar,
         ignoring dimensions: Set<FilterDimension> = [],
         ignoreMaker: Bool = false,
         ignoreModel: Bool = false
     ) -> Bool {
-        if !ignoreMaker, let maker = selectedMaker, car.maker != maker {
+        // 제조사
+        if !ignoreMaker, let maker = selectedMaker,
+           normalize(car.maker) != normalize(maker) {
             return false
         }
-        if !ignoreModel, let model = selectedModel, car.model != model {
+
+        // 모델
+        if !ignoreModel, let model = selectedModel,
+           normalize(car.model) != normalize(model) {
             return false
         }
+
+        // 트림 / 서브모델
+        if !selectedTrims.isEmpty &&
+            !selectedTrims.contains(where: { normalize($0) == normalize(car.title) }) {
+            return false
+        }
+
+        // 가격
         if car.price < minPrice || car.price > maxPrice {
             return false
         }
+
+        // 연식
         if car.year < minYear || car.year > maxYear {
             return false
         }
+
+        // 주행거리
         if car.mileage < minMileage || car.mileage > maxMileage {
             return false
         }
-        if !dimensions.contains(.fuel) && !selectedFuels.isEmpty && !selectedFuels.contains(car.fuel) {
+
+        // 연료
+        if !dimensions.contains(.fuel),
+           !selectedFuels.isEmpty,
+           !selectedFuels.contains(where: { normalize($0) == normalize(car.fuel) }) {
             return false
         }
-        if !dimensions.contains(.area) && !selectedAreas.isEmpty && !selectedAreas.contains(car.area) {
+
+        // 차종
+        if !dimensions.contains(.carType),
+           !selectedCarTypes.isEmpty,
+           !selectedCarTypes.contains(where: { normalize($0) == normalize(car.category) }) {
             return false
         }
-        if !dimensions.contains(.carType) && !selectedCarTypes.isEmpty && !selectedCarTypes.contains(car.category) {
+
+        // 지역
+        if !dimensions.contains(.region),
+           !selectedRegions.isEmpty,
+           !selectedRegions.contains(where: { normalize($0) == normalize(car.region) }) {
             return false
         }
+
         return true
     }
     
@@ -538,11 +576,11 @@ final class SearchDetailViewModel: ObservableObject {
     
     private func configureFilterOptions(with cars: [SearchCar]) {
         let selectedFuelSet = selectedFuels
-        let selectedAreaSet = selectedAreas
+        let selectedRegionSet = selectedRegions
         let selectedCarTypeSet = selectedCarTypes
         
         fuelOptions = Self.buildOptions(from: cars.map { $0.fuel }, selected: selectedFuelSet)
-        areaOptions = Self.buildOptions(from: cars.map { $0.area }, selected: selectedAreaSet)
+        regionOptions = Self.buildOptions(from: cars.map { $0.region }, selected: selectedRegionSet)
         carTypeOptions = Self.buildOptions(from: cars.map { $0.category }, selected: selectedCarTypeSet)
     }
     
