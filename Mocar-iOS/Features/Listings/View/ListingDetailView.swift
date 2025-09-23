@@ -285,14 +285,11 @@ import FirebaseAuth
 
 struct ListingDetailView: View {
     @StateObject private var viewModel: ListingDetailViewModel
-    @ObservedObject private var favoritesVM: FavoritesViewModel
+    @EnvironmentObject var favoritesVM: FavoritesViewModel
     let listingId: String
     
-    init(service: ListingService, favoritesVM: FavoritesViewModel, listingId: String) {
-        _viewModel = StateObject(
-            wrappedValue: ListingDetailViewModel(service: service)
-        )
-        self.favoritesVM = favoritesVM
+    init(service: ListingService, listingId: String) {
+        _viewModel = StateObject(wrappedValue: ListingDetailViewModel(service: service))
         self.listingId = listingId
     }
 

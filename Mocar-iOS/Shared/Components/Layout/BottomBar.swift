@@ -12,7 +12,20 @@ struct BottomBar: View {
     
     @EnvironmentObject var session: UserSession //전역 세션 받아오기
     @State private var showLoginModal = false
-     @State private var navigateToLogin = false
+    @State private var navigateToLogin = false
+    
+    @StateObject private var favoritesVM: FavoritesViewModel
+    
+    init() {
+        let listingRepo = ListingRepository()
+        let favoriteRepo = FavoriteRepository()
+        let favoriteService = FavoriteServiceImpl(
+            favoriteRepository: favoriteRepo,
+            listingRepository: listingRepo
+        )
+        _favoritesVM = StateObject(wrappedValue: FavoritesViewModel(service: favoriteService))
+    }
+
     
     var body: some View {
         NavigationStack{
@@ -83,7 +96,7 @@ struct BottomBar: View {
                 }
             }
         }
-        
+        .environmentObject(favoritesVM)
     }
     
     @ViewBuilder

@@ -16,32 +16,41 @@ struct VerticalListingCardView: View {
         VStack(alignment: .leading, spacing: 4) {
             
             ZStack(alignment: .topTrailing) {
-                // 이미지 배경 통일
-                Color.cardBgGray // 배경색
-                    .frame(maxWidth: .infinity)
-                  
-                  // 실제 이미지
-                  if listing.images.count > 0 {
-                      Image(listing.images[0])
-                          .resizable()
-                          .scaledToFit()
-                          .padding(5)
-                          .frame(height: 124)
-                          .clipped()
-                  }
-                  
+                if let imageUrl = listing.images.first, let url = URL(string: imageUrl) {
+                    AsyncImage(url: url) { phase in
+                        switch phase {
+                        case .empty:
+                            ProgressView()
+                                .frame(width: 170, height: 120)
+                        case .success(let image):
+                            image
+                                .resizable()
+                                .scaledToFill()
+                                .frame(width: 170, height: 120)
+                                .clipped()
+                        case .failure:
+                            Image("이미지없음icon") // fallback 이미지
+                                .resizable()
+                               .scaledToFill()    // 비율 유지 + 꽉 채움
+                               .frame(width: 170, height: 120)
+                               .clipped()         // 프레임 밖 잘라냄
+                               .cornerRadius(12)
+                        @unknown default:
+                            EmptyView()
+                        }
+                    }
+                } else {
+                    Image("이미지없음icon")
+                        .resizable()
+                        .scaledToFill()
+                        .frame(width: 170, height: 120, alignment: .top)  // 상단 맞춤
+                        .clipped()
+                }
                 // 좋아요 버튼
-//                Button(action: {
-//                    onToggleFavorite()
-//                }) {
-//                    Image(systemName: isFavorite ? "heart.fill" : "heart")
-//                        .foregroundColor(isFavorite ? .red : .gray)
-//                        .padding(8)
-//                }
-//                FavoriteButton(
-//                    isFavorite: isFavorite,
-//                    onToggle: onToggleFavorite
-//                )
+                FavoriteButton(
+                    isFavorite: isFavorite,
+                    onToggle: onToggleFavorite
+                )
             }
             
             VStack(alignment: .leading, spacing: 6) {

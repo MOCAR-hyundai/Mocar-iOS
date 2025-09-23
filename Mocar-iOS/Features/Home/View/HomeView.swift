@@ -199,19 +199,13 @@ import SwiftUI
 
 struct HomeView: View {
     @StateObject private var homeViewModel: HomeViewModel
-    @StateObject private var favoritesVM: FavoritesViewModel
+    @EnvironmentObject var favoritesVM: FavoritesViewModel
     @StateObject private var userSession = UserSession()
     @State private var showLogin = false
     
     init() {
         let listingRepo = ListingRepository()
-        let favoriteRepo = FavoriteRepository()
-        let favoriteService = FavoriteServiceImpl(
-            favoriteRepository: favoriteRepo,
-            listingRepository: listingRepo
-        )
         
-        _favoritesVM = StateObject(wrappedValue: FavoritesViewModel(service: favoriteService))
         _homeViewModel = StateObject(
             wrappedValue: HomeViewModel(
                 service: HomeServiceImpl(listingRepository: listingRepo)
@@ -285,7 +279,6 @@ struct HomeView: View {
                                             NavigationLink(
                                                 destination: ListingDetailView(
                                                     service: ListingServiceImpl(repository: ListingRepository()),
-                                                    favoritesVM: favoritesVM,
                                                     listingId: listing.id ?? ""
                                                 )
                                             ) {
@@ -341,11 +334,10 @@ struct HomeView: View {
                                         NavigationLink(
                                             destination: ListingDetailView(
                                                 service: ListingServiceImpl(repository: ListingRepository()),
-                                                favoritesVM: favoritesVM,
                                                 listingId: listing.id ?? ""
                                             )
                                         ) {
-                                            ListingCardView(
+                                            VerticalListingCardView(
                                                 listing: listing,
                                                 isFavorite: favoritesVM.isFavorite(listing),
                                                 onToggleFavorite: {

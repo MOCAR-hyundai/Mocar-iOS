@@ -13,7 +13,7 @@ import FirebaseFirestore
 struct MyPageView: View {
     @Binding var selectedTab: Int
     @StateObject private var viewModel = MyPageViewModel()
-    
+    @EnvironmentObject var favoritesVM: FavoritesViewModel
     
     var body: some View {
         NavigationView {
