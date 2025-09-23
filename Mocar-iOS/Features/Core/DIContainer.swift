@@ -27,7 +27,7 @@ final class DIContainer {
         let homeService = HomeServiceImpl(repository: listingRepository)
         return HomeViewModel(
             service: homeService,
-            favoritesViewModel: favoritesVM
+           // favoritesViewModel: favoritesVM
         )
     }()
 }

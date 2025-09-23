@@ -16,11 +16,11 @@ final class HomeViewModel: ObservableObject {
     @Published var brands : [CarBrand] = []
     
     private let service : HomeService
-    let favoritesViewModel: FavoritesViewModel
+    //let favoritesViewModel: FavoritesViewModel
     
-    init(service: HomeService, favoritesViewModel: FavoritesViewModel) {
+    init(service: HomeService/*, favoritesViewModel: FavoritesViewModel*/) {
         self.service = service
-        self.favoritesViewModel = favoritesViewModel
+       // self.favoritesViewModel = favoritesViewModel
     }
     
     func fetchListings() async {

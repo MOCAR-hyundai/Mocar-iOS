@@ -25,11 +25,11 @@ final class ListingDetailViewModel: ObservableObject {
     @Published var ticks: [Int] = []
     
     private let service: ListingService
-    let favoritesViewModel: FavoritesViewModel
+    //let favoritesViewModel: FavoritesViewModel
     
-    init(service: ListingService, favoritesViewModel: FavoritesViewModel){
+    init(service: ListingService/*, favoritesViewModel: FavoritesViewModel*/){
         self.service = service
-        self.favoritesViewModel = favoritesViewModel
+        //self.favoritesViewModel = favoritesViewModel
     }
     
     // 상태 문구

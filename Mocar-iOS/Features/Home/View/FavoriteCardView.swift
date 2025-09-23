@@ -21,13 +21,17 @@ struct FavoriteCardView: View{
                     .frame(width: 180, height: 120)   // frame을 카드 width에 맞춤
                     .clipped()                        // 잘려서 여백 없애기
 
-                Button(action: {
-                    onToggleFavorite()
-                }) {
-                    Image(systemName: isFavorite ?  "heart.fill" : "heart")
-                        .foregroundColor(.red)
-                        .padding(0)
-                }
+//                Button(action: {
+//                    onToggleFavorite()
+//                }) {
+//                    Image(systemName: isFavorite ?  "heart.fill" : "heart")
+//                        .foregroundColor(.red)
+//                        .padding(0)
+//                }
+//                FavoriteButton(
+//                    isFavorite: isFavorite,           
+//                    onToggle: onToggleFavorite
+//                )
             }
             CarInfoView(listing: listing)
             

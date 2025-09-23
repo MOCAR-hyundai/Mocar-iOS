@@ -31,13 +31,17 @@ struct VerticalListingCardView: View {
                   }
                   
                 // 좋아요 버튼
-                Button(action: {
-                    onToggleFavorite()
-                }) {
-                    Image(systemName: isFavorite ? "heart.fill" : "heart")
-                        .foregroundColor(isFavorite ? .red : .gray)
-                        .padding(8)
-                }
+//                Button(action: {
+//                    onToggleFavorite()
+//                }) {
+//                    Image(systemName: isFavorite ? "heart.fill" : "heart")
+//                        .foregroundColor(isFavorite ? .red : .gray)
+//                        .padding(8)
+//                }
+//                FavoriteButton(
+//                    isFavorite: isFavorite,
+//                    onToggle: onToggleFavorite
+//                )
             }
             
             VStack(alignment: .leading, spacing: 6) {

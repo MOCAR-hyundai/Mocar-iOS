@@ -8,21 +8,21 @@
 import SwiftUI
 
 struct HomeView: View {
-    @StateObject private var favoritesViewModel = DIContainer.shared.favoritesVM
+    //@StateObject private var favoritesViewModel = DIContainer.shared.favoritesVM
     @StateObject private var homeViewModel =  DIContainer.shared.homeVM
     @StateObject private var brandViewModel = CarBrandViewModel()
     @StateObject private var userSession = UserSession()
     //@State private var selectedBrand: CarBrand? = nil
     @State private var showLogin = false
     
-//    init(){
-//        //FavoritesviewModel을 먼저 만들고 HomeViewModel에 주입
-//        let favVM = FavoritesViewModel()
-//        let repository = ListingRepository()
-//        let service = HomeServiceImpl(repository: repository)
-//        _favoritesViewModel = StateObject(wrappedValue: favVM)
-//        _homeViewModel = StateObject(wrappedValue: HomeViewModel(service: service, favoritesViewModel: favVM))
-//   }
+    init(){
+        //FavoritesviewModel을 먼저 만들고 HomeViewModel에 주입
+        //let favVM = FavoritesViewModel()
+        let repository = ListingRepository()
+        let service = HomeServiceImpl(repository: repository)
+        //_favoritesViewModel = StateObject(wrappedValue: favVM)
+        _homeViewModel = StateObject(wrappedValue: HomeViewModel(service: service/*, favoritesViewModel: favVM*/))
+   }
 
     var body: some View {
         NavigationStack{
@@ -83,29 +83,31 @@ struct HomeView: View {
                         
                         //리스트
                         ScrollView(.horizontal, showsIndicators: false){
-                            HStack(spacing: 16) {
-                                ForEach(favoritesViewModel.favorites,id: \.safeId) { favorite in
-                                    if let listing = homeViewModel.listings.first(where: {$0.id == favorite.listingId}){
-                                        NavigationLink(
-                                            destination: ListingDetailView(
-                                                listingId: favorite.listingId,
-                                                favoritesViewModel: favoritesViewModel,
-                                                service: ListingServiceImpl(repository: ListingRepository())
-                                            )
-                                        ) {
-                                            FavoriteCardView(
-                                                listing: listing,
-                                                isFavorite: favoritesViewModel.isFavorite(listing),
-                                                onToggleFavorite:{
-                                                    favoritesViewModel.toggleFavorite(listing)
-                                                }
-                                            )
-                                        }
-                                         .buttonStyle(PlainButtonStyle())
-                                    }
-                                    
-                                }
-                            }
+//                            HStack(spacing: 16) {
+//                                ForEach(favoritesViewModel.favorites,id: \.safeId) { favorite in
+//                                    if let listing = homeViewModel.listings.first(where: {$0.id == favorite.listingId}){
+//                                        NavigationLink(
+//                                            destination: ListingDetailView(
+//                                                    viewModel: ListingDetailViewModel(
+//                                                        service: ListingServiceImpl(repository: ListingRepository()),
+//                                                        favoritesViewModel: favoritesViewModel
+//                                                    ),
+//                                                    listingId: listing.id ?? ""
+//                                                )
+//                                        ) {
+//                                            FavoriteCardView(
+//                                                listing: listing,
+//                                                isFavorite: favoritesViewModel.isFavorite(listing),
+//                                                onToggleFavorite:{
+//                                                    favoritesViewModel.toggleFavorite(listing)
+//                                                }
+//                                            )
+//                                        }
+//                                         .buttonStyle(PlainButtonStyle())
+//                                    }
+//                                    
+//                                }
+//                            }
                         }
                     }
                     .padding(.bottom,16)
@@ -138,43 +140,45 @@ struct HomeView: View {
                             GridItem(.flexible()), // 첫 번째 열
                             GridItem(.flexible())  // 두 번째 열
                         ], spacing: 16) {
-                            ForEach(homeViewModel.filteredListings, id: \.safeId) { listing in
-                                let detailView = ListingDetailView(
-                                    listingId: listing.id ?? "",
-                                    favoritesViewModel: homeViewModel.favoritesViewModel,
-                                    service: ListingServiceImpl(repository: ListingRepository())
-                                )
-
-                                NavigationLink(destination: detailView) {
-                                    ListingCardView(
-                                        listing: listing,
-                                        isFavorite: favoritesViewModel.isFavorite(listing),
-                                        onToggleFavorite: {
-                                            favoritesViewModel.toggleFavorite(listing)
-                                        }
-                                    )
-                                }
-                                .buttonStyle(PlainButtonStyle())
-                            }
-
 //                            ForEach(homeViewModel.filteredListings, id: \.safeId) { listing in
-//                                NavigationLink(
-//                                    destination: ListingDetailView(
-//                                        listingId: listing.id,
-//                                        favoritesViewModel: homeViewModel.favoritesViewModel,
-//                                        service: ListingServiceImpl(repository: ListingRepository())
-//                                    )
-//                                ){
-//                                    ListingCardView(
+//                                let detailView = ListingDetailView(
+//                                    listingId: listing.id ?? "",
+//                                    favoritesViewModel: homeViewModel.favoritesViewModel,
+//                                    service: ListingServiceImpl(repository: ListingRepository())
+//                                )
+//
+//                                NavigationLink(destination: detailView) {
+//                                    VerticalListingCardView(
 //                                        listing: listing,
 //                                        isFavorite: favoritesViewModel.isFavorite(listing),
-//                                        onToggleFavorite:{
+//                                        onToggleFavorite: {
 //                                            favoritesViewModel.toggleFavorite(listing)
 //                                        }
 //                                    )
 //                                }
 //                                .buttonStyle(PlainButtonStyle())
 //                            }
+                            
+                            
+                            
+
+                            ForEach(homeViewModel.filteredListings, id: \.safeId) { listing in
+                                NavigationLink(
+                                    destination: ListingDetailView(
+                                        service: ListingServiceImpl(repository: ListingRepository()),
+                                        listingId: listing.id ?? ""
+                                    )
+                                ){
+                                    ListingCardView(
+                                        listing: listing,
+                                        isFavorite:false,
+                                        onToggleFavorite:{
+                                            print("하트눌림")
+                                        }
+                                    )
+                                }
+                                .buttonStyle(PlainButtonStyle())
+                            }
                         }
                     }
                 }

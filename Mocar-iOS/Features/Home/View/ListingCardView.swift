@@ -18,13 +18,13 @@ struct ListingCardView: View{
                 Image("hyundai")
                     .resizable()
                 
-                Button(action: {
-                    onToggleFavorite()
-                }) {
-                    Image(systemName: isFavorite ? "heart.fill" : "heart")
-                        .foregroundColor(isFavorite ? .red : .gray)
-                        .padding(8)
-                }
+//                Button(action: {
+//                    onToggleFavorite()
+//                }) {
+//                    Image(systemName: isFavorite ? "heart.fill" : "heart")
+//                        .foregroundColor(isFavorite ? .red : .gray)
+//                        .padding(8)
+//                }
             }
             CarInfoView(listing: listing)
             

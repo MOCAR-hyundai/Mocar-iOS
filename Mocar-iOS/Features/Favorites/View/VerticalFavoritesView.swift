@@ -8,14 +8,14 @@
 import SwiftUI
 
 struct VerticalFavoritesView: View {
-    @StateObject private var favoritesViewModel : FavoritesViewModel
+    //@StateObject private var favoritesViewModel : FavoritesViewModel
     
-    init(favoritesViewModel: FavoritesViewModel = DIContainer.shared.favoritesVM) {
-        _favoritesViewModel = StateObject(wrappedValue: favoritesViewModel)
-    }
+//    init(favoritesViewModel: FavoritesViewModel = DIContainer.shared.favoritesVM) {
+//        _favoritesViewModel = StateObject(wrappedValue: favoritesViewModel)
+//    }
     
     var body: some View {
-        TopBar(style: .list(title: "\(favoritesViewModel.favoritesCount)대"))
+        //TopBar(style: .list(title: "\(favoritesViewModel.favoritesCount)대"))
         ScrollView(showsIndicators: false){
             //찜한 목록
             VStack(alignment: .leading, spacing: 8){
@@ -27,24 +27,24 @@ struct VerticalFavoritesView: View {
                    ],
                    spacing: 16
                 ) {
-                    ForEach(favoritesViewModel.favoriteListings,id: \.safeId) { listing in
-                        NavigationLink(
-                           destination: ListingDetailView(
-                               listingId: listing.id ?? "",
-                               favoritesViewModel: favoritesViewModel,
-                               service: ListingServiceImpl(repository: ListingRepository())
-                           )
-                        ){
-                            VerticalListingCardView(
-                                listing: listing,
-                                isFavorite: favoritesViewModel.isFavorite(listing),
-                                onToggleFavorite: {
-                                    favoritesViewModel.toggleFavorite(listing)
-                                }
-                            )
-                        }
-                        .buttonStyle(.plain)
-                    }
+//                    ForEach(favoritesViewModel.favoriteListings,id: \.safeId) { listing in
+//                        NavigationLink(
+//                           destination: ListingDetailView(
+//                               listingId: listing.id ?? "",
+//                               favoritesViewModel: favoritesViewModel,
+//                               service: ListingServiceImpl(repository: ListingRepository())
+//                           )
+//                        ){
+//                            VerticalListingCardView(
+//                                listing: listing,
+//                                isFavorite: favoritesViewModel.isFavorite(listing),
+//                                onToggleFavorite: {
+//                                    favoritesViewModel.toggleFavorite(listing)
+//                                }
+//                            )
+//                        }
+//                        .buttonStyle(.plain)
+//                    }
                 }
                 .padding(.horizontal)
             }

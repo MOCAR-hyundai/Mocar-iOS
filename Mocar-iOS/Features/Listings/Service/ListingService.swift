@@ -8,10 +8,12 @@
 import Foundation
 
 //Repository에서 가져온 데이터를 가공
+
+//프로토콜 인터페이스 역할 getListingDetail 함수를 반드시 구현해야 함
 protocol ListingService {
     func getListingDetail(id: String, allListings: [Listing]) async throws -> (Listing, [Double], Double, Double, Double, Double, [Int])
 }
-    
+//실제 구현체- ListingRepository를 주입받아 Firestore에서 데이터 가져옴
 final class ListingServiceImpl: ListingService {
     private let repository: ListingRepository
     
@@ -41,6 +43,7 @@ final class ListingServiceImpl: ListingService {
         return (found, prices, minPrice, maxPrice, safeMin, safeMax, ticks)
     }
 
+    //minPrice~maxPrice 구간을 5등분해서 눈금 값 배열 생성
     private func makeTicks(minPrice: Double, maxPrice: Double) -> [Int] {
             guard minPrice < maxPrice else { return [Int(minPrice)] }
             let step = (maxPrice - minPrice) / 5.0

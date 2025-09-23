@@ -10,18 +10,21 @@ import FirebaseFirestore
 import FirebaseAuth
 
 struct ListingDetailView: View {
-    let listingId: String
     // ListingDetailViewModel은 FavoritesViewModel을 반드시 필요로 함
     // 따라서 View가 직접 소유(@StateObject)하고, 생성 시 외부에서 FavoritesViewModel을 주입받아야 함
     @StateObject private var viewModel: ListingDetailViewModel
+    let listingId: String
     
-
-    init(listingId: String, favoritesViewModel: FavoritesViewModel, service: ListingService) {
-        _viewModel = StateObject(
-            wrappedValue: ListingDetailViewModel(service: service,favoritesViewModel: favoritesViewModel)
-        )
-        self.listingId = listingId
-    }
+//    init(viewModel: ListingDetailViewModel, listingId: String) {
+//            _viewModel = StateObject(wrappedValue: viewModel)
+//            self.listingId = listingId
+//        }
+    init(service: ListingService, listingId: String) {
+            _viewModel = StateObject(
+                wrappedValue: ListingDetailViewModel(service: service)
+            )
+            self.listingId = listingId
+        }
 
     /** 채팅방과 연결  **/
     @StateObject private var userStore = UserStore()
@@ -40,10 +43,12 @@ struct ListingDetailView: View {
                         VStack{
                             ZStack(alignment: .topTrailing){
                                 CarImageTabView(images: listing.images)
-                                FavoriteButton(
-                                    favoritesViewModel: viewModel.favoritesViewModel,
-                                    listing: listing
-                                )
+//                                FavoriteButton(
+//                                    isFavorite: viewModel.favoritesViewModel.isFavorite(listing),
+//                                            onToggle: {
+//                                                viewModel.favoritesViewModel.toggleFavorite(listing)
+//                                            }
+//                                )
                                 
                             }
                             

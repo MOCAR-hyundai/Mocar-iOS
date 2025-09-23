@@ -9,10 +9,7 @@ import SwiftUI
 
 struct SearchResultsView: View {
     @StateObject private var viewModel = SearchViewModel()
-    @StateObject private var favoritesViewModel = FavoritesViewModel(
-        listingRepository: ListingRepository(),
-        favoriteRepository: FavoriteRepository()
-    )
+    //@ObservedObject private var favoritesViewModel = DIContainer.shared.favoritesVM
     
     @State private var selectedCategory: String = "" // 선택된 카테고리 저장
     
@@ -182,28 +179,28 @@ struct SearchResultsView: View {
                       .padding(.leading,3)
                       
                       // MARK: - 검색 결과 그리드
-                      ScrollView {
-                          LazyVGrid(columns: columns, spacing: 25) {
-                              ForEach(viewModel.listings) { listing in
-                                  if let id = listing.id {
-                                      NavigationLink(
-                                        destination: ListingDetailView(
-                                            listingId: id,
-                                            favoritesViewModel: favoritesViewModel,
-                                            service: ListingServiceImpl(repository: ListingRepository())
-                                        )
-                                        .navigationBarBackButtonHidden(true)
-                                      ) {
-                                          ListingCard(listing: listing)
-                                      }
-                                      .buttonStyle(PlainButtonStyle())
-                                  }
-                                  
-                              }
-                          }
-                          .padding(.horizontal)
-                          .padding(.top, 10)
-                      }
+//                      ScrollView {
+//                          LazyVGrid(columns: columns, spacing: 25) {
+//                              ForEach(viewModel.listings) { listing in
+//                                  if let id = listing.id {
+//                                      NavigationLink(
+//                                        destination: ListingDetailView(
+//                                            listingId: id,
+//                                            favoritesViewModel: favoritesViewModel,
+//                                            service: ListingServiceImpl(repository: ListingRepository())
+//                                        )
+//                                        .navigationBarBackButtonHidden(true)
+//                                      ) {
+//                                          ListingCard(listing: listing)
+//                                      }
+//                                      .buttonStyle(PlainButtonStyle())
+//                                  }
+//                                  
+//                              }
+//                          }
+//                          .padding(.horizontal)
+//                          .padding(.top, 10)
+//                      }
                   }
                 // MARK: - RangeSliderPopup
                   .background(Color.backgroundGray100)

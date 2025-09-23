@@ -24,9 +24,9 @@ class FavoritesViewModel: ObservableObject {
         listenFavorites()
     }
     
-    var favoritesCount: Int {
-        favorites.count
-    }
+//    var favoritesCount: Int {
+//        favorites.count
+//    }
     
 //    //실시간 업데이트
 //    func listenFavorites() {
@@ -83,17 +83,19 @@ class FavoritesViewModel: ObservableObject {
 //    }
     
     
-    private func listenFavorites() {
-        guard let userId = userId else { return }
+    private func listenFavorites(){
+        guard let userId = userId else {
+            return
+        }
+        print("🟡 Starting to listen favorites for user: \(userId)")
         favoriteRepository.listenFavorites(userId: userId) { [weak self] favs in
             //Task { await self?.updateFavorites(favs) }
 //            Task { [weak self] in
 //                await self?.updateFavorites(favs)
 //            }
-            Task{
-                @MainActor in
-                 await self?.updateFavorites(favs)
-            }
+            Task { @MainActor in
+                        await self?.updateFavorites(favs)
+                    }
         }
     }
     
@@ -131,15 +133,12 @@ class FavoritesViewModel: ObservableObject {
 //                print("❌ Failed to load favorite listings: \(error)")
 //            }
         
-
-        
         await MainActor.run {
-                if favorites.map(\.id) != favs.map(\.id) {   // 🔑 id 기준 비교
+                if favorites.map(\.id) != favs.map(\.id) {
                     favorites = favs
                 }
-            }
-
-            let ids = favs.map { $0.listingId }
+         }
+        let ids = favs.map { $0.listingId }
             do {
                 let listings = try await listingRepository.fetchListings(byIds: ids)
                 await MainActor.run {
@@ -150,12 +149,16 @@ class FavoritesViewModel: ObservableObject {
             } catch {
                 print("❌ Failed to load favorite listings: \(error)")
             }
+        
     }
     
     func toggleFavorite(_ listing: Listing) {
-//            guard let userId = userId, let listingId = listing.id else { return }
-//
-//            let favId = "\(userId)_\(listingId)"
+        guard let userId = userId, let listingId = listing.id else {
+            print("❌ toggleFavorite: Missing userId or listingId")
+            return
+        }
+        
+            let favId = "\(userId)_\(listingId)"
 //
 //            if isFavorite(listing) {
 //                // 찜 해제
@@ -178,42 +181,42 @@ class FavoritesViewModel: ObservableObject {
 //                    }
 //                }
 //            }
-        guard let userId = userId, let listingId = listing.id else { return }
-            let favId = "\(userId)_\(listingId)"
-
         if isFavorite(listing) {
-                // 로컬 먼저 업데이트
-                favorites.removeAll { $0.listingId == listingId }
-                favoriteRepository.removeFavorite(favId: favId)
-            } else {
-                let newFavorite = Favorite(
-                    id: favId,
-                    userId: userId,
-                    listingId: listingId,
-                    createdAt: Date()
-                )
-                favorites.append(newFavorite)
-                favoriteRepository.addFavorite(newFavorite)
-            }
+            // 로컬 먼저 업데이트
+                    favorites.removeAll { $0.listingId == listingId }
+                    favoriteRepository.removeFavorite(favId: favId)
+                } else {
+                    let newFavorite = Favorite(
+                        id: favId,
+                        userId: userId,
+                        listingId: listingId,
+                        createdAt: Date()
+                    )
+                    favorites.append(newFavorite)
+                    favoriteRepository.addFavorite(newFavorite)
+                }
+                
         }
     private func updateFavoriteCount(listingId: String, increment: Int64) {
-//            Task {
-//                let docRef = Firestore.firestore().collection("listings").document(listingId)
-//                docRef.updateData([
-//                    "favoriteCount": FieldValue.increment(increment)
-//                ])
-//            }
+        //            Task {
+        //                let docRef = Firestore.firestore().collection("listings").document(listingId)
+        //                docRef.updateData([
+        //                    "favoriteCount": FieldValue.increment(increment)
+        //                ])
+        //            }
         Task {
-                let docRef = Firestore.firestore().collection("listings").document(listingId)
-                try? await docRef.updateData([
-                    "favoriteCount": FieldValue.increment(increment)
-                ])
-            }
+            let docRef = Firestore.firestore().collection("listings").document(listingId)
+            try? await docRef.updateData([
+                "favoriteCount": FieldValue.increment(increment)
+            ])
         }
+    }
     
     // 찜 여부 확인
     func isFavorite(_ listing: Listing) -> Bool {
-        return favorites.contains(where: { $0.listingId == listing.id })
+        let result = favorites.contains(where: { $0.listingId == listing.id })
+                print("🔍 isFavorite(\(listing.id ?? "nil")): \(result)")
+                return result
     }
 }
 

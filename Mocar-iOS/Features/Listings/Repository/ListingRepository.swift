@@ -45,13 +45,14 @@ class ListingRepository {
     
     func fetchListings() async throws -> [Listing] {
         do {
+            //Firestore에서 listings 컬렉션의 모든 문서를 가져옴
             let snapshot = try await db.collection("listings").getDocuments()
             return snapshot.documents.compactMap { doc in
                 do {
-                    return try doc.data(as: Listing.self)
+                    return try doc.data(as: Listing.self) //Firestore 문서를 Swift의 Listing 모델로 디코딩
                 } catch {
                     print("Decoding error in \(doc.documentID): \(error)")
-                    return nil
+                    return nil  //디코딩 실패시 nil로 스킵
                 }
             }
         } catch {
@@ -80,18 +81,22 @@ class ListingRepository {
     
     func fetchListing(id: String) async throws -> Listing {
             do {
+                //특정 document id에 해당하는 매물을 가져옴.
                 let doc = try await db.collection("listings").document(id).getDocument()
-                guard let listing = try? doc.data(as: Listing.self) else {
+                guard let listing = try? doc.data(as: Listing.self) else { //디코딩 실패 → 404 Not Found 에러 throw
                     throw NSError(domain: "ListingRepository",
                                   code: 404,
                                   userInfo: [NSLocalizedDescriptionKey: "Listing not found"])
                 }
-                return listing
+                return listing //성공하면 listing 객체 반환
             } catch {
                 print("Firestore error: \(error.localizedDescription)")
                 throw error
             }
         }
+    
+    //in 쿼리(whereField(FieldPath.documentID(), in: ids))를 사용
+    //favorites DB에 저장된 listingId들을 기반으로, listings 컬렉션에서 실제 매물 데이터를 가져오는 함수
     func fetchListings(byIds ids: [String]) async throws -> [Listing] {
         guard !ids.isEmpty else { return [] }
         
