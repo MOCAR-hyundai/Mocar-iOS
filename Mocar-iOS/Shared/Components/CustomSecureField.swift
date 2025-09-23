@@ -30,7 +30,11 @@ struct CustomSecureField: View {
                     .padding(.trailing, 40)   // 아이콘 공간
                     .background(
                         RoundedRectangle(cornerRadius: 10)
-                            .stroke(focusedField.wrappedValue == fieldType ? Color.blue : Color.gray, lineWidth: 1)
+                            .fill(Color.white) // ✅ 흰 박스
+                    )
+                    .overlay(
+                        RoundedRectangle(cornerRadius: 10)
+                            .stroke(focusedField.wrappedValue == fieldType ? Color.keyColorBlue : Color.lineGray, lineWidth: 1)
                     )
                     .focused(focusedField, equals: fieldType)
             } else {
@@ -43,7 +47,11 @@ struct CustomSecureField: View {
                     .padding(.trailing, 40)   // 아이콘 공간
                     .background(
                         RoundedRectangle(cornerRadius: 10)
-                            .stroke(focusedField.wrappedValue == fieldType ? Color.blue : Color.gray, lineWidth: 1)
+                            .fill(Color.white) // ✅ 흰 박스
+                    )
+                    .overlay(
+                        RoundedRectangle(cornerRadius: 10)
+                            .stroke(focusedField.wrappedValue == fieldType ? Color.keyColorBlue : Color.lineGray, lineWidth: 1)
                     )
                     .focused(focusedField, equals: fieldType)
             }
@@ -59,10 +67,12 @@ struct CustomSecureField: View {
                             .scaledToFit()
                             .frame(width: 20, height: 20)
                             .padding(.trailing)
+                            .foregroundColor(Color.textGray200)
                     } else {
                         Image(systemName: "eye")
                             .frame(width: 20, height: 20)
                             .padding(.trailing)
+                            .foregroundColor(Color.textGray200)
                     }
                 }
                 .padding(.vertical, 10)   // 🔽 높이 줄이기

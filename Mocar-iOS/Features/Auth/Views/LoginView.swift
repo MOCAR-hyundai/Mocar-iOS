@@ -17,23 +17,23 @@ struct LoginView: View {
     @State private var loginErrorMessage: String? = nil
     @State private var isLoading: Bool = false
 
-    //@State private var navigateToHome = false
-
-    
-    @FocusState private var focusedField: Field?
-    @Environment(\.dismiss) private var dismiss
 
     enum Field {
         case email
         case password
     }
     
+    @FocusState private var focusedField: Field?
+    @Environment(\.dismiss) private var dismiss
+
+ 
+    
     var body: some View {
         NavigationStack{
             VStack(spacing: 20) {
               
                 TopBar(style: .login)
-                    .padding(.bottom, 70)
+                    .padding(.bottom, 65)
                     .padding(.leading,5)
                     .background(Color.backgroundGray100)
                 
@@ -50,19 +50,23 @@ struct LoginView: View {
                     Text("이메일")
                         .font(.system(size: 14))
                     
-
                     TextField("abc@example.com", text: $email)
                         .keyboardType(.emailAddress)
                         .autocapitalization(.none)
                         .textInputAutocapitalization(.never)
                         .disableAutocorrection(true)
-                        .padding()
+                        .padding(.vertical, 14)   // 높이 줄임
+                        .padding(.horizontal, 15)  // 좌우는 살짝 유지
                         .background(
                             RoundedRectangle(cornerRadius: 10)
-                                .stroke(focusedField == .email ? Color.keyColorBlue : Color.gray, lineWidth: 1)
+                                .fill(Color.white)   // 배경 흰색
                         )
-                        .focused($focusedField, equals: .email)
-                        .background(Color.white)
+                        .overlay(
+                            RoundedRectangle(cornerRadius: 10)
+                                .stroke(focusedField == .email ? Color.keyColorBlue : Color.lineGray, lineWidth: 1)
+                        )
+                        .focused($focusedField, equals: .email) // 포커스 상태 연결
+                    
                     // 비밀번호
                     Text("비밀번호")
                         .font(.system(size: 14))
@@ -74,26 +78,36 @@ struct LoginView: View {
                                 .autocapitalization(.none)   // 자동 대문자 방지
                                 .textInputAutocapitalization(.never) // 자동 대문자 방지: iOS 15 이상
                                 .disableAutocorrection(true) // 자동 수정 방지
-                                .padding()
                                 .padding(.trailing, 50)
+                                .padding(.vertical, 14)   // 높이 줄임
+                                .padding(.horizontal, 15)  // 좌우는 살짝 유지
                                 .background(
                                     RoundedRectangle(cornerRadius: 10)
-                                        .stroke(focusedField == .password ? Color.keyColorBlue : Color.gray, lineWidth: 1)
+                                        .fill(Color.white)   // 배경 흰색
+                                )
+                                .overlay(
+                                    RoundedRectangle(cornerRadius: 10)
+                                        .stroke(focusedField == .password ? Color.keyColorBlue : Color.lineGray, lineWidth: 1)
                                 )
                                 .focused($focusedField, equals: .password)
-                                .background(Color.white)
+                                
                         } else {
                             TextField("8자 이상의 비밀번호", text: $password)
                                 .autocapitalization(.none)   // 자동 대문자 방지
                                 .textInputAutocapitalization(.never) // 자동 대문자 방지: iOS 15 이상
                                 .disableAutocorrection(true) // 자동 수정 방지
-                                .padding()
                                 .padding(.trailing, 50)
+                                .padding(.vertical, 14)   // 높이 줄임
+                                .padding(.horizontal, 15)  // 좌우는 살짝 유지
                                 .background(
-                                    RoundedRectangle(cornerRadius: 8)
-                                        .stroke(Color.gray, lineWidth: 1)
+                                    RoundedRectangle(cornerRadius: 10)
+                                        .fill(Color.white)   // 배경 흰색
                                 )
-                                .background(Color.white)
+                                .overlay(
+                                    RoundedRectangle(cornerRadius: 10)
+                                        .stroke(focusedField == .password ? Color.keyColorBlue : Color.lineGray, lineWidth: 1)
+                                )
+                                .focused($focusedField, equals: .password)
                         }
                         HStack {
                             Spacer()
@@ -109,7 +123,7 @@ struct LoginView: View {
                                             .padding(.trailing)
                                     } else {
                                         Image(systemName: "eye")   // SF Symbols
-                                            .foregroundStyle(.black)
+                                            .foregroundStyle(Color.textGray100)
                                             .frame(width: 20, height: 20)
                                             .padding(.trailing)
                                     }
@@ -123,11 +137,12 @@ struct LoginView: View {
                             .toggleStyle(CheckboxToggleStyle())
                         Spacer()
                         
-                        NavigationLink("비밀번호를 잃어버리셨나요? ", destination: ResetPasswordView())
-                            .foregroundColor(.blue)
+                        NavigationLink("비밀번호를 잊으셨나요? ", destination: ResetPasswordView())
+                            .foregroundColor(Color.keyColorBlue)
                         
                     }
                     .font(.system(size: 14, weight: .regular, design: .default))
+                    .padding(.horizontal, 6)
                     .padding(.top, 6)
                 }
                 .padding(.horizontal)
@@ -148,14 +163,14 @@ struct LoginView: View {
                 }) {
                     if isLoading {
                         ProgressView().progressViewStyle(CircularProgressViewStyle(tint: .white))
-                            .frame(maxWidth: .infinity, maxHeight: 30)
+                            .frame(maxWidth: .infinity, maxHeight: 26)
                             .padding()
                             .background(Color.keyColorDarkGray)
                             .cornerRadius(62)
                     } else {
                         Text("로그인")
                             .foregroundColor(.white)
-                            .frame(maxWidth: .infinity, maxHeight: 30)
+                            .frame(maxWidth: .infinity, maxHeight: 26)
                             .padding()
                             .background(Color.keyColorDarkGray)
                             .cornerRadius(62)
@@ -169,15 +184,12 @@ struct LoginView: View {
                 HStack {
                     Text("계정이 없으신가요?")
                     NavigationLink("회원가입", destination: SignUpView())
-                        .foregroundColor(.blue)
+                        .foregroundColor(Color.keyColorBlue)
                 }
                 .font(.footnote)
                 .padding(.bottom, 50)
             }
             .padding(.top)
-//            .navigationDestination(isPresented: $navigateToHome) {
-//                HomeView()
-//            }
             .background(Color.backgroundGray100)
             
         }
@@ -213,7 +225,6 @@ struct LoginView: View {
                     UserDefaults.standard.set(true, forKey: "keepLoggedIn")
                 }
                 // 다음 화면으로 이동 처리 가능
-//                navigateToHome = true   // ✅ 로그인 성공 시 홈으로 이동
                 dismiss()
 
             }

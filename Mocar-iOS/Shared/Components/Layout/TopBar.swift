@@ -43,18 +43,22 @@ struct TopBar: View {
                 
             case .login:
                 ZStack{
-//                    BackButton()
-//                        .padding(.leading, 5)
+                    BackButton()
+                        .padding(.leading, 3)
                     HStack {
+//                        Spacer()
                         Image("logo")
                             .resizable()
                             .scaledToFit()
                             .frame(maxWidth: 150)
+                            .frame(height: 30)
+                            .padding(.leading, 13)
                             
                         Spacer()
                     }
-                    .padding(.leading, 5)
                 }
+                
+         
                 
             case .singup:
 //                BackButton()

@@ -35,12 +35,13 @@ struct SignUpView: View {
             VStack (spacing: 20) {
                 
             TopBar(style: .singup)
-                .padding(.bottom, 30)
+                .padding(.bottom, 25)
+                .padding(.leading, 10)
                 .background(Color.backgroundGray100)
                 
                // 제목
                Text("회원가입")
-                    .font(.system(size: 30, weight: .semibold, design: .default))
+                    .font(.system(size: 28, weight: .semibold, design: .default))
                     .frame(maxWidth: .infinity, alignment: .leading)
                     .padding(.horizontal)
                 
@@ -60,10 +61,15 @@ struct SignUpView: View {
                                 .autocapitalization(.none)
                                 .textInputAutocapitalization(.never)
                                 .disableAutocorrection(true)
-                                .padding()
+                                .padding(.vertical, 13)   // 높이 줄임 (기본 16 → 10)
+                                .padding(.horizontal, 15)  // 좌우는 살짝 유지
                                 .background(
-                                    RoundedRectangle(cornerRadius: 6)
-                                        .stroke(focusedField == .email ? Color.keyColorBlue : Color.gray, lineWidth: 1)
+                                    RoundedRectangle(cornerRadius: 10)
+                                        .fill(Color.white)   // 배경 흰색
+                                )
+                                .overlay(
+                                    RoundedRectangle(cornerRadius: 10)
+                                        .stroke(focusedField == .email ? Color.keyColorBlue : Color.lineGray, lineWidth: 1)
                                 )
                                 .focused($focusedField, equals: .email) // 포커스 상태 연결
                         }
@@ -80,11 +86,16 @@ struct SignUpView: View {
                                         .autocapitalization(.none)   // 자동 대문자 방지
                                         .textInputAutocapitalization(.never) // 자동 대문자 방지: iOS 15 이상
                                         .disableAutocorrection(true) // 자동 수정 방지
-                                        .padding()
+                                        .padding(.vertical, 13)   // 높이 줄임 (기본 16 → 10)
+                                        .padding(.horizontal, 15)  // 좌우는 살짝 유지
                                         .padding(.trailing, 50)
                                         .background(
-                                            RoundedRectangle(cornerRadius: 6)
-                                                .stroke(focusedField == .password ? Color.keyColorBlue : Color.gray, lineWidth: 1)
+                                            RoundedRectangle(cornerRadius: 10)
+                                                .fill(Color.white)   // 배경 흰색
+                                        )
+                                        .overlay(
+                                            RoundedRectangle(cornerRadius: 10)
+                                                .stroke(focusedField == .password ? Color.keyColorBlue : Color.lineGray, lineWidth: 1)
                                         )
                                         .focused($focusedField, equals: .password)
                                 } else {
@@ -92,20 +103,22 @@ struct SignUpView: View {
                                         .autocapitalization(.none)   // 자동 대문자 방지
                                         .textInputAutocapitalization(.never) // 자동 대문자 방지: iOS 15 이상
                                         .disableAutocorrection(true) // 자동 수정 방지
-                                        .padding()
+                                        .padding(.vertical, 13)   // 높이 줄임 (기본 16 → 10)
+                                        .padding(.horizontal, 15)  // 좌우는 살짝 유지
                                         .padding(.trailing, 50)
                                         .background(
-                                            RoundedRectangle(cornerRadius: 6)
-                                                .stroke(focusedField == .password ? Color.keyColorBlue : Color.gray, lineWidth: 1)
+                                            RoundedRectangle(cornerRadius: 10)
+                                                .fill(Color.white)   // 배경 흰색
+                                        )
+                                        .overlay(
+                                            RoundedRectangle(cornerRadius: 10)
+                                                .stroke(focusedField == .password ? Color.keyColorBlue : Color.lineGray, lineWidth: 1)
                                         )
                                         .focused($focusedField, equals: .password)
                                 }
                                 HStack {
                                     Spacer()
                                     Button(action: { isPasswordSecured.toggle() }) {
-    //                                    Image(systemName: isPasswordSecured ? "eye.slash" : "eye")
-    //                                        .foregroundColor(.gray)
-    //                                        .padding(.trailing, 12)
                                         
                                         ZStack {
                                             if isPasswordSecured {
@@ -116,7 +129,7 @@ struct SignUpView: View {
                                                     .padding(.trailing)
                                             } else {
                                                 Image(systemName: "eye")   // SF Symbols
-                                                    .foregroundStyle(.black)
+                                                    .foregroundStyle(Color.textGray100)
                                                     .frame(width: 20, height: 20)
                                                     .padding(.trailing)
                                             }
@@ -138,10 +151,15 @@ struct SignUpView: View {
                                         .autocapitalization(.none)   // 자동 대문자 방지
                                         .textInputAutocapitalization(.never) // 자동 대문자 방지: iOS 15 이상
                                         .disableAutocorrection(true) // 자동 수정 방지
-                                        .padding()
+                                        .padding(.vertical, 13)   // 높이 줄임
+                                        .padding(.horizontal, 15)  // 좌우는 살짝 유지
                                         .background(
-                                            RoundedRectangle(cornerRadius: 6)
-                                                .stroke(focusedField == .confirmPassword ? Color.keyColorBlue : Color.gray, lineWidth: 1)
+                                            RoundedRectangle(cornerRadius: 10)
+                                                .fill(Color.white)   // 배경 흰색
+                                        )
+                                        .overlay(
+                                            RoundedRectangle(cornerRadius: 10)
+                                                .stroke(focusedField == .confirmPassword ? Color.keyColorBlue : Color.lineGray, lineWidth: 1)
                                         )
                                         .focused($focusedField, equals: .confirmPassword)
                                 } else {
@@ -149,11 +167,16 @@ struct SignUpView: View {
                                         .autocapitalization(.none)   // 자동 대문자 방지
                                         .textInputAutocapitalization(.never) // 자동 대문자 방지: iOS 15 이상
                                         .disableAutocorrection(true) // 자동 수정 방지
-                                        .padding()
+                                        .padding(.vertical, 13)   // 높이 줄임
+                                        .padding(.horizontal, 15)  // 좌우는 살짝 유지
                                         .padding(.trailing, 50)
                                         .background(
-                                            RoundedRectangle(cornerRadius: 6)
-                                                .stroke(focusedField == .confirmPassword ? Color.keyColorBlue : Color.gray, lineWidth: 1)
+                                            RoundedRectangle(cornerRadius: 10)
+                                                .fill(Color.white)   // 배경 흰색
+                                        )
+                                        .overlay(
+                                            RoundedRectangle(cornerRadius: 10)
+                                                .stroke(focusedField == .confirmPassword ? Color.keyColorBlue : Color.lineGray, lineWidth: 1)
                                         )
                                         .focused($focusedField, equals: .confirmPassword)
                                 }
@@ -169,7 +192,7 @@ struct SignUpView: View {
                                                     .padding(.trailing)
                                             } else {
                                                 Image(systemName: "eye")   // SF Symbols
-                                                    .foregroundStyle(.black)
+                                                    .foregroundStyle(Color.textGray100)
                                                     .frame(width: 20, height: 20)
                                                     .padding(.trailing)
                                             }
@@ -191,10 +214,15 @@ struct SignUpView: View {
                                 TextField("YYYY-MM-DD", text: $birthDate)
                                     .keyboardType(.numbersAndPunctuation)
                             }
-                            .padding()
+                            .padding(.vertical, 13)   // 높이 줄임 (기본 16 → 10)
+                            .padding(.horizontal, 15)  // 좌우는 살짝 유지
                             .background(
-                                RoundedRectangle(cornerRadius: 6)
-                                    .stroke(focusedField == .birthDate ? Color.keyColorBlue : Color.gray, lineWidth: 1)
+                                RoundedRectangle(cornerRadius: 10)
+                                    .fill(Color.white)   // 배경 흰색
+                            )
+                            .overlay(
+                                RoundedRectangle(cornerRadius: 10)
+                                    .stroke(focusedField == .birthDate ? Color.keyColorBlue : Color.lineGray, lineWidth: 1)
                             )
                             .focused($focusedField, equals: .birthDate)
                         }
@@ -205,10 +233,15 @@ struct SignUpView: View {
                                 .font(.system(size: 14))
                                 .padding(.top, 6)
                             TextField("이름", text: $name)
-                                .padding()
+                                .padding(.vertical, 13)   // 높이 줄임 (기본 16 → 10)
+                                .padding(.horizontal, 15)  // 좌우는 살짝 유지
                                 .background(
-                                    RoundedRectangle(cornerRadius: 6)
-                                        .stroke(focusedField == .name ? Color.keyColorBlue : Color.gray, lineWidth: 1)
+                                    RoundedRectangle(cornerRadius: 10)
+                                        .fill(Color.white)   // 배경 흰색
+                                )
+                                .overlay(
+                                    RoundedRectangle(cornerRadius: 10)
+                                        .stroke(focusedField == .name ? Color.keyColorBlue : Color.lineGray, lineWidth: 1)
                                 )
                                 .focused($focusedField, equals: .name)
                         }
@@ -221,12 +254,11 @@ struct SignUpView: View {
                     Button(action: {
                         // 회원가입 액션
                         signUp()
-                        
                     }) {
                         Text("회원가입")
                             .foregroundColor(.white)
                             .frame(maxWidth: .infinity)
-                            .frame(height: 28) // 버튼 높이 설정
+                            .frame(height: 26) // 버튼 높이 설정
                             .padding()
                             .background(Color.keyColorDarkGray)
                             .cornerRadius(62)
