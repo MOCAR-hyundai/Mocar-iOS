@@ -7,48 +7,115 @@
 
 import Foundation
 
-//Repository에서 가져온 데이터를 가공
+//Repository에서 데이터 가져오기 + 비지니스 로직(가공), ui와는 독립적
 
-//프로토콜 인터페이스 역할 getListingDetail 함수를 반드시 구현해야 함
-protocol ListingService {
-    func getListingDetail(id: String, allListings: [Listing]) async throws -> (Listing, [Double], Double, Double, Double, Double, [Int])
+struct ListingDetailData {
+    let listing: Listing        // 단일 매물
+    let prices: [Double]        // 같은 모델 매물들의 가격 리스트
+    let minPrice: Double        // 최저가
+    let maxPrice: Double        // 최고가
+    let safeMin: Double         // 시세 안전 구간 최소값
+    let safeMax: Double         // 시세 안전 구간 최대값
+    let ticks: [Int]            // 가격 구간 눈금
 }
+
+//프로토콜 인터페이스 역할
+protocol ListingService {
+    // 전체 매물 가져오기 (홈, 검색 등)
+    func getAllListings() async throws -> [Listing]
+    
+    // 단일 매물 가져오기 (상세 화면, 찜한 매물 조회)
+    func getListing(id: String) async throws -> Listing
+
+    // 매물 상세 분석 데이터 (상세 화면 전용)
+    func getListingDetail(id: String, allListings: [Listing]) async throws -> ListingDetailData
+}
+
 //실제 구현체- ListingRepository를 주입받아 Firestore에서 데이터 가져옴
+//final class ListingServiceImpl: ListingService {
+//    private let repository: ListingRepository
+//    
+//    init(repository: ListingRepository) {
+//        self.repository = repository
+//    }
+//    
+//
+//    func getListingDetail(id: String, allListings: [Listing]) async throws -> (Listing, [Double], Double, Double, Double, Double, [Int]) {
+//        let found = try await repository.fetchListing(id: id)
+//        
+//        //동일 모델의 매물들 필터링
+//        let sameModelListings = allListings.filter { $0.model == found.model }
+//        //가격 리스트만 추출
+//        let prices = sameModelListings.map { Double($0.price) }
+//        
+//        
+//        // 최소, 최대 값 계산
+//        let minPrice = prices.min() ?? 0
+//        let maxPrice = prices.max() ?? 0
+//        let ticks = makeTicks(minPrice: minPrice, maxPrice: maxPrice)
+//        
+//        //시세 안전 구간 범위
+//        let safeMin = ticks.count > 1 ? Double(ticks[1]) : minPrice
+//        let safeMax = ticks.count > 4 ? Double(ticks[4]) : maxPrice
+//
+//        return (found, prices, minPrice, maxPrice, safeMin, safeMax, ticks)
+//    }
+//
+//    //minPrice~maxPrice 구간을 5등분해서 눈금 값 배열 생성
+//    private func makeTicks(minPrice: Double, maxPrice: Double) -> [Int] {
+//            guard minPrice < maxPrice else { return [Int(minPrice)] }
+//            let step = (maxPrice - minPrice) / 5.0
+//            return (0...5).map {i in
+//                Int(minPrice + Double(i) * step) }
+//    }
+//}
+
 final class ListingServiceImpl: ListingService {
     private let repository: ListingRepository
     
     init(repository: ListingRepository) {
         self.repository = repository
     }
-    
 
-    func getListingDetail(id: String, allListings: [Listing]) async throws -> (Listing, [Double], Double, Double, Double, Double, [Int]) {
+    func getAllListings() async throws -> [Listing] {
+        return try await repository.fetchListings()
+    }
+
+    func getListing(id: String) async throws -> Listing {
+        return try await repository.fetchListing(id: id)
+    }
+
+    func getListingDetail(id: String, allListings: [Listing]) async throws -> ListingDetailData {
         let found = try await repository.fetchListing(id: id)
         
-        //동일 모델의 매물들 필터링
+        // 동일 모델 매물들 필터링
         let sameModelListings = allListings.filter { $0.model == found.model }
-        //가격 리스트만 추출
         let prices = sameModelListings.map { Double($0.price) }
-        
         
         // 최소, 최대 값 계산
         let minPrice = prices.min() ?? 0
         let maxPrice = prices.max() ?? 0
         let ticks = makeTicks(minPrice: minPrice, maxPrice: maxPrice)
         
-        //시세 안전 구간 범위
+        // 시세 안전 구간 범위
         let safeMin = ticks.count > 1 ? Double(ticks[1]) : minPrice
         let safeMax = ticks.count > 4 ? Double(ticks[4]) : maxPrice
 
-        return (found, prices, minPrice, maxPrice, safeMin, safeMax, ticks)
+        return ListingDetailData(
+            listing: found,
+            prices: prices,
+            minPrice: minPrice,
+            maxPrice: maxPrice,
+            safeMin: safeMin,
+            safeMax: safeMax,
+            ticks: ticks
+        )
     }
 
-    //minPrice~maxPrice 구간을 5등분해서 눈금 값 배열 생성
     private func makeTicks(minPrice: Double, maxPrice: Double) -> [Int] {
-            guard minPrice < maxPrice else { return [Int(minPrice)] }
-            let step = (maxPrice - minPrice) / 5.0
-            return (0...5).map {i in
-                Int(minPrice + Double(i) * step) }
+        guard minPrice < maxPrice else { return [Int(minPrice)] }
+        let step = (maxPrice - minPrice) / 5.0
+        return (0...5).map { i in Int(minPrice + Double(i) * step) }
     }
 }
 
