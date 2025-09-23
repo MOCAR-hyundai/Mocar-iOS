@@ -11,7 +11,9 @@ enum TopBarStyle{
     case home(isLoggedIn: Bool)                 // 로고 + 검색
     case login                   // 로그인
     case singup                  //회원가입
-    case listing(title: String) // 뒤로가기 + 타이틀
+    case listing(title: String)     // 뒤로가기 + 타이틀
+    case MyPage(title: String)      // 뒤로가기 + 타이틀
+    case Mylistings(title: String)  // 뒤로가기 + 왼쪽 타이틀
     //case chat(title: String)   // 뒤로가기 + 채팅방 이름
 }
 
@@ -39,9 +41,31 @@ struct TopBar: View {
                 }
                 
             case .login:
-                BackButton()
+                ZStack{
+//                    BackButton()
+//                        .padding(.leading, 5)
+                    HStack {
+                        Image("logo")
+                            .resizable()
+                            .scaledToFit()
+                            .frame(maxWidth: 150)
+                            
+                        Spacer()
+                    }
+                    .padding(.leading, 5)
+                }
+                
             case .singup:
-                BackButton()
+//                BackButton()
+                HStack {
+                    Image("logo")
+                        .resizable()
+                        .scaledToFit()
+                        .frame(maxWidth: 150)
+                        
+                    Spacer()
+                }
+                
             case .listing(title: let title):
                 ZStack{
                     HStack {
@@ -50,7 +74,40 @@ struct TopBar: View {
                     }
                     Text(title)
                 }
+            case .MyPage(title: let title):
+                ZStack{
+                    HStack {
+                        BackButton()
+                            .padding(.leading, 5)
+                        Spacer()
+                    }
+                    Text(title)
+                        .font(.system(size: 18, weight: .semibold, design: .default))
+                }
                 
+            case .Mylistings(title: let title):
+                ZStack{
+                    BackButton()
+                        .padding(.leading, 5)
+                    HStack {
+                        Text(title)
+                            .font(.system(size: 18, weight: .semibold, design: .default))
+                            .padding(.leading, 45)
+                        Spacer()
+                        
+                    }
+                }
+//                ZStack{
+//                    HStack {
+//                        BackButton()
+//                            .padding(.leading, 5)
+//                        Spacer()
+//                    }
+//                    Text(title)
+//                        .font(.system(size: 18, weight: .semibold, design: .default))
+//                }
+                
+            
             }
         }
         //.padding(.horizontal, 16)   // 좌우 여백

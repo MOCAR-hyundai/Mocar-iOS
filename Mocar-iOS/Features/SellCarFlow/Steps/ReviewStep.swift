@@ -9,6 +9,7 @@ import SwiftUI
 
 struct ReviewStep: View {
     @ObservedObject var viewModel: SellCarViewModel
+    @State private var isUploading = false   // 업로드 상태 표시
     
     var body: some View {
         VStack {
@@ -18,11 +19,20 @@ struct ReviewStep: View {
                 .fontWeight(.bold)
                 .padding(.bottom, 16)
             
-            // 수정 필요
-            Image("car-img")
-                .resizable()
-                .scaledToFit()
-                .frame(height: 150)
+            // 대표 이미지 (첫 번째 사진이 있으면 그것을 표시)
+            if let firstPhoto = viewModel.photos.first {
+                Image(uiImage: firstPhoto)
+                    .resizable()
+                    .scaledToFit()
+                    .frame(height: 150)
+                    .cornerRadius(8)
+            } else {
+                Image("car-img")
+                    .resizable()
+                    .scaledToFit()
+                    .frame(height: 150)
+            }
+
             
             Spacer()
             VStack(spacing: 12) {
@@ -38,19 +48,23 @@ struct ReviewStep: View {
                     .stroke(Color.gray, lineWidth: 1)
             )
             
-            ScrollView(.horizontal) {
-                HStack {
-                    ForEach(viewModel.photos, id: \.self) { img in
-                        Image(uiImage: img)
-                            .resizable()
-                            .scaledToFill()
-                            .frame(width: 80, height: 80)
-                            .clipped()
-                            .cornerRadius(8)
-                    }
-                }
-            }
-            
+
+            // 사진 미리보기
+              if !viewModel.photos.isEmpty {
+                  ScrollView(.horizontal, showsIndicators: false) {
+                      HStack {
+                          ForEach(viewModel.photos, id: \.self) { img in
+                              Image(uiImage: img)
+                                  .resizable()
+                                  .scaledToFill()
+                                  .frame(width: 80, height: 80)
+                                  .clipped()
+                                  .cornerRadius(8)
+                          }
+                      }
+                  }
+                  .padding(.vertical)
+              }
             Spacer()
             
             HStack {
@@ -64,17 +78,35 @@ struct ReviewStep: View {
                         .cornerRadius(8)
                 }
                 
-                Button(action: { viewModel.goNext() }
-                ) {
-                    Text("등록")
-                        .frame(maxWidth: .infinity)
-                        .padding()
-                        .background(Color.blue)
-                        .foregroundColor(.white)
-                        .cornerRadius(8)
+                Button(action: {
+                    isUploading = true
+                    viewModel.registerCar { success in
+                        isUploading = false
+                        if success {
+                            viewModel.goNext()  // Complete 화면으로 이동
+                        }
+                    }
+                }) {
+                    if isUploading {
+                        ProgressView()
+                            .frame(maxWidth: .infinity)
+                            .padding()
+                            .background(Color.blue)
+                            .foregroundColor(.white)
+                            .cornerRadius(8)
+                    } else {
+                        Text("등록")
+                            .frame(maxWidth: .infinity)
+                            .padding()
+                            .background(Color.blue)
+                            .foregroundColor(.white)
+                            .cornerRadius(8)
+                    }
                 }
+                
             }
         }
+        .padding()
     }
 }
 

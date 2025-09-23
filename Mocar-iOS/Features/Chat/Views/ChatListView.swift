@@ -181,6 +181,7 @@ struct ChatListView: View {
             .background(Color.backgroundGray100)
             .onAppear {                               // 나중에 살려야 한다!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
                 vm.fetchChats(for: currentUserId)
+                userStore.fetchUser(userId: currentUserId)  // 🔥 현재 로그인한 사용자 프로필도 불러오기
             }
         }
     }
@@ -218,19 +219,40 @@ struct ChatRow: View {
             // MARK: -프로필
             // 프로필 이미지
             // 실제 이미지 불러와 지는 지  db에 값 올리고 확인
-            AsyncImage(url: URL(string: userStore.users[otherUserId]?.photoUrl ?? "")) { image in
-                image
-                .resizable()
-                .scaledToFill()
+//            AsyncImage(url: URL(string: userStore.users[otherUserId]?.photoUrl ?? "")) { image in
+//                image
+//                .resizable()
+//                .scaledToFill()
+//                .clipShape(Circle())
+//                .frame(width: 45, height: 45)
+//            } placeholder: {
+//                Circle()
+//                    .fill(Color.gray.opacity(0.3))
+//                    .frame(width: 45, height: 45)
+//            }
+//            .background(Color.clear) // 배경 투명
+//            .padding(.trailing, 3)
+            // 🔥 상대방 ID
+            let otherUserId = (chat.buyerId == currentUserId) ? chat.sellerId : chat.buyerId
+
+            // 🔥 상대방 프로필
+            if let user = userStore.users[otherUserId] {
+                AsyncImage(url: URL(string: user.photoUrl ?? "")) { image in
+                    image.resizable()
+                } placeholder: {
+                    Image(systemName: "person.circle.fill")
+                        .resizable()
+                        .foregroundColor(.gray)
+                }
+                .frame(width: 40, height: 40)
                 .clipShape(Circle())
-                .frame(width: 45, height: 45)
-            } placeholder: {
-                Circle()
-                    .fill(Color.gray.opacity(0.3))
-                    .frame(width: 45, height: 45)
+            } else {
+                // 아직 로딩 전이면 placeholder
+                Image(systemName: "person.circle.fill")
+                    .resizable()
+                    .foregroundColor(.gray)
+                    .frame(width: 40, height: 40)
             }
-            .background(Color.clear) // 배경 투명
-            .padding(.trailing, 3)
             
 //            VStack(alignment: .leading) {
 //                Text(userStore.users[otherUserId]?.name ?? "Unknown")
@@ -268,23 +290,6 @@ struct ChatRow: View {
                    .lineLimit(1)
            }
             
-            
-
-//            Spacer()
-//
-//            VStack(alignment: .trailing) {
-//                Text(chat.lastAt, style: .time)
-//                    .font(.caption)
-//                    .foregroundColor(.gray)
-//
-//                if let unread = vm.unreadCounts[chat.id ?? ""], unread > 0 {
-//                    Text("\(unread)")
-//                        .font(.caption2)
-//                        .padding(6)
-//                        .background(Circle().fill(Color.blue))
-//                        .foregroundColor(.white)
-//                }
-//            }
 
             // 시간 + 안 읽은 메시지
              VStack(alignment: .trailing, spacing: 4) {
@@ -302,23 +307,7 @@ struct ChatRow: View {
              }
              .fixedSize() // ❗ 오른쪽 공간 최소화
             
-//            VStack(alignment: .trailing, spacing: 4) {
-//                Text(formattedDate(chat.lastAt))
-//                    .font(.caption)
-//                    .foregroundColor(.gray)
-//
-//                if let unread = vm.unreadCounts[chat.id ?? ""], unread > 0 {
-//                    Text("\(unread)")
-//                        .font(.caption2)
-//                        .padding(6)
-//                        .background(Circle().fill(Color.blue))
-//                        .foregroundColor(.white)
-//                } else {
-//                    // 빈 공간 확보 (안 읽은 메시지 없을 때도 위치 유지)
-//                    Color.clear
-//                        .frame(height: 20)
-//                }
-//            }
+
 
         }
         .padding(.vertical, 8)

@@ -11,38 +11,31 @@ import FirebaseFirestore
 class ChatListViewModel: ObservableObject {
     @Published var chats: [Chat] = []
     @Published var unreadCounts: [String: Int] = [:] // chatId -> 안 읽은 개수
+    
+    @Published var currentUserPhotoUrl: String? = nil   // 사용자 프로필 이미지
 
     private var db = Firestore.firestore()
     private var chatListener: ListenerRegistration?
     private var messageListeners: [String: ListenerRegistration] = [:]
-
-    /***
-    func fetchChats(for userId: String) {
-        chatListener?.remove()
-        chatListener = db.collection("chats")
-            //.whereField("participants", arrayContains: userId)
-            .order(by: "lastAt", descending: true)
-            .addSnapshotListener { snapshot, error in
-                if let error = error {
-                    print("❌ Failed to fetch chats: \(error)")
-                    return
-                }
-                guard let docs = snapshot?.documents else { return }
-                self.chats = docs.compactMap { try? $0.data(as: Chat.self) }
-
-                // 각 채팅방의 안 읽은 메시지 카운트도 구독
-                for chat in self.chats {
-                    self.listenForUnreadMessages(chatId: chat.id ?? "",
-                                                 currentUserId: userId)
-                }
-            }
-    }
-    */
     
     func fetchChats(for userId: String) {
         
         //확인용
         print("🔹 fetchChats called for userId: \(userId)")
+        
+        // 먼저 로그인한 사용자 프로필 가져오기
+        db.collection("users").document(userId).getDocument { snapshot, error in
+            if let error = error {
+                print("❌ Failed to fetch user profile: \(error)")
+                return
+            }
+            if let data = snapshot?.data(),
+               let photoUrl = data["photoUrl"] as? String {
+                DispatchQueue.main.async {
+                    self.currentUserPhotoUrl = photoUrl
+                }
+            }
+        }
         
         chatListener?.remove()
         chatListener = db.collection("chats")
@@ -68,43 +61,7 @@ class ChatListViewModel: ObservableObject {
             }
     }
 
-    
-//    private func listenForUnreadMessages(chatId: String, currentUserId: String) {
-//        // 기존 리스너 제거
-//        messageListeners[chatId]?.remove()
-//        
-//        let listener = db.collection("chats")
-//            .document(chatId)
-//            .collection("messages")
-//            .addSnapshotListener { snapshot, error in
-//                if let error = error {
-//                    print("❌ Failed to fetch messages: \(error)")
-//                    return
-//                }
-//                
-//                guard let docs = snapshot?.documents else { return }
-//
-//                // 안 읽은 메시지 카운트
-//                var unreadCount = 0
-//                for doc in docs {
-//                    if let readBy = doc["readBy"] as? [String] {
-//                        if !readBy.contains(currentUserId) {
-//                            unreadCount += 1
-//                        }
-//                    }
-//                    else {
-//                        // readBy 필드 없으면 안 읽은 메시지로 처리
-//                        unreadCount += 1
-//                    }
-//                }
-//
-//                DispatchQueue.main.async {
-//                    self.unreadCounts[chatId] = unreadCount
-//                }
-//            }
-//        
-//        messageListeners[chatId] = listener
-//    }
+
 
     private func listenForUnreadMessages(chatId: String, currentUserId: String) {
         // 기존 리스너 제거
