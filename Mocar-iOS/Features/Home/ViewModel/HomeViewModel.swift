@@ -9,52 +9,46 @@ import Foundation
 import FirebaseFirestore
 import FirebaseAuth
 
-class HomeViewModel: ObservableObject {
-    private let service = ListingService()
+@MainActor
+final class HomeViewModel: ObservableObject {
+    @Published var brandListings: [Listing] = []   // 현재 선택된 브랜드의 매물
+    @Published var brands: [CarBrand] = []         // 브랜드 목록
+    @Published var selectedBrand: CarBrand? = nil
+    @Published var isLoading: Bool = false
     
-    let favoritesViewModel: FavoritesViewModel
+    private let service: HomeService
     
-    @Published var listings: [Listing] = []
-    @Published var selectedBrand: String? = nil
-    @Published var brands : [String] = []
-    
-    private let db = Firestore.firestore()
-    
-    
-    init(favoriteViewModel: FavoritesViewModel) {
-        self.favoritesViewModel = favoriteViewModel
-        //listings 불러오기
-        fetchListings()
+    init(service: HomeService) {
+        self.service = service
     }
     
-    func fetchListings() {
-        service.fetchListings { result in
-            DispatchQueue.main.async {
-                switch result {
-                case .success(let listings):
-                    self.listings = listings
-                    //print("불러온 listings 브랜드들:", listings.map { $0.brand })
-                    self.brands = Array(Set(listings.map{$0.brand})).sorted()
-                    
-                    if let first = self.brands.first {
-                        self.selectedBrand = first
-                    }
-                case .failure(let error):
-                    print("Error fetching listings: \(error)")
-                }
+    // 브랜드 목록 불러오기
+    func loadBrands() async {
+        isLoading = true
+        do {
+            let brands = try await service.getCarBrands()
+            self.brands = brands
+            self.selectedBrand = brands.first
+            // 기본 선택 브랜드 매물도 같이 불러오기
+            if let firstBrand = brands.first {
+                await loadListings(for: firstBrand)
             }
+        } catch {
+            print("ERROR MESSAGE --  Failed to fetch brands: \(error)")
         }
+        isLoading = false
     }
     
-    func selectBrand(_ brand: String) {
-            selectedBrand = brand
-    }
-    //브랜드 필터링
-    var filteredListings: [Listing] {
-        if let brand = selectedBrand {
-            return listings.filter { $0.brand == brand }
+    // 특정 브랜드의 매물 불러오기
+    func loadListings(for brand: CarBrand) async {
+        isLoading = true
+        do {
+            let listings = try await service.getListings(by: brand.name)
+            self.brandListings = listings
+            self.selectedBrand = brand
+        } catch {
+            print("ERROR MESSAGE -- Failed to fetch listings for brand \(brand.name): \(error)")
         }
-        return listings
+        isLoading = false
     }
-    
 }

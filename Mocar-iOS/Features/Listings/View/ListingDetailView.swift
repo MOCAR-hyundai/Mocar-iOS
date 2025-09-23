@@ -9,244 +9,242 @@ import SwiftUI
 import FirebaseFirestore
 import FirebaseAuth
 
-struct ListingDetailView: View {
-    let listingId: String
-    // ListingDetailViewModel은 FavoritesViewModel을 반드시 필요로 함
-    // 따라서 View가 직접 소유(@StateObject)하고, 생성 시 외부에서 FavoritesViewModel을 주입받아야 함
-    @StateObject private var viewModel: ListingDetailViewModel
-    
 
-    init(listingId: String, favoritesViewModel: FavoritesViewModel) {
-        _viewModel = StateObject(
-            wrappedValue: ListingDetailViewModel(favoritesViewModel: favoritesViewModel)
-        )
+struct ListingDetailView: View {
+    @StateObject private var viewModel: ListingDetailViewModel
+    @EnvironmentObject var favoritesVM: FavoritesViewModel
+    let listingId: String
+    
+    init(service: ListingService, listingId: String) {
+        _viewModel = StateObject(wrappedValue: ListingDetailViewModel(service: service))
         self.listingId = listingId
     }
 
-    /** 채팅방과 연결  **/
+    // 채팅 관련 상태
     @StateObject private var userStore = UserStore()
     @State private var selectedChat: Chat? = nil
     @State private var isChatActive = false
-    /** 채팅방과 연결  **/
     
     var body: some View {
-        Group{
-            if let listing = viewModel.listing {
-                VStack{
-                    TopBar(style: .listing(title:viewModel.listing?.plateNo ?? ""))
-                        .padding()
-
-                    ScrollView{
-                        VStack{
-                            ZStack(alignment: .topTrailing){
-                                CarImageTabView(images: listing.images)
-                                FavoriteButton(
-                                    favoritesViewModel: viewModel.favoritesViewModel,
-                                        listing: listing
-                                )
-                            }
-                            
-                            //차량 기본 정보
-                            VStack(alignment: .leading){
-                                Text(listing.model)
-                                    .frame(maxWidth: .infinity, alignment: .leading)
-                                    .padding(.leading,8)
-                                    .font(.title3)
-                                    .fontWeight(.semibold)
-                                Text("\(listing.year)년")
-                                    .padding(.leading,8)
-                                    .foregroundStyle(.gray)
-                                
-                                Text("\(listing.priceInManwon)만원")
-                                    .padding(.leading,8)
-                                    .font(.title2)
-                                    .fontWeight(.bold)
-                                    .foregroundColor(Color.keyColorBlue)
-                            }
-                            .padding(.horizontal)
-                            
-                            ProfileInfoView()
-                                .padding(.horizontal)
-                            
-                            
-                            VStack(alignment: .leading){
-                                Text("기본 정보")
-                                    .font(.title3)
-                                    .fontWeight(.semibold)
-                                VStack(alignment: .leading, spacing: 10){
-                                    InfoRow(label: "차량 번호", value: listing.plateNo ?? "번호 없음")
-                                    InfoRow(label: "연식", value: "\(listing.year)")
-                                    InfoRow(label: "변속기", value: listing.transmission ?? "0cc")
-                                    InfoRow(label: "차종", value: listing.carType ?? "-")
-                                    InfoRow(label: "주행거리", value: "\(listing.mileage)km")
-                                    InfoRow(label: "연료", value: listing.fuel)
-                                }
-                                .padding()
-                                .background(Color.pureWhite)
-                                .cornerRadius(12)
-                                
-                            }
-                            .padding()
-                            
-                            
-                            VStack{
-                                Text("이 차의 상태")
-                                    .frame(maxWidth: .infinity, alignment: .leading)
-                                    .font(.title3)
-                                    .fontWeight(.semibold)
-                                    .padding(.bottom,3)
-                                Text(listing.description)
-                                    .frame(maxWidth: .infinity, alignment: .leading)
-                                    .padding()
-                                    .background(Color.white)
-                                    .cornerRadius(12)
-                            }
-                            .padding()
-                            
-                            VStack{
-                                Text("시세")
-                                    .font(.title3)
-                                    .fontWeight(.semibold)
-                                    .padding(.bottom, 8)
-                                    .frame(maxWidth: .infinity, alignment: .leading)
-                                VStack{
-                                    Text("시세안전구간")
-                                        .foregroundStyle(.gray)
-                                    Text("\(Int(viewModel.safeMin))~\(Int(viewModel.safeMax))만원")
-                                        .font(.title3)
-                                        .fontWeight(.semibold)
-                                        .padding(.bottom, 15)
-                                    
-                                    PriceRangeView(viewModel: viewModel)
-                                    
-                                }
-                                
-                            }
-                            .padding()
-                            
-                        }
-                        .padding(.bottom, 90)
-                        .onAppear {
-                            viewModel.loadListing(id: listingId)
-                        }
-                    }
-
+        NavigationStack {
+            Group {
+                if let detailData = viewModel.detailData {
+                    content(detailData: detailData)
+                } else {
+                    loadingView
                 }
-                .background(Color.backgroundGray100)
-                .navigationBarHidden(true)   // 기본 네비게이션 바 숨김
-                .navigationBarBackButtonHidden(true) // 기본 뒤로가기 숨김
-//                .onAppear {
-//                    viewModel.loadListing(id: listingId)
-//                }
-            } else {
-                VStack {
-                    ProgressView()
-                    Text("불러오는 중...")
-                        .foregroundColor(.gray)
-                        .padding(.top, 8)
-                }
-                .frame(maxWidth: .infinity, maxHeight: .infinity)
-                .background(Color.backgroundGray100)
-                .navigationBarHidden(true)
-                .navigationBarBackButtonHidden(true)
-//                .onAppear {
-//                    viewModel.loadListing(id: listingId)
-//                }
             }
-
+            .task {
+                if viewModel.detailData == nil {
+                    await viewModel.loadListing(id: listingId)
+                }
+            }
+        }
+        .background(Color.backgroundGray100)
+        .navigationBarHidden(true)
+        .navigationBarBackButtonHidden(true)
+        .overlay(alignment: .bottom) {
+            buyButton
+        }
+    }
+    
+    // MARK: - 본문 UI
+    private func content(detailData: ListingDetailData) -> some View {
+        VStack {
+            TopBar(style: .listing(title: detailData.listing.plateNo))
+                .padding()
             
-            }
-            .onAppear {
-                viewModel.loadListing(id: listingId)
+            ScrollView {
+                VStack {
+                    // 차량 이미지 + 찜 버튼
+                    ZStack(alignment: .topTrailing) {
+                        CarImageTabView(images: detailData.listing.images)
+                        FavoriteButton(
+                            isFavorite: favoritesVM.isFavorite(detailData.listing),
+                            onToggle: {
+                                Task { await favoritesVM.toggleFavorite(detailData.listing) }
+                            }
+                        )
+                    }
+                    
+                    basicInfo(detailData.listing)
+                    
+                    ProfileInfoView()
+                        .padding(.horizontal)
+                    
+                    vehicleInfo(detailData.listing)
+                    
+                    descriptionView(detailData.listing)
+                    
+                    priceView(detailData)
+                }
+                .padding(.bottom, 90)
             }
             .background(Color.backgroundGray100)
-            //.navigationBarHidden(true)   // 기본 네비게이션 바 숨김
-            //.navigationBarBackButtonHidden(true) // 기본 뒤로가기 숨김
-        
-            HStack{
-                /**채팅방과 연결 */
-                Button(action: {
-                    createOrFetchChat()
-                }) {
-                    Text("구매 문의")
-                        .foregroundStyle(.white)
-                        .fontWeight(.bold)
-                }
-                .frame(maxWidth: .infinity, minHeight: 50)
-                .background(
-                    RoundedRectangle(cornerRadius: 8)
-                        .fill(Color.blue)
-                )
-                
-                
-                // ✅ 네비게이션 링크 (선택된 Chat 있으면 활성화됨)
-                // ✅ ListingDetailView 안에
-                NavigationLink(
-                    destination:
-                        Group {
-                            if let chat = selectedChat,
-                               let currentUserId = Auth.auth().currentUser?.uid {
-                                ChatDetailView(
-                                    chat: chat,
-                                    currentUserId: currentUserId,
-                                    userStore: userStore
-                                )
-                            } else {
-                                EmptyView()
-                            }
-                        },
-                    isActive: $isChatActive
-                ) {
-                    EmptyView()
-                }
-                .hidden()
-                
-                /** 채팅방과 연결  */
-                
+        }
+    }
+    
+    // MARK: - 로딩 뷰
+    private var loadingView: some View {
+        VStack {
+            ProgressView()
+            Text("불러오는 중...")
+                .foregroundColor(.gray)
+                .padding(.top, 8)
+        }
+        .frame(maxWidth: .infinity, maxHeight: .infinity)
+        .background(Color.backgroundGray100)
+    }
+    
+    // MARK: - 하단 구매 문의 바
+    private var buyButton: some View {
+        HStack {
+            Button(action: { createOrFetchChat() }) {
+                Text("구매 문의")
+                    .foregroundStyle(.white)
+                    .fontWeight(.bold)
+            }
+            .frame(maxWidth: .infinity, minHeight: 50)
+            .background(
+                RoundedRectangle(cornerRadius: 8).fill(Color.blue)
+            )
+            
+            NavigationLink(
+                destination: Group {
+                    if let chat = selectedChat,
+                       let currentUserId = Auth.auth().currentUser?.uid {
+                        ChatDetailView(
+                            chat: chat,
+                            currentUserId: currentUserId,
+                            userStore: userStore
+                        )
+                    } else {
+                        EmptyView()
+                    }
+                },
+                isActive: $isChatActive
+            ) {
+                EmptyView()
+            }
+            .hidden()
+        }
+        .padding()
+    }
+    
+    // MARK: - Subviews
+    private func basicInfo(_ listing: Listing) -> some View {
+        VStack(alignment: .leading) {
+            Text(listing.model)
+                .frame(maxWidth: .infinity, alignment: .leading)
+                .padding(.leading, 8)
+                .font(.title3)
+                .fontWeight(.semibold)
+            
+            Text("\(listing.year)년")
+                .padding(.leading, 8)
+                .foregroundStyle(.gray)
+            
+            
+            Text("\(NumberFormatter.koreanPriceString(from:listing.price))")
+                .padding(.leading, 8)
+                .font(.title2)
+                .fontWeight(.bold)
+                .foregroundColor(Color.keyColorBlue)
+        }
+        .padding(.horizontal)
+    }
+    
+    private func vehicleInfo(_ listing: Listing) -> some View {
+        VStack(alignment: .leading) {
+            Text("기본 정보")
+                .font(.title3)
+                .fontWeight(.semibold)
+            
+            VStack(alignment: .leading, spacing: 10) {
+                InfoRow(label: "차량 번호", value: listing.plateNo ?? "번호 없음")
+                InfoRow(label: "연식", value: "\(listing.year)")
+                InfoRow(label: "변속기", value: listing.transmission ?? "-")
+                InfoRow(label: "차종", value: listing.carType)
+                InfoRow(label: "주행거리", value: "\(listing.mileage)km")
+                InfoRow(label: "연료", value: listing.fuel)
             }
             .padding()
-            
-            
+            .background(Color.pureWhite)
+            .cornerRadius(12)
         }
+        .padding()
+    }
+    
+    private func descriptionView(_ listing: Listing) -> some View {
+        VStack(alignment: .leading) {
+            Text("이 차의 상태")
+                .font(.title3)
+                .fontWeight(.semibold)
+                .padding(.bottom, 3)
+            
+            Text(listing.description)
+                .frame(maxWidth: .infinity, alignment: .leading)
+                .padding()
+                .background(Color.white)
+                .cornerRadius(12)
+        }
+        .padding()
+    }
+    
+    private func priceView(_ detailData: ListingDetailData) -> some View {
+        VStack(alignment: .leading) {
+            Text("시세")
+                .font(.title3)
+                .fontWeight(.semibold)
+                .padding(.bottom, 8)
+            
+            VStack {
+                Text("시세안전구간")
+                    .foregroundStyle(.gray)
+                Text("\(Int(detailData.safeMin)) ~ \(Int(detailData.safeMax))만원")
+                    .font(.title3)
+                    .fontWeight(.semibold)
+                    .padding(.bottom, 15)
+                
+                PriceRangeView(viewModel: viewModel)
+            }
+        }
+        .padding()
+    }
+    
+    // MARK: - 채팅방 연결
+    private func createOrFetchChat() {
+        guard let currentUserId = Auth.auth().currentUser?.uid,
+              let listing = viewModel.detailData?.listing else { return }
         
-
-    /**채팅방과 연결 */
-    // Firestore 확인 → Chat 객체 세팅 → Navigation 실행
-       private func createOrFetchChat() {
-           guard let currentUserId = Auth.auth().currentUser?.uid else { return } //로그인 후 이용 모달 나중에 띄우기
-           let db = Firestore.firestore()
-           
-           db.collection("chats")
-               .whereField("buyerId", isEqualTo: currentUserId)
-               .whereField("sellerId", isEqualTo: viewModel.listing?.sellerId ?? "")
-               .whereField("listingId", isEqualTo: viewModel.listing?.id ?? "")
-               .getDocuments (completion:{ snapshot, error in
-                   if let doc = snapshot?.documents.first,
-                      let existingChat = try? doc.data(as: Chat.self) {
-                       // ✅ 기존 채팅방 있음
-                       self.selectedChat = existingChat
-                       self.isChatActive = true
-                   } else {
-                       // ✅ 채팅방 없음 → 새 Chat 객체 넘기기
-                       let newChat = Chat(
-                           id: nil,
-                           buyerId: currentUserId,
-                           sellerId: viewModel.listing?.sellerId ?? "",
-                           listingId: viewModel.listing?.id ?? "",
-                           lastMessage: nil,
-                           listingTitle: viewModel.listing?.title ?? "",
-                           lastAt: Date()
-                       )
-                       self.selectedChat = newChat
-                       self.isChatActive = true
-                   }
-               })
-       }
-    /**채팅방과 연결 */
-
+        let db = Firestore.firestore()
+        db.collection("chats")
+            .whereField("buyerId", isEqualTo: currentUserId)
+            .whereField("sellerId", isEqualTo: listing.sellerId)
+            .whereField("listingId", isEqualTo: listing.id ?? "")
+            .getDocuments { snapshot, error in
+                if let doc = snapshot?.documents.first,
+                   let existingChat = try? doc.data(as: Chat.self) {
+                    self.selectedChat = existingChat
+                    self.isChatActive = true
+                } else {
+                    let newChat = Chat(
+                        id: nil,
+                        buyerId: currentUserId,
+                        sellerId: listing.sellerId,
+                        listingId: listing.id ?? "",
+                        lastMessage: nil,
+                        listingTitle: listing.title,
+                        lastAt: Date()
+                    )
+                    self.selectedChat = newChat
+                    self.isChatActive = true
+                }
+            }
+    }
 }
 
-
+// MARK: - 재사용 InfoRow
 struct InfoRow: View{
     let label: String
     let value: String

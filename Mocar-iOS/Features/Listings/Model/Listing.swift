@@ -23,7 +23,7 @@ enum ListingStatus: String, Codable {
 struct Listing : Identifiable, Codable{
     @DocumentID var id: String?
     var sellerId: String
-    var plateNo: String?
+    var plateNo: String
     var title: String
     var brand: String   
     var model: String
@@ -42,10 +42,11 @@ struct Listing : Identifiable, Codable{
     //@ServerTimestamp var updatedAt: Date?
     var createdAt: String
     var updatedAt: String?
-    var carType: String?
+    var carType: String
     
-    var priceInManwon: Int {
-            return price / 10000
-    }
     
+}
+
+extension Listing {
+    var safeId: String { id ?? UUID().uuidString }
 }
