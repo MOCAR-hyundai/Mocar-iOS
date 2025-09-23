@@ -21,7 +21,7 @@ struct ResetPasswordView: View {
               .ignoresSafeArea()
 
           VStack(spacing: 20) {
-              TopBar(style: .login)
+              TopBar(style: .Mylistings(title: "비밀번호 재설정"))
                   .padding(.top)   // 안전 영역 고려해서 위쪽 붙이기
                   .padding(.leading, 5)
               Spacer().frame(height: 10)
