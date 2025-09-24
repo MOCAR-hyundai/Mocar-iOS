@@ -16,6 +16,8 @@ final class FavoritesViewModel: ObservableObject {
     @Published var isLoading: Bool = false
     
     private let service: FavoriteService
+    private var favoritesTask: Task<Void, Never>?
+    
     private var userId: String? {
         Auth.auth().currentUser?.uid
     }
@@ -28,20 +30,44 @@ final class FavoritesViewModel: ObservableObject {
     // 실시간 구독 시작
     func observeFavorites() {
         guard let userId else { return }
-        Task {
+        // 기존 리스너 취소 (중복 방지)
+        favoritesTask?.cancel()
+        
+//        Task {
+//            for await favorites in service.listenFavorites(userId: userId) {
+//                //중복 호출 방지
+//                if self.favorites.map(\.id) != favorites.map(\.id){
+//                    self.favorites = favorites
+//                    // 동시에 listing 데이터도 가져오기
+//                    do {
+//                        self.favoriteListings = try await service.getFavoriteListings(userId: userId)
+//                    } catch {
+//                        print("ERROR MESSAGE -- Failed to fetch favorite listings: \(error)")
+//                    }
+//                }
+//            }
+//        }
+        favoritesTask = Task {
             for await favorites in service.listenFavorites(userId: userId) {
-                //중복 호출 방지
-                if self.favorites.map(\.id) != favorites.map(\.id){
+                // 중복 호출 방지
+                if self.favorites.map(\.id) != favorites.map(\.id) {
                     self.favorites = favorites
                     // 동시에 listing 데이터도 가져오기
                     do {
                         self.favoriteListings = try await service.getFavoriteListings(userId: userId)
                     } catch {
-                        print("ERROR MESSAGE -- Failed to fetch favorite listings: \(error)")
+                        print("❌ Failed to fetch favorite listings: \(error)")
                     }
                 }
             }
         }
+    }
+    
+    //리스너 중단 + 데이터 초기화
+    func stopObserving() {
+        favoritesTask?.cancel()
+        favoritesTask = nil
+        clearFavorites()
     }
     
     // 매물이 찜 상태인지 확인
@@ -57,5 +83,11 @@ final class FavoritesViewModel: ObservableObject {
         } catch {
             print("ERROR MESSAGE -- toggleFavorite error: \(error)")
         }
+    }
+    
+    //찜하기 클리어
+    func clearFavorites() {
+        self.favoriteListings = []
+        self.favorites = []
     }
 }

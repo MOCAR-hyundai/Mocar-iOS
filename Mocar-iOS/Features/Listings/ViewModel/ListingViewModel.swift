@@ -239,17 +239,18 @@ final class ListingDetailViewModel: ObservableObject {
     func deleteListing() async {
         guard let listingId = detailData?.listing.id else { return }
         guard let currentUserId = Auth.auth().currentUser?.uid else {
-            print("❌ 로그인한 유저가 아님")
+            print(" 로그인한 유저가 아님")
             return
         }
         
         do {
             try await service.deleteListing(listingId: listingId, currentUserId: currentUserId)
-            print("✅ 매물 삭제 성공: \(listingId)")
+            print(" 매물 삭제 성공: \(listingId)")
             self.detailData = nil  // UI 상태 비우기
         } catch {
-            print("❌ 매물 삭제 실패: \(error.localizedDescription)")
+            print(" 매물 삭제 실패: \(error.localizedDescription)")
         }
     }
+    
 
 }

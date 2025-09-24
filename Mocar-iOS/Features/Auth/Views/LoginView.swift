@@ -17,6 +17,7 @@ struct LoginView: View {
     @State private var loginErrorMessage: String? = nil
     @State private var isLoading: Bool = false
 
+    @EnvironmentObject var favoritesVM: FavoritesViewModel
 
     enum Field {
         case email
@@ -224,6 +225,8 @@ struct LoginView: View {
                 if keepLoggedIn {
                     UserDefaults.standard.set(true, forKey: "keepLoggedIn")
                 }
+                //  로그인 성공하면 찜 목록 다시 구독 시작
+                favoritesVM.observeFavorites()
                 // 다음 화면으로 이동 처리 가능
                 dismiss()
 

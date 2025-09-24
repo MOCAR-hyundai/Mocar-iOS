@@ -220,6 +220,9 @@ struct MyPageView: View {
                         showLogoutConfirm = false
                         // 여기서 홈 화면으로 이동시키고 싶다면,
                         // 예: root 뷰를 LoginView로 교체하는 로직 필요
+                        favoritesVM.stopObserving()
+                        favoritesVM.clearFavorites()
+                        
                     },
                     onCancel: {
                         showLogoutConfirm = false
