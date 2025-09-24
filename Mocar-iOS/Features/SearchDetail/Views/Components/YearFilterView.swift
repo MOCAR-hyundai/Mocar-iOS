@@ -30,14 +30,24 @@ struct YearFilterView: View {
                         set: { newValue in
                             let intValue = Int(newValue.rounded())
                             minYear = min(max(intValue, yearRange.lowerBound), maxYear)
-                            minText = String(minYear)
+                            
+                            if minYear == yearRange.lowerBound {
+                                minText = ""
+                            } else {
+                                minText = String(minYear)
+                            }
                         }),
                     upperValue: Binding(
                         get: { Double(maxYear) },
                         set: { newValue in
                             let intValue = Int(newValue.rounded())
                             maxYear = max(min(intValue, yearRange.upperBound), minYear)
-                            maxText = String(maxYear)
+                            
+                            if maxYear == yearRange.upperBound {
+                                maxText = ""
+                            } else {
+                                maxText = String(maxYear)
+                            }
                         }),
                     range: Double(yearRange.lowerBound)...Double(yearRange.upperBound)
                 )
@@ -55,11 +65,10 @@ struct YearFilterView: View {
                         minText = newValue.filter { "0123456789".contains($0) }
                         if let value = Int(minText) {
                             minYear = min(max(value, yearRange.lowerBound), maxYear)
+                        } else {
+                            minYear = yearRange.lowerBound
                         }
                     }
-//                    .onSubmit {
-//                        minText = String(minYear)
-//                    }
                 
                 Text("년")
                 
@@ -75,11 +84,10 @@ struct YearFilterView: View {
                         maxText = newValue.filter { "0123456789".contains($0) }
                         if let value = Int(maxText) {
                             maxYear = max(min(value, yearRange.upperBound), minYear)
+                        } else {
+                            maxYear = yearRange.upperBound
                         }
                     }
-//                    .onSubmit {
-//                        maxText = String(maxYear)
-//                    }
                 
                 Text("년")
             }

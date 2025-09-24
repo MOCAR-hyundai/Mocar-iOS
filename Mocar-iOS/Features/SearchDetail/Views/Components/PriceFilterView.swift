@@ -31,7 +31,7 @@ struct PriceFilterView: View {
                             let intValue = Int(newValue.rounded())
                             minPrice = min(max(intValue, priceRange.lowerBound), maxPrice)
                             
-                            // 🔹 최소가 범위 시작점이면 "전체" 의미 → 빈 문자열
+                            // 최소가 범위 시작점이면 "전체" 의미 → 빈 문자열
                             if minPrice == priceRange.lowerBound {
                                 minText = ""
                             } else {
@@ -44,7 +44,7 @@ struct PriceFilterView: View {
                             let intValue = Int(newValue.rounded())
                             maxPrice = max(min(intValue, priceRange.upperBound), minPrice)
                             
-                            // 🔹 최대가 범위 끝이면 "전체" 의미 → 빈 문자열
+                            // 최대가 범위 끝이면 "전체" 의미 → 빈 문자열
                             if maxPrice == priceRange.upperBound {
                                 maxText = ""
                             } else {
