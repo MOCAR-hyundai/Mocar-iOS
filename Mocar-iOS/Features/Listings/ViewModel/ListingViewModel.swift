@@ -7,6 +7,7 @@
 
 import Foundation
 import FirebaseFirestore
+import FirebaseStorage
 import FirebaseAuth
 
 //ui 상태 관리
@@ -23,6 +24,8 @@ final class ListingDetailViewModel: ObservableObject {
     // 상세 분석 데이터 (서비스에서 한 번에 받아옴)
     @Published var detailData: ListingDetailData?
     
+    @Published var photos: [UIImage] = []
+    
     private let service: ListingService
     //let favoritesViewModel: FavoritesViewModel
     
@@ -30,6 +33,7 @@ final class ListingDetailViewModel: ObservableObject {
         self.service = service
         //self.favoritesViewModel = favoritesViewModel
     }
+    private let db = Firestore.firestore()
     
     // MARK: - 상태 문구
     var statusText: String {
@@ -40,15 +44,15 @@ final class ListingDetailViewModel: ObservableObject {
     }
     
     // MARK: - 데이터 로딩
-    func loadListing(id: String) async {
+    func loadListing(id: String, forceReload: Bool = false) async {
         //이미 로딩된 경우 다시 불러오지 않음
-        if detailData != nil { return }
-        do {
-            let data = try await service.getListingDetail(id: id, allListings: listings)
-            self.detailData = data
-        } catch {
-            print("Error Message -- fail to load listing: \(error)")
-        }
+        if detailData != nil, !forceReload { return }
+            do {
+                let data = try await service.getListingDetail(id: id, allListings: listings)
+                self.detailData = data
+            } catch {
+                print("❌ fail to load listing: \(error)")
+            }
     }
 
     // MARK: - 안전 구간 계산 X좌표
@@ -109,6 +113,125 @@ final class ListingDetailViewModel: ObservableObject {
             }
         } catch {
             print("EROOR MESAAGE -- Failed to update status: \(error)")
+        }
+    }
+    
+    // MARK: - 이미지 업로드 (Storage)
+    private func uploadImageToStorage(_ image: UIImage, completion: @escaping (String?) -> Void) {
+        guard let data = image.jpegData(compressionQuality: 0.8) else {
+            completion(nil)
+            return
+        }
+        
+        let filename = UUID().uuidString + ".jpg"
+        let ref = Storage.storage().reference().child("listings/\(filename)")
+        
+        ref.putData(data, metadata: nil) { _, error in
+            if let error = error {
+                print("업로드 실패:", error.localizedDescription)
+                completion(nil)
+                return
+            }
+            ref.downloadURL { url, _ in
+                completion(url?.absoluteString)
+            }
+        }
+    }
+        
+    // MARK: - 사진 여러 장 업로드 후 Firestore에 저장
+    func saveListing(_ listing: Listing) {
+        let group = DispatchGroup()
+        var uploadedURLs: [String] = []
+        
+        for photo in photos {
+            group.enter()
+            uploadImageToStorage(photo) { url in
+                if let url = url {
+                    uploadedURLs.append(url)
+                }
+                group.leave()
+            }
+        }
+        
+        group.notify(queue: .main) {
+            
+            let finalImages = uploadedURLs.isEmpty ? listing.images : uploadedURLs
+            // Firestore 문서 저장
+            var data: [String: Any] = [
+                "sellerId": listing.sellerId,
+                "plateNo": listing.plateNo,
+                "title": listing.title,
+                "brand": listing.brand,
+                "model": listing.model,
+                "trim": listing.trim,
+                "year": listing.year,
+                "mileage": listing.mileage,
+                "fuel": listing.fuel,
+                "transmission": listing.transmission ?? "",
+                "price": listing.price,
+                "region": listing.region,
+                "description": listing.description,
+                "images": finalImages,
+                "status": listing.status.rawValue,
+                "stats": [
+                    "viewCount": listing.stats.viewCount,
+                    "favoriteCount": listing.stats.favoriteCount
+                ],
+                "createdAt": listing.createdAt,
+                "updatedAt": Date().ISO8601Format(), // 수정 시간 갱신
+                "carType": listing.carType
+            ]
+            
+            if let id = listing.id {
+                // 이미 있는 listing 수정
+                self.db.collection("listings").document(id).updateData(data) { error in
+                    if let error = error {
+                        print("매물 수정 실패: \(error.localizedDescription)")
+                    } else {
+                        print("매물 수정 성공: \(id)")
+                        // UI에 즉시 반영
+                        self.detailData = ListingDetailData(
+                            listing: Listing(
+                                id: id,
+                                sellerId: listing.sellerId,
+                                plateNo: listing.plateNo,
+                                title: listing.title,
+                                brand: listing.brand,
+                                model: listing.model,
+                                trim: listing.trim,
+                                year: listing.year,
+                                mileage: listing.mileage,
+                                fuel: listing.fuel,
+                                transmission: listing.transmission,
+                                price: listing.price,
+                                region: listing.region,
+                                description: listing.description,
+                                images: finalImages,
+                                status: listing.status,
+                                stats: listing.stats,
+                                createdAt: listing.createdAt,
+                                updatedAt: Date().ISO8601Format(),
+                                carType: listing.carType
+                            ),
+                            seller: self.detailData?.seller,
+                            prices: self.detailData?.prices ?? [],    // ✅ 추가
+                            minPrice: self.detailData?.minPrice ?? 0,
+                            maxPrice: self.detailData?.maxPrice ?? 0,
+                            safeMin: self.detailData?.safeMin ?? 0,
+                            safeMax: self.detailData?.safeMax ?? 0,
+                            ticks: self.detailData?.ticks ?? []
+                        )
+                    }
+                }
+            } else {
+                // 새 등록
+                let ref = self.db.collection("listings").addDocument(data: data) { error in
+                    if let error = error {
+                        print("새 listing 등록 실패: \(error.localizedDescription)")
+                    }
+                }
+                print("새 listing 등록 완료: \(ref.documentID)")
+            }
         }
     }
 

@@ -33,7 +33,7 @@ struct ListingDetailView: View {
                 if let detailData = viewModel.detailData {
                     content(detailData: detailData)
                 } else {
-                    loadingView
+                    loadingView()
                 }
             }
             .task {
@@ -41,7 +41,7 @@ struct ListingDetailView: View {
                     await viewModel.loadListing(id: listingId)
                 }
             }
-        buyButton
+            buyButton
                 .padding()
 //        }
 
@@ -112,7 +112,7 @@ struct ListingDetailView: View {
 
             
             
-            ScrollView {
+            ScrollView(showsIndicators: false) {
                 VStack {
                     // 차량 이미지 + 찜 버튼
                     ZStack(alignment: .topTrailing) {
@@ -148,18 +148,6 @@ struct ListingDetailView: View {
             }
             .background(Color.backgroundGray100)
         }
-    }
-    
-    // MARK: - 로딩 뷰
-    private var loadingView: some View {
-        VStack {
-            ProgressView()
-            Text("불러오는 중...")
-                .foregroundColor(.gray)
-                .padding(.top, 8)
-        }
-        .frame(maxWidth: .infinity, maxHeight: .infinity)
-        .background(Color.backgroundGray100)
     }
     
     // MARK: - 하단 구매 문의 바
@@ -213,7 +201,7 @@ struct ListingDetailView: View {
                 if currentUserId == listing.sellerId {
                     //  판매자일 때 → 수정하기 버튼
                     NavigationLink(
-                        destination: ListingEditView(listing: listing) // 수정 화면으로 이동
+                        destination: ListingEditView(listing: listing, viewModel: viewModel)
                     ) {
                         Text("수정하기")
                             .foregroundStyle(.white)
@@ -268,18 +256,19 @@ struct ListingDetailView: View {
     // MARK: - Subviews
     private func basicInfo(_ listing: Listing) -> some View {
         VStack(alignment: .leading) {
-            Text(listing.model)
+            Text(listing.title)
                 .frame(maxWidth: .infinity, alignment: .leading)
                 .padding(.leading, 8)
                 .font(.title3)
                 .fontWeight(.semibold)
             
-            Text("\(listing.year)년")
+            Text("\(String(listing.year))년")
                 .padding(.leading, 8)
                 .foregroundStyle(.gray)
             
             
             Text("\(NumberFormatter.koreanPriceString(from:listing.price))")
+            
                 .padding(.leading, 8)
                 .font(.title2)
                 .fontWeight(.bold)
@@ -295,7 +284,7 @@ struct ListingDetailView: View {
                 .fontWeight(.semibold)
             
             VStack(alignment: .leading, spacing: 10) {
-                InfoRow(label: "차량 번호", value: listing.plateNo ?? "번호 없음")
+                InfoRow(label: "차량 번호", value: listing.plateNo)
                 InfoRow(label: "연식", value: "\(listing.year)")
                 InfoRow(label: "변속기", value: listing.transmission ?? "-")
                 InfoRow(label: "차종", value: listing.carType)

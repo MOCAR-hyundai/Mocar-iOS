@@ -13,6 +13,7 @@ extension Color {
     // text
     static let textBlack100 = Color(hex: "#000000")
     static let textGray100 = Color(hex: "#7F7F7F")
+    static let textGray101 = Color(hex: "#D9D9D9")
     static let textGray200  = Color(hex: "#454545")
     static let textGray300  = Color(hex: "#313131")
     

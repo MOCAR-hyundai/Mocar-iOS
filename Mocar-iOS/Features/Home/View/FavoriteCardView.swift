@@ -59,7 +59,7 @@ struct FavoriteCardView: View{
                     .lineLimit(2)
                     .multilineTextAlignment(.leading) // 왼쪽 정렬
                 
-                Text("\(listing.year)식 · \(listing.mileage) km · \(listing.fuel)")
+                Text("\(String(listing.year))식 · \(listing.mileage) km · \(listing.fuel)")
                     .foregroundColor(.secondary)
                     .font(.system(size: 11, weight: .regular))
                     .lineLimit(2)          // 최대 2줄까지 허용
