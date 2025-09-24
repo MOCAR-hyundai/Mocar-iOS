@@ -119,11 +119,11 @@ struct ListingDetailView: View {
                         FavoriteButton(
                             isFavorite: favoritesVM.isFavorite(detailData.listing),
                             onToggle: {
-                                if let _ = Auth.auth().currentUser {   // ✅ 로그인 되어 있으면
+                                if let _ = Auth.auth().currentUser {   // 로그인 되어 있으면
                                     Task {
                                         await favoritesVM.toggleFavorite(detailData.listing)
                                     }
-                                } else {   // ✅ 로그인 안 되어 있으면 모달 띄우기
+                                } else {   //  로그인 안 되어 있으면 모달 띄우기
                                     withAnimation {
                                         showLoginModal = true
                                     }

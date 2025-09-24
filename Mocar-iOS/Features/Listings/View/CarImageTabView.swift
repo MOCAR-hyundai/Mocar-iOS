@@ -27,10 +27,11 @@ struct CarImageTabView: View {
                                     .frame(width: geo.size.width, height: geo.size.width * 3/4)
                                     .clipped()
                             case .failure:
-                                Image(systemName: "photo")
+                                Image(systemName: "이미지없음icon")
                                     .resizable()
                                     .scaledToFit()
-                                    .frame(width: geo.size.width, height: geo.size.width * 3/4)
+                                    .frame(width: 80, height: 80) // 아이콘 크기 (작게)
+                                    .frame(width: 170, height: 125) // 이미지 영역 크기 강제
                                     .foregroundColor(.gray)
                             @unknown default:
                                 EmptyView()
