@@ -12,6 +12,8 @@ struct HomeView: View {
 //    @StateObject private var homeViewModel: HomeViewModel
     @EnvironmentObject var favoritesVM: FavoritesViewModel
     @StateObject private var userSession = UserSession()
+    @State private var showLoginModal = false
+    @State private var navigateToLogin = false
     
     @State private var showLogin = false
     @State private var showSearch = false
@@ -121,7 +123,7 @@ struct HomeView: View {
                                         ForEach(favoritesVM.favoriteListings, id: \.safeId) { listing in
                                             NavigationLink(
                                                 destination: ListingDetailView(
-                                                    service: ListingServiceImpl(repository: ListingRepository()),
+                                                    service: ListingServiceImpl(repository: ListingRepository(),                         userStore: UserStore()                         ),
                                                     listingId: listing.id ?? ""
                                                 )
                                             ) {
@@ -129,7 +131,11 @@ struct HomeView: View {
                                                     listing: listing,
                                                     isFavorite: favoritesVM.isFavorite(listing),
                                                     onToggleFavorite: {
-                                                        Task { await favoritesVM.toggleFavorite(listing) }
+                                                        if let _ = userSession.user {
+                                                            Task { await favoritesVM.toggleFavorite(listing) }
+                                                        } else {
+                                                            withAnimation { showLoginModal = true }
+                                                        }
                                                     }
                                                 )
                                             }
@@ -176,7 +182,8 @@ struct HomeView: View {
                                     ForEach(homeViewModel.brandListings, id: \.safeId) { listing in
                                         NavigationLink(
                                             destination: ListingDetailView(
-                                                service: ListingServiceImpl(repository: ListingRepository()),
+                                                service: ListingServiceImpl(repository: ListingRepository(),
+                                                     userStore: UserStore()),
                                                 listingId: listing.id ?? ""
                                             )
                                         ) {
@@ -184,7 +191,11 @@ struct HomeView: View {
                                                 listing: listing,
                                                 isFavorite: favoritesVM.isFavorite(listing),
                                                 onToggleFavorite: {
-                                                    Task { await favoritesVM.toggleFavorite(listing) }
+                                                    if let _ = userSession.user {
+                                                        Task { await favoritesVM.toggleFavorite(listing) }
+                                                    } else {
+                                                        withAnimation { showLoginModal = true }
+                                                    }
                                                 }
                                             )
                                         }
@@ -204,8 +215,32 @@ struct HomeView: View {
                 }
                 .navigationBarHidden(true)
                 .background(Color.backgroundGray100)
+                .overlay {
+                    if showLoginModal {
+                        Color.black.opacity(0.4).ignoresSafeArea()
+                        ConfirmModalView(
+                            message: "로그인 이후 사용 가능합니다.",
+                            confirmTitle: "로그인",
+                            cancelTitle: "취소",
+                            onConfirm: {
+                                showLoginModal = false
+                                navigateToLogin = true
+                            },
+                            onCancel: {
+                                showLoginModal = false
+                            }
+                        )
+                    }
+                }
+                .background(Color.clear) // 배경 투명
+                .transition(.opacity) // 부드럽게 등장
+                .animation(.easeInOut, value: showLoginModal)
+                .navigationDestination(isPresented: $navigateToLogin){
+                    LoginView()
+                }
             }
         }
         .background(Color.backgroundGray100)
+        
     }
 }

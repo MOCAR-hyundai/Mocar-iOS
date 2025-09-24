@@ -7,6 +7,7 @@
 
 import Foundation
 import FirebaseFirestore
+import SwiftUI
 
 struct ListingStats: Codable {
     var viewCount: Int
@@ -19,6 +20,28 @@ enum ListingStatus: String, Codable {
     case soldOut = "sold"
     case draft = "draft"
 }
+
+//변환 프로퍼티
+extension ListingStatus {
+    var displayText: String {
+        switch self {
+        case .onSale: return "판매중"
+        case .reserved: return "예약중"
+        case .soldOut: return "판매완료"
+        case .draft: return "임시저장"
+        }
+    }
+
+    var displayColor: Color {
+        switch self {
+        case .onSale: return .green
+        case .reserved: return .orange
+        case .soldOut: return .red
+        case .draft: return .gray
+        }
+    }
+}
+
 
 struct Listing : Identifiable, Codable{
     @DocumentID var id: String?
@@ -49,4 +72,12 @@ struct Listing : Identifiable, Codable{
 
 extension Listing {
     var safeId: String { id ?? UUID().uuidString }
+}
+
+extension Listing {
+    func with(status: ListingStatus) -> Listing {
+        var copy = self
+        copy.status = status
+        return copy
+    }
 }
