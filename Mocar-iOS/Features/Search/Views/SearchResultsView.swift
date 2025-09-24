@@ -34,6 +34,7 @@ struct SearchResultsView: View {
     @State private var unit: String = ""
     
     let cardWidth = (UIScreen.main.bounds.width - 12*3) / 2
+
     
     let columns = [
         GridItem(.flexible(), spacing: 12),
@@ -43,31 +44,33 @@ struct SearchResultsView: View {
     var body: some View {
         VStack {
             // MARK: - 상단 바
-            HStack {
-                Button(action: { dismiss() }) {
-                    Image(systemName: "chevron.left")
-                        .frame(width: 20, height: 20)
-                        .padding(12)
-                        .foregroundColor(.black)
-                        .overlay(
-                            RoundedRectangle(cornerRadius: 50)
-                                .stroke(Color.lineGray, lineWidth: 1)
-                        )
-                }
-                Text("\(viewModel.listings.count)대")
-                    .font(.system(size: 16, weight: .bold))
-                Spacer()
-                HStack(spacing: 12) {
-                    Image("SortAscending")
-                    Image("MagnifyingGlass")
-                    Image("HeartStraight")
-                    Image("House")
-                }
-                .foregroundColor(.gray)
-            }
-            .padding(.horizontal)
-            .padding(.vertical, 6)
-            .background(Color.backgroundGray100)
+            TopBar(style: .search(title:"\(viewModel.listings.count)대"))
+                .background(Color.backgroundGray100)
+//            HStack {
+//                Button(action: { dismiss() }) {
+//                    Image(systemName: "chevron.left")
+//                        .frame(width: 20, height: 20)
+//                        .padding(12)
+//                        .foregroundColor(.black)
+//                        .overlay(
+//                            RoundedRectangle(cornerRadius: 50)
+//                                .stroke(Color.lineGray, lineWidth: 1)
+//                        )
+//                }
+//                Text("\(viewModel.listings.count)대")
+//                    .font(.system(size: 16, weight: .bold))
+//                Spacer()
+//                HStack(spacing: 12) {
+//                    Image("SortAscending")
+//                    Image("MagnifyingGlass")
+//                    Image("HeartStraight")
+//                    Image("House")
+//                }
+//                .foregroundColor(.gray)
+//            }
+//            .padding(.horizontal)
+//            .padding(.vertical, 6)
+//            .background(Color.backgroundGray100)
             
             // MARK: - 필터 바
             ScrollView(.horizontal, showsIndicators: false) {

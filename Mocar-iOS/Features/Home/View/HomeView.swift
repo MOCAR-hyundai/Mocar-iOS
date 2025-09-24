@@ -18,6 +18,7 @@ struct HomeView: View {
     @State private var showLogin = false
     @State private var showSearch = false
     @State private var showFilter = false
+
     
 //    init() {
 //        let listingRepo = ListingRepository()
@@ -239,6 +240,7 @@ struct HomeView: View {
                     LoginView()
                 }
             }
+
         }
         .background(Color.backgroundGray100)
         

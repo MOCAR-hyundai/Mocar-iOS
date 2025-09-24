@@ -14,13 +14,14 @@ enum TopBarStyle{
     case MyPage(title: String)                              // 뒤로가기 + 타이틀
     case Mylistings(title: String)                          // 뒤로가기 + 왼쪽 타이틀
     case RestPwd                                            // 뒤로가기 + 왼쪽 로고
-    case chat   // 뒤로가기 + 채팅방 이름
+    case chat                                               // 뒤로가기 + 채팅방 이름
+    case search(title: String)
 }
 
 struct TopBar: View {
     let style : TopBarStyle
     var onLoginTap: (() -> Void)? = nil
-
+    
     var body: some View {
         HStack{
             switch style {
@@ -40,7 +41,7 @@ struct TopBar: View {
                     .padding(.vertical,10)
                 }
                 
-              case .loginSignup:
+            case .loginSignup:
                 HStack(spacing: 0) {
                     BackButton()
                         .padding(.leading, 5)
@@ -63,7 +64,7 @@ struct TopBar: View {
                         .font(.system(size: 14))
                         .foregroundColor(status.displayColor)
                         .padding(.trailing,10)
-                   
+                    
                 }
             case .MyPage(title: let title):
                 HStack {
@@ -74,14 +75,14 @@ struct TopBar: View {
                     Spacer()
                 }
             case .Mylistings(title: let title):
-                    HStack {
-                        BackButton()
-                            .padding(.leading, 5)
-                        Text(title)
-                            .font(.system(size: 18, weight: .semibold, design: .default))
-                        Spacer()
+                HStack {
+                    BackButton()
+                        .padding(.leading, 5)
+                    Text(title)
+                        .font(.system(size: 18, weight: .semibold, design: .default))
+                    Spacer()
                 }
-
+                
             case .RestPwd:
                 ZStack{
                     BackButton()
@@ -95,18 +96,33 @@ struct TopBar: View {
                         Spacer()
                         
                     }
-
+                    
                 }
             case .chat:
                 HStack{
                     BackButton()
-                    
+                }
+            case .search(title: let title):
+                HStack {
+                    BackButton()
+                    Text(title)
+                        .font(.system(size: 18, weight: .semibold, design: .default))
+                    Spacer()
+//                    if let onHomeTap = onHomeTap {
+//                        Button(action: { onHomeTap() }) {
+//                            Image("House")
+//                                .font(.system(size: 18))
+//                                .foregroundColor(.black)
+//                                .frame(width: 36, height: 36)
+//                                .padding(.vertical, 5)
+//                        }
+//                    }
                 }
                 
+                
             }
-            
+            //.padding(.horizontal, 16)   // 좌우 여백
         }
-        //.padding(.horizontal, 16)   // 좌우 여백
     }
 }
 
