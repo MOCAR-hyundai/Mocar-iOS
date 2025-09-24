@@ -162,9 +162,8 @@ struct SearchView: View {
                     
                 case .searchResultDetail(let listingId):
                     ListingDetailView(
-                        service: ListingServiceImpl(repository: ListingRepository(),
-                            userStore: UserStore()),
-                                    listingId: listingId
+                        service: ListingServiceImpl(repository: ListingRepository()),
+                                    listingId: listingId 
                     )
                 }
             }

@@ -35,7 +35,7 @@ final class ListingDetailViewModel: ObservableObject {
     var statusText: String {
         guard let data = detailData else { return "" }
         if Double(data.listing.price) < data.safeMin { return "낮음" }
-        if Double(data.listing.price) > data.safeMax { return "낮음" }
+        if Double(data.listing.price) > data.safeMax { return "높음" }
         return "적정"
     }
     
@@ -63,13 +63,8 @@ final class ListingDetailViewModel: ObservableObject {
         guard let data = detailData, data.maxPrice > data.minPrice else { return 0 }
         let start = clamped(data.safeMin, min: data.minPrice, max: data.maxPrice)
         let end   = clamped(data.safeMax, min: data.minPrice, max: data.maxPrice)
-
-        let startRatio = (start - data.minPrice) / (data.maxPrice - data.minPrice)
-        let endRatio = (end - data.minPrice) / (data.maxPrice - data.minPrice)
-
-        return width * CGFloat(endRatio - startRatio)
+        return CGFloat((end - start) / (data.maxPrice - data.minPrice)) * width
     }
-
     
     // MARK: - Util
     private func clamped(_ value: Double, min: Double, max: Double) -> Double {
@@ -88,28 +83,4 @@ final class ListingDetailViewModel: ObservableObject {
         
         return pos
     }
-    
-    //MARK: - 유저 정보
-    var sellerName: String {
-           detailData?.seller?.name ?? "알 수 없음"
-    }
-       
-   var sellerProfileImageUrl: String? {
-       detailData?.seller?.photoUrl
-   }
-    
-    //MARK: - 매물 상태 변경
-    func changeStatus(to status: ListingStatus) async {
-        guard let listingId = detailData?.listing.id else { return }
-        
-        do {
-            try await service.updateListingAndOrders(listingId: listingId, status: status)
-            if let current = detailData {
-                self.detailData = current.withStatus(status) // UI 즉시 반영
-            }
-        } catch {
-            print("EROOR MESAAGE -- Failed to update status: \(error)")
-        }
-    }
-
 }

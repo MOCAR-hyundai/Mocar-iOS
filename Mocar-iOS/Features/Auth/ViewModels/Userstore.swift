@@ -17,7 +17,7 @@ class UserStore: ObservableObject {
 
         db.collection("users").document(userId).getDocument { snapshot, error in
             if let error = error {
-                print("Failed to fetch user: \(error)")
+                print("❌ Failed to fetch user: \(error)")
                 return
             }
             if let user = try? snapshot?.data(as: User.self) {

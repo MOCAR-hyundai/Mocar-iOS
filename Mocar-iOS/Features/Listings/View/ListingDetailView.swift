@@ -13,8 +13,6 @@ import FirebaseAuth
 struct ListingDetailView: View {
     @StateObject private var viewModel: ListingDetailViewModel
     @EnvironmentObject var favoritesVM: FavoritesViewModel
-    @State private var navigateToLogin = false
-    @State private var showLoginModal : Bool = false
     let listingId: String
     
     init(service: ListingService, listingId: String) {
@@ -41,76 +39,20 @@ struct ListingDetailView: View {
                     await viewModel.loadListing(id: listingId)
                 }
             }
-            buyButton
-                .padding()
 //        }
-
         .background(Color.backgroundGray100)
         .navigationBarHidden(true)
         .navigationBarBackButtonHidden(true)
-        .navigationDestination(isPresented: $navigateToLogin){
-            LoginView()
-        }
-        .overlay{
-            if showLoginModal {
-                Color.black.opacity(0.4).ignoresSafeArea()
-                ConfirmModalView(
-                    message: "로그인 이후 사용 가능합니다.",
-                    confirmTitle: "로그인",
-                    cancelTitle: "취소",
-                    onConfirm: {
-                        showLoginModal = false
-                        navigateToLogin = true
-                    },
-                    onCancel: {
-                        showLoginModal = false
-                    }
-                )
-                .background(Color.clear) // 배경 투명
-                .transition(.opacity) // 부드럽게 등장
-                .animation(.easeInOut, value: showLoginModal)
-            }
+        .overlay(alignment: .bottom) {
+            buyButton
         }
     }
     
     // MARK: - 본문 UI
     private func content(detailData: ListingDetailData) -> some View {
         VStack {
-            TopBar(
-                style: .listing(
-                    title: detailData.listing.plateNo,
-                    status: detailData.listing.status
-                )
-            )
-            .padding()
-            .overlay(alignment: .trailing) {
-                HStack{  // 상태와 버튼 사이 간격
-                    if let currentUserId = Auth.auth().currentUser?.uid,
-                       currentUserId == detailData.listing.sellerId {
-                        Menu {
-                            Button("판매중") {
-                                Task { await viewModel.changeStatus(to: .onSale) }
-                            }
-                            Button("예약중") {
-                                Task { await viewModel.changeStatus(to: .reserved) }
-                            }
-                            Button("판매완료") {
-                                Task { await viewModel.changeStatus(to: .soldOut) }
-                            }
-                        } label: {
-                            Image(systemName: "ellipsis")
-                                .rotationEffect(.degrees(90))
-                                .font(.system(size: 16))
-                                .foregroundColor(.black)
-                                .padding(.trailing, 8)
-                        }
-                    }
-                }
-            }
-
-
-
-            
+            TopBar(style: .listing(title: detailData.listing.plateNo))
+                .padding()
             
             ScrollView {
                 VStack {
@@ -120,22 +62,14 @@ struct ListingDetailView: View {
                         FavoriteButton(
                             isFavorite: favoritesVM.isFavorite(detailData.listing),
                             onToggle: {
-                                if let _ = Auth.auth().currentUser {   // 로그인 되어 있으면
-                                    Task {
-                                        await favoritesVM.toggleFavorite(detailData.listing)
-                                    }
-                                } else {   //  로그인 안 되어 있으면 모달 띄우기
-                                    withAnimation {
-                                        showLoginModal = true
-                                    }
-                                }
+                                Task { await favoritesVM.toggleFavorite(detailData.listing) }
                             }
                         )
                     }
                     
                     basicInfo(detailData.listing)
                     
-                    ProfileInfoView(seller: detailData.seller)
+                    ProfileInfoView()
                         .padding(.horizontal)
                     
                     vehicleInfo(detailData.listing)
@@ -194,8 +128,7 @@ struct ListingDetailView: View {
             }
             .hidden()
         }
-        .padding(.vertical, 8) // 버튼 위/아래 여백
-        .background(Color.backgroundGray100) // 버튼 바 배경 (스크롤과 구분)
+        .padding()
     }
     
     // MARK: - Subviews
@@ -266,22 +199,14 @@ struct ListingDetailView: View {
                 .padding(.bottom, 8)
             
             VStack {
-                if detailData.minPrice == 0 && detailData.maxPrice == 0 {
-                    //  시세 데이터 없음 처리
-                    Text("시세 정보 없음")
-                        .foregroundStyle(.gray)
-                        .padding(.bottom, 15)
-                } else {
-                    //  정상 데이터 출력
-                    Text("시세구간")
-                        .foregroundStyle(.gray)
-                    Text("\(NumberFormatter.koreanPriceString(from: Int(detailData.safeMin))) ~ \(NumberFormatter.koreanPriceString(from: Int(detailData.safeMax)))")
-                        .font(.title3)
-                        .fontWeight(.semibold)
-                        .padding(.bottom, 15)
-                    PriceRangeView(viewModel: viewModel)
-                }
+                Text("시세안전구간")
+                    .foregroundStyle(.gray)
+                Text("\(Int(detailData.safeMin)) ~ \(Int(detailData.safeMax))만원")
+                    .font(.title3)
+                    .fontWeight(.semibold)
+                    .padding(.bottom, 15)
                 
+                PriceRangeView(viewModel: viewModel)
             }
         }
         .padding()

@@ -28,9 +28,7 @@ struct VerticalFavoritesListView: View {
                     ForEach(favoritesVM.favoriteListings,id: \.safeId) { listing in
                         NavigationLink(
                             destination: ListingDetailView(
-                                service: ListingServiceImpl(repository: ListingRepository(),
-                                    userStore: UserStore()
-                                ),
+                                service: ListingServiceImpl(repository: ListingRepository()),  
                                 listingId: listing.id ?? ""
                             )
                         ){

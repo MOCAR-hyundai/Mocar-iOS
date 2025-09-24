@@ -28,9 +28,20 @@ struct ChatListView: View {
         NavigationView {
             VStack {
                 HStack {
-                    TopBar(style: .chat)
                     // 탑 바
-                    
+                    Button(action: {
+                        // 뒤로가기 액션
+                        dismiss()
+                    }) {
+                        Image(systemName: "chevron.left")
+                            .frame(width: 20, height: 20)
+                            .padding(12) // 아이콘 주변 여백
+                            .foregroundColor(.black)
+                            .overlay(
+                                RoundedRectangle(cornerRadius: 50) // 충분히 큰 값이면 원처럼 둥글게
+                                    .stroke(Color.lineGray, lineWidth: 1) // 테두리 색과 두께
+                            )
+                    }
                     
                     // 현재 유저의 프로필 이미지 실제 이미지 불러와 지는 지  db에 값 올리고 확인
                     AsyncImage(url: URL(string: userStore.users[currentUserId]?.photoUrl ?? "")) { image in
@@ -57,19 +68,19 @@ struct ChatListView: View {
                            .padding(8)
                    }
                     
-//                    Button(action: {
-//                        // 점 세개 액션
-//                    }) {
-//                        Image("3Dot")
-//                            .frame(width: 20, height: 20)
-//                            .padding(12) // 아이콘 주변 여백
-//                            .overlay(
-//                                RoundedRectangle(cornerRadius: 50) // 충분히 큰 값이면 원처럼 둥글게
-//                                    .stroke(Color.lineGray, lineWidth: 1) // 테두리 색과 두께
-//                            )
-//                    }
+                    Button(action: {
+                        // 점 세개 액션
+                    }) {
+                        Image("3Dot")
+                            .frame(width: 20, height: 20)
+                            .padding(12) // 아이콘 주변 여백
+                            .overlay(
+                                RoundedRectangle(cornerRadius: 50) // 충분히 큰 값이면 원처럼 둥글게
+                                    .stroke(Color.lineGray, lineWidth: 1) // 테두리 색과 두께
+                            )
+                    }
                 }
-                .padding(.horizontal,6)
+                .padding(.horizontal)
                 .padding(3)
                 .padding(.vertical, 6)
                 .padding(.bottom, 5)

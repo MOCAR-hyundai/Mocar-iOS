@@ -11,7 +11,7 @@ import FirebaseStorage
 
 struct ChatDetailView: View {
 //    let chat: Chat
-    @State var chat: Chat   // let → @State 로 변경
+    @State var chat: Chat   // ✅ let → @State 로 변경
     let currentUserId: String
     @ObservedObject var userStore: UserStore
     
@@ -33,7 +33,7 @@ struct ChatDetailView: View {
         chat.buyerId == currentUserId ? chat.sellerId : chat.buyerId
     }
     
-    //  프리뷰용 init
+    // ✅ 프리뷰용 init
       init(chat: Chat, currentUserId: String, userStore: UserStore, previewMessages: [Message] = []) {
           self.chat = chat
           self.currentUserId = currentUserId
@@ -44,85 +44,59 @@ struct ChatDetailView: View {
     var body: some View {
         VStack {
             // 탑 바
-            HStack(spacing: 10) {
-                        TopBar(style: .chat) // BackButton만 들어감
-
-                        AsyncImage(url: URL(string: userStore.users[otherUserId]?.photoUrl ?? "")) { image in
-                            image
-                                .resizable()
-                                .scaledToFill()   // 프레임을 꽉 채움
-                                .frame(width: 40, height: 40) // 정사각형 지정
-                                .clipShape(Circle())          // 동그랗게 자르기
-                                
-                        } placeholder: {
-                            Circle()
-                                .fill(Color.gray.opacity(0.3))
-                                .frame(width: 40, height: 40)
-                        }
-                        .frame(width: 40, height: 40)
-                        
-                        .clipShape(Circle())
-
-                        Text(userStore.users[otherUserId]?.name ?? "Unknown")
-                            .font(.system(size: 18, weight: .bold))
-
-                        Spacer()
-                    }
-                    .padding(6)
-                    .background(Color.backgroundGray100)
-//            HStack {
-//                Button(action: {
-//                    // 뒤로가기 액션
-//                    dismiss()
-//                }) {
-//                    Image(systemName: "chevron.left")
-//                        .frame(width: 20, height: 20)
-//                        .padding(12) // 아이콘 주변 여백
-//                        .foregroundColor(.black)
-//                        .overlay(
-//                            RoundedRectangle(cornerRadius: 50) // 충분히 큰 값이면 원처럼 둥글게
-//                                .stroke(Color.lineGray, lineWidth: 1) // 테두리 색과 두께
-//                        )
-//                }
-//                
-//                // 현재 유저의 프로필 이미지 실제 이미지 불러와 지는 지  db에 값 올리고 확인
-//                AsyncImage(url: URL(string: userStore.users[otherUserId]?.photoUrl ?? "")) { image in
-//                    image.resizable()
-//                } placeholder: {
-//                    Circle().fill(Color.gray.opacity(0.3))
-//                }
-//                .frame(width: 45, height: 45)
-//                .clipShape(Circle())
-//                
-////                            Text("Chats")
-//                Text(userStore.users[otherUserId]?.name ?? "Unknown")
-//                    .font(.system(size: 18, weight: .bold, design: .default))
-//                
-//                Spacer()
-//                
-//                Image(systemName: "phone")
-//                        .resizable()               // 이미지 크기 조절 가능하게
-//                        .aspectRatio(contentMode: .fit)
-//                        .frame(width: 20, height: 20) // 원하는 크기로 설정
-//                        .foregroundColor(.iconGray)
-//                
-//                
-//                Button(action: {
-//                    // 점 세개 액션
-//                }) {
-//                    Image("3Dot")
-//                        .renderingMode(.template)        // 색 변경 가능하게
-//                        .frame(width: 20, height: 20)
-//                        .rotationEffect(.degrees(90)) // 90도 회전
-//                        .padding(12) // 아이콘 주변 여백
-//                        .foregroundColor(.iconGray)
-//                }
-//            }
-//            .padding(.horizontal)
-//            .padding(3)
-//            .padding(.vertical, 6)
-//            .padding(.bottom, 10)
-//            .background(Color.backgroundGray100) // <- F8F8F8 배경
+            HStack {
+                Button(action: {
+                    // 뒤로가기 액션
+                    dismiss()
+                }) {
+                    Image(systemName: "chevron.left")
+                        .frame(width: 20, height: 20)
+                        .padding(12) // 아이콘 주변 여백
+                        .foregroundColor(.black)
+                        .overlay(
+                            RoundedRectangle(cornerRadius: 50) // 충분히 큰 값이면 원처럼 둥글게
+                                .stroke(Color.lineGray, lineWidth: 1) // 테두리 색과 두께
+                        )
+                }
+                
+                // 현재 유저의 프로필 이미지 실제 이미지 불러와 지는 지  db에 값 올리고 확인
+                AsyncImage(url: URL(string: userStore.users[otherUserId]?.photoUrl ?? "")) { image in
+                    image.resizable()
+                } placeholder: {
+                    Circle().fill(Color.gray.opacity(0.3))
+                }
+                .frame(width: 45, height: 45)
+                .clipShape(Circle())
+                
+//                            Text("Chats")
+                Text(userStore.users[otherUserId]?.name ?? "Unknown")
+                    .font(.system(size: 18, weight: .bold, design: .default))
+                
+                Spacer()
+                
+                Image(systemName: "phone")
+                        .resizable()               // 이미지 크기 조절 가능하게
+                        .aspectRatio(contentMode: .fit)
+                        .frame(width: 20, height: 20) // 원하는 크기로 설정
+                        .foregroundColor(.iconGray)
+                
+                
+                Button(action: {
+                    // 점 세개 액션
+                }) {
+                    Image("3Dot")
+                        .renderingMode(.template)        // 색 변경 가능하게
+                        .frame(width: 20, height: 20)
+                        .rotationEffect(.degrees(90)) // 90도 회전
+                        .padding(12) // 아이콘 주변 여백
+                        .foregroundColor(.iconGray)
+                }
+            }
+            .padding(.horizontal)
+            .padding(3)
+            .padding(.vertical, 6)
+            .padding(.bottom, 10)
+            .background(Color.backgroundGray100) // <- F8F8F8 배경
 
 
             
@@ -257,13 +231,13 @@ struct ChatDetailView: View {
         .navigationBarBackButtonHidden(true)
         .onAppear {
             userStore.fetchUser(userId: otherUserId)
-            startListeningMessages()   //  리스너 시작
+            startListeningMessages()   // ✅ 리스너 시작
             
             // chat의 listingId로 리스팅 불러오기
 //            listingVM.fetchListing(by: chat.listingId)
         }
         .onDisappear {
-            stopListeningMessages()    //  리스너 해제
+            stopListeningMessages()    // ✅ 리스너 해제
         }
         
     }
@@ -335,16 +309,16 @@ struct ChatDetailView: View {
         guard !content.trimmingCharacters(in: .whitespaces).isEmpty || imageUrl != nil else { return }
         
         if let chatId = chat.id {
-            //  기존 채팅방 있으면 그대로 메시지 전송
+            // ✅ 기존 채팅방 있으면 그대로 메시지 전송
             saveMessage(chatId: chatId, text: content, imageUrl: imageUrl)
         } else {
-            //  채팅방 없으면 새로 생성 후 첫 메시지 전송
+            // ✅ 채팅방 없으면 새로 생성 후 첫 메시지 전송
             let chatRef = db.collection("chats").document()
             chat.id = chatRef.documentID   // @State라서 이제 업데이트 가능
 
             do {
                 try chatRef.setData(from: chat)
-                //  새 채팅방 만들자마자 리스너 시작
+                // ✅ 새 채팅방 만들자마자 리스너 시작
 //                startListeningMessages()
             } catch {
                 print("채팅방 생성 실패: \(error.localizedDescription)")
@@ -382,7 +356,7 @@ struct ChatDetailView: View {
                         ])
                     }
                 }
-            //  로컬에서도 바로 반영
+            // ✅ 로컬에서도 바로 반영
             DispatchQueue.main.async {
                 self.messages.append(newMessage)
             }
