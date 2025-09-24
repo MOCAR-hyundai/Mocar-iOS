@@ -46,7 +46,7 @@ final class FavoritesViewModel: ObservableObject {
     
     // 매물이 찜 상태인지 확인
     func isFavorite(_ listing: Listing) -> Bool {
-        favorites.contains(where: { $0.listingId == listing.id })
+       favorites.contains(where: { $0.listingId == listing.id })
     }
     
     // 찜/찜 해제 토글
