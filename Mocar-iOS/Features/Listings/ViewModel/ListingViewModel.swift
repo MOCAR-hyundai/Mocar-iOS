@@ -49,9 +49,11 @@ final class ListingDetailViewModel: ObservableObject {
         if detailData != nil, !forceReload { return }
             do {
                 let data = try await service.getListingDetail(id: id, allListings: listings)
+                print(" loadListing result listing:", data.listing.title, data.listing.sellerId)
+                print(" loadListing result seller:", data.seller?.name ?? "nil", data.seller?.photoUrl ?? "nil")
                 self.detailData = data
             } catch {
-                print("❌ fail to load listing: \(error)")
+                print(" fail to load listing: \(error)")
             }
     }
 

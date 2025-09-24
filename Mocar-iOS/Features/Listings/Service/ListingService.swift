@@ -80,8 +80,13 @@ final class ListingServiceImpl: ListingService {
         if let cachedUser = userStore.getUser(userId: found.sellerId) {
             seller = cachedUser
         } else {
-            //await userStore.fetchUser(userId: found.sellerId)
-            seller = userStore.getUser(userId: found.sellerId)
+            //seller = userStore.getUser(userId: found.sellerId)
+            do {
+                seller = try await userStore.fetchUser(userId: found.sellerId)
+                print("✅ seller fetched:", seller?.name ?? "nil", seller?.photoUrl ?? "nil")
+            } catch {
+                print("❌ Failed to fetch seller:", error.localizedDescription)
+            }
         }
         
         //값을 담을 변수
