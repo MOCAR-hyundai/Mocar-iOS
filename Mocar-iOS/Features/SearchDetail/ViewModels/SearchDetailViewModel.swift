@@ -430,6 +430,26 @@ final class SearchDetailViewModel: ObservableObject {
     
     // 필터 저장
     func saveCurrentFiltersAsRecent() {
+        // 필터가 전혀 선택되지 않았는지 확인
+        let isFilterEmpty =
+        selectedMaker == nil &&
+        selectedModel == nil &&
+        selectedTrims.isEmpty &&
+        carTypeOptions.allSatisfy { !$0.checked } &&
+        fuelOptions.allSatisfy { !$0.checked } &&
+        regionOptions.allSatisfy { !$0.checked } &&
+        minPrice == priceRange.lowerBound &&
+        maxPrice == priceRange.upperBound &&
+        minYear == yearRange.lowerBound &&
+        maxYear == yearRange.upperBound &&
+        minMileage == mileageRange.lowerBound &&
+        maxMileage == mileageRange.upperBound
+        
+        guard !isFilterEmpty else {
+            print("필터 없음 → 최근 검색 기록에 저장 안 함")
+            return
+        }
+        
         let firestoreFilter = RecentFilter(
             userId: Auth.auth().currentUser?.uid,
             brand: selectedMaker,
@@ -449,11 +469,10 @@ final class SearchDetailViewModel: ObservableObject {
         Task {
             do {
                 try await recentHistoryRepository.saveFilter(firestoreFilter)
-                applyFilterToListings() // 저장 후 목록 갱신
-                // 저장 후 Firestore에서 최신 목록 갱신
+                applyFilterToListings()
                 self.recentSearches = try await recentHistoryRepository.fetchFilters()
             } catch {
-                print("❌ 필터 저장/불러오기 실패:", error.localizedDescription)
+                print("필터 저장/불러오기 실패:", error.localizedDescription)
             }
         }
     }
@@ -744,7 +763,7 @@ final class SearchDetailViewModel: ObservableObject {
             do {
                 self.recentSearches = try await recentHistoryRepository.fetchFilters()
             } catch {
-                print("❌ 최근 필터 로드 실패:", error.localizedDescription)
+                print("최근 필터 로드 실패:", error.localizedDescription)
             }
         }
     }
