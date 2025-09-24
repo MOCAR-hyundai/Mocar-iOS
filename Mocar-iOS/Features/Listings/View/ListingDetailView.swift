@@ -41,7 +41,7 @@ struct ListingDetailView: View {
                     await viewModel.loadListing(id: listingId)
                 }
             }
-            buyButton
+        buyButton
                 .padding()
 //        }
 
@@ -163,18 +163,84 @@ struct ListingDetailView: View {
     }
     
     // MARK: - 하단 구매 문의 바
+//    private var buyButton: some View {
+//        HStack {
+//            if let currentUserId = Auth.auth().currentUser?.uid,
+//                let listing = viewModel.detailData?.listing{
+//                
+//            }else {
+//                
+//            }
+//            Button(action: { createOrFetchChat() }) {
+//                Text("구매 문의")
+//                    .foregroundStyle(.white)
+//                    .fontWeight(.bold)
+//            }
+//            .frame(maxWidth: .infinity, minHeight: 50)
+//            .background(
+//                RoundedRectangle(cornerRadius: 8).fill(Color.blue)
+//            )
+//            
+//            NavigationLink(
+//                destination: Group {
+//                    if let chat = selectedChat,
+//                       let currentUserId = Auth.auth().currentUser?.uid {
+//                        ChatDetailView(
+//                            chat: chat,
+//                            currentUserId: currentUserId,
+//                            userStore: userStore
+//                        )
+//                    } else {
+//                        EmptyView()
+//                    }
+//                },
+//                isActive: $isChatActive
+//            ) {
+//                EmptyView()
+//            }
+//            .hidden()
+//        }
+//        .padding(.vertical, 8) // 버튼 위/아래 여백
+//        .background(Color.backgroundGray100) // 버튼 바 배경 (스크롤과 구분)
+//    }
+    
+    // MARK: - 하단 구매/수정 버튼
     private var buyButton: some View {
         HStack {
-            Button(action: { createOrFetchChat() }) {
-                Text("구매 문의")
-                    .foregroundStyle(.white)
-                    .fontWeight(.bold)
+            if let currentUserId = Auth.auth().currentUser?.uid,
+               let listing = viewModel.detailData?.listing {
+                
+                if currentUserId == listing.sellerId {
+                    //  판매자일 때 → 수정하기 버튼
+                    NavigationLink(
+                        destination: ListingEditView(listing: listing) // 수정 화면으로 이동
+                    ) {
+                        Text("수정하기")
+                            .foregroundStyle(.white)
+                            .fontWeight(.bold)
+                            .frame(maxWidth: .infinity, minHeight: 50)
+                            .background(RoundedRectangle(cornerRadius: 8).fill(Color.blue))
+                    }
+                } else {
+                    //  구매자일 때 → 구매 문의 버튼
+                    Button {
+                        if Auth.auth().currentUser != nil {
+                            createOrFetchChat()
+                        } else {
+                            withAnimation { showLoginModal = true }
+                        }
+                    } label: {
+                        Text("구매 문의")
+                            .foregroundStyle(.white)
+                            .fontWeight(.bold)
+                            .frame(maxWidth: .infinity, minHeight: 50)
+                            .background(RoundedRectangle(cornerRadius: 8).fill(Color.blue))
+                    }
+                }
+                
             }
-            .frame(maxWidth: .infinity, minHeight: 50)
-            .background(
-                RoundedRectangle(cornerRadius: 8).fill(Color.blue)
-            )
             
+            //  NavigationLink for ChatDetailView
             NavigationLink(
                 destination: Group {
                     if let chat = selectedChat,
@@ -194,9 +260,10 @@ struct ListingDetailView: View {
             }
             .hidden()
         }
-        .padding(.vertical, 8) // 버튼 위/아래 여백
-        .background(Color.backgroundGray100) // 버튼 바 배경 (스크롤과 구분)
+        .padding(.vertical, 8)
+        .background(Color.backgroundGray100)
     }
+
     
     // MARK: - Subviews
     private func basicInfo(_ listing: Listing) -> some View {
