@@ -47,14 +47,29 @@ final class FavoritesViewModel: ObservableObject {
 //                }
 //            }
 //        }
+//        favoritesTask = Task {
+//            for await favorites in service.listenFavorites(userId: userId) {
+//                // 중복 호출 방지
+//                if self.favorites.map(\.id) != favorites.map(\.id) {
+//                    self.favorites = favorites
+//                    // 동시에 listing 데이터도 가져오기
+//                    do {
+//                        self.favoriteListings = try await service.getFavoriteListings(userId: userId)
+//                    } catch {
+//                        print("❌ Failed to fetch favorite listings: \(error)")
+//                    }
+//                }
+//            }
+//        }
+        
         favoritesTask = Task {
             for await favorites in service.listenFavorites(userId: userId) {
-                // 중복 호출 방지
-                if self.favorites.map(\.id) != favorites.map(\.id) {
+                // ✅ 단순 비교로 갱신 스킵 방지 (count/내용 바뀌면 무조건 반영)
+                if favorites.count != self.favorites.count || favorites.map(\.id) != self.favorites.map(\.id) {
                     self.favorites = favorites
-                    // 동시에 listing 데이터도 가져오기
                     do {
                         self.favoriteListings = try await service.getFavoriteListings(userId: userId)
+                        print("✅ UI 업데이트 - listings count: \(self.favoriteListings.count)")
                     } catch {
                         print("❌ Failed to fetch favorite listings: \(error)")
                     }

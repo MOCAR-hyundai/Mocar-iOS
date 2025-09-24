@@ -15,7 +15,7 @@ struct ProfileInfoView: View {
         if let seller = seller {
             print(" ProfileInfoView photoUrl:", seller.photoUrl)
         } else {
-            print("⚠️ seller is nil")
+            print("seller is nil")
         }
     }
     

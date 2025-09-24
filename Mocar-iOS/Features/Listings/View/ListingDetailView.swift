@@ -239,7 +239,7 @@ struct ListingDetailView: View {
                                 .foregroundStyle(.white)
                                 .fontWeight(.bold)
                                 .frame(maxWidth: .infinity, minHeight: 50)
-                                .background(RoundedRectangle(cornerRadius: 8).fill(Color.borderGray))
+                                .background(RoundedRectangle(cornerRadius: 8).fill(Color.lineGray))
                         }
                     }
                 } else {
