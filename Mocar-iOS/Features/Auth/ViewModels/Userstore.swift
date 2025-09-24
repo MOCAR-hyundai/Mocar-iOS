@@ -28,6 +28,25 @@ class UserStore: ObservableObject {
         }
     }
     
+    //async/await 버전 (서비스에서 사용)
+    func fetchUser(userId: String) async throws -> User {
+        if let cached = users[userId] {
+            return cached
+        }
+        
+        let snapshot = try await db.collection("users").document(userId).getDocument()
+        guard let user = try? snapshot.data(as: User.self) else {
+            throw NSError(domain: "UserStore", code: 0, userInfo: [NSLocalizedDescriptionKey: "User not found"])
+        }
+        
+        // 캐시에 저장
+        DispatchQueue.main.async {
+            self.users[userId] = user
+        }
+        
+        return user
+    }
+    
     func getUser(userId: String) -> User? {
         return users[userId]
     }

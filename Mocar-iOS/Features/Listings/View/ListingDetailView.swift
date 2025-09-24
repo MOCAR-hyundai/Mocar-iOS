@@ -16,6 +16,9 @@ struct ListingDetailView: View {
     @State private var navigateToLogin = false
     @State private var showLoginModal : Bool = false
     let listingId: String
+    @State private var showDeleteConfirm = false
+    @Environment(\.dismiss) private var dismiss
+
     
     init(service: ListingService, listingId: String) {
         _viewModel = StateObject(wrappedValue: ListingDetailViewModel(service: service))
@@ -28,12 +31,12 @@ struct ListingDetailView: View {
     @State private var isChatActive = false
     
     var body: some View {
-//        NavigationStack {
+        VStack {
             Group {
                 if let detailData = viewModel.detailData {
                     content(detailData: detailData)
                 } else {
-                    loadingView
+                    loadingView()
                 }
             }
             .task {
@@ -43,7 +46,7 @@ struct ListingDetailView: View {
             }
             buyButton
                 .padding()
-//        }
+        }
 
         .background(Color.backgroundGray100)
         .navigationBarHidden(true)
@@ -69,6 +72,27 @@ struct ListingDetailView: View {
                 .background(Color.clear) // 배경 투명
                 .transition(.opacity) // 부드럽게 등장
                 .animation(.easeInOut, value: showLoginModal)
+            }
+            if showDeleteConfirm {
+                Color.black.opacity(0.4).ignoresSafeArea()
+                ConfirmModalView(
+                    message: "정말 삭제하시겠습니까?",
+                    confirmTitle: "삭제",
+                    cancelTitle: "취소",
+                    onConfirm: {
+                        Task {
+                            await viewModel.deleteListing()
+                            showDeleteConfirm = false
+                            dismiss()   // 삭제 후 이전 화면으로
+                        }
+                    },
+                    onCancel: {
+                        showDeleteConfirm = false
+                    }
+                )
+                .background(Color.clear)
+                .transition(.opacity)
+                .animation(.easeInOut, value: showDeleteConfirm)
             }
         }
     }
@@ -112,7 +136,7 @@ struct ListingDetailView: View {
 
             
             
-            ScrollView {
+            ScrollView(showsIndicators: false) {
                 VStack {
                     // 차량 이미지 + 찜 버튼
                     ZStack(alignment: .topTrailing) {
@@ -150,31 +174,94 @@ struct ListingDetailView: View {
         }
     }
     
-    // MARK: - 로딩 뷰
-    private var loadingView: some View {
-        VStack {
-            ProgressView()
-            Text("불러오는 중...")
-                .foregroundColor(.gray)
-                .padding(.top, 8)
-        }
-        .frame(maxWidth: .infinity, maxHeight: .infinity)
-        .background(Color.backgroundGray100)
-    }
-    
     // MARK: - 하단 구매 문의 바
+//    private var buyButton: some View {
+//        HStack {
+//            if let currentUserId = Auth.auth().currentUser?.uid,
+//                let listing = viewModel.detailData?.listing{
+//                
+//            }else {
+//                
+//            }
+//            Button(action: { createOrFetchChat() }) {
+//                Text("구매 문의")
+//                    .foregroundStyle(.white)
+//                    .fontWeight(.bold)
+//            }
+//            .frame(maxWidth: .infinity, minHeight: 50)
+//            .background(
+//                RoundedRectangle(cornerRadius: 8).fill(Color.blue)
+//            )
+//            
+//            NavigationLink(
+//                destination: Group {
+//                    if let chat = selectedChat,
+//                       let currentUserId = Auth.auth().currentUser?.uid {
+//                        ChatDetailView(
+//                            chat: chat,
+//                            currentUserId: currentUserId,
+//                            userStore: userStore
+//                        )
+//                    } else {
+//                        EmptyView()
+//                    }
+//                },
+//                isActive: $isChatActive
+//            ) {
+//                EmptyView()
+//            }
+//            .hidden()
+//        }
+//        .padding(.vertical, 8) // 버튼 위/아래 여백
+//        .background(Color.backgroundGray100) // 버튼 바 배경 (스크롤과 구분)
+//    }
+    
+    // MARK: - 하단 구매/수정 버튼
     private var buyButton: some View {
         HStack {
-            Button(action: { createOrFetchChat() }) {
-                Text("구매 문의")
-                    .foregroundStyle(.white)
-                    .fontWeight(.bold)
+            if let currentUserId = Auth.auth().currentUser?.uid,
+               let listing = viewModel.detailData?.listing {
+                
+                if currentUserId == listing.sellerId {
+                    //  판매자일 때 → 수정하기 버튼
+                    NavigationLink(
+                        destination: ListingEditView(listing: listing, viewModel: viewModel)
+                    ) {
+                        Text("수정하기")
+                            .foregroundStyle(.white)
+                            .fontWeight(.bold)
+                            .frame(maxWidth: .infinity, minHeight: 50)
+                            .background(RoundedRectangle(cornerRadius: 8).fill(Color.blue))
+                        Button {
+                            showDeleteConfirm = true
+                        } label: {
+                            Text("삭제하기")
+                                .foregroundStyle(.white)
+                                .fontWeight(.bold)
+                                .frame(maxWidth: .infinity, minHeight: 50)
+                                .background(RoundedRectangle(cornerRadius: 8).fill(Color.lineGray))
+                        }
+                    }
+                } else {
+                    //  구매자일 때 → 구매 문의 버튼
+                    Button {
+                        if Auth.auth().currentUser != nil {
+                            createOrFetchChat()
+                        } else {
+                            withAnimation { showLoginModal = true }
+                        }
+                    } label: {
+                        Text("구매 문의")
+                            .foregroundStyle(.white)
+                            .fontWeight(.bold)
+                            .frame(maxWidth: .infinity, minHeight: 50)
+                            .background(RoundedRectangle(cornerRadius: 8).fill(Color.blue))
+                    }
+                }
+                
             }
-            .frame(maxWidth: .infinity, minHeight: 50)
-            .background(
-                RoundedRectangle(cornerRadius: 8).fill(Color.blue)
-            )
             
+            //  NavigationLink for ChatDetailView
             NavigationLink(
                 destination: Group {
                     if let chat = selectedChat,
@@ -194,25 +281,27 @@ struct ListingDetailView: View {
             }
             .hidden()
         }
-        .padding(.vertical, 8) // 버튼 위/아래 여백
-        .background(Color.backgroundGray100) // 버튼 바 배경 (스크롤과 구분)
+        //.padding(.vertical, 8)
+        .background(Color.backgroundGray100)
     }
+
     
     // MARK: - Subviews
     private func basicInfo(_ listing: Listing) -> some View {
         VStack(alignment: .leading) {
-            Text(listing.model)
+            Text(listing.title)
                 .frame(maxWidth: .infinity, alignment: .leading)
                 .padding(.leading, 8)
                 .font(.title3)
                 .fontWeight(.semibold)
             
-            Text("\(listing.year)년")
+            Text("\(String(listing.year))년")
                 .padding(.leading, 8)
                 .foregroundStyle(.gray)
             
             
             Text("\(NumberFormatter.koreanPriceString(from:listing.price))")
+            
                 .padding(.leading, 8)
                 .font(.title2)
                 .fontWeight(.bold)
@@ -228,7 +317,7 @@ struct ListingDetailView: View {
                 .fontWeight(.semibold)
             
             VStack(alignment: .leading, spacing: 10) {
-                InfoRow(label: "차량 번호", value: listing.plateNo ?? "번호 없음")
+                InfoRow(label: "차량 번호", value: listing.plateNo)
                 InfoRow(label: "연식", value: "\(listing.year)")
                 InfoRow(label: "변속기", value: listing.transmission ?? "-")
                 InfoRow(label: "차종", value: listing.carType)
@@ -271,6 +360,7 @@ struct ListingDetailView: View {
                     Text("시세 정보 없음")
                         .foregroundStyle(.gray)
                         .padding(.bottom, 15)
+                        .frame(maxWidth: .infinity, alignment: .center)
                 } else {
                     //  정상 데이터 출력
                     Text("시세구간")

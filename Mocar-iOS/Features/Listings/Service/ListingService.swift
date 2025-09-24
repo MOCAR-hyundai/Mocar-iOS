@@ -48,6 +48,9 @@ protocol ListingService {
     
     //차량 상태 업데이트
     func updateListingAndOrders(listingId: String, status: ListingStatus) async throws
+    
+    // 매물 삭제
+    func deleteListing(listingId: String, currentUserId: String) async throws
 }
 
 
@@ -77,8 +80,13 @@ final class ListingServiceImpl: ListingService {
         if let cachedUser = userStore.getUser(userId: found.sellerId) {
             seller = cachedUser
         } else {
-            //await userStore.fetchUser(userId: found.sellerId)
-            seller = userStore.getUser(userId: found.sellerId)
+            //seller = userStore.getUser(userId: found.sellerId)
+            do {
+                seller = try await userStore.fetchUser(userId: found.sellerId)
+                print("✅ seller fetched:", seller?.name ?? "nil", seller?.photoUrl ?? "nil")
+            } catch {
+                print("❌ Failed to fetch seller:", error.localizedDescription)
+            }
         }
         
         //값을 담을 변수
@@ -144,6 +152,10 @@ final class ListingServiceImpl: ListingService {
     
     func updateListingAndOrders(listingId: String, status: ListingStatus) async throws {
         try await repository.updateListingAndOrders(listingId: listingId, newStatus: status)
+    }
+    
+    func deleteListing(listingId: String, currentUserId: String) async throws {
+        try await repository.deleteListing(id: listingId, currentUserId: currentUserId)
     }
 }
 

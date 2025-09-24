@@ -10,6 +10,15 @@ import SwiftUI
 struct ProfileInfoView: View {
     let seller: User?
     
+    init(seller: User?) {
+        self.seller = seller
+        if let seller = seller {
+            print(" ProfileInfoView photoUrl:", seller.photoUrl)
+        } else {
+            print("seller is nil")
+        }
+    }
+    
     var body: some View {
         VStack{
             HStack(spacing: 12){
@@ -19,6 +28,7 @@ struct ProfileInfoView: View {
                         img.resizable()
                             .clipShape(Circle())
                             .scaledToFill()
+                        
                     } placeholder: {
                         Circle()
                             .fill(Color.gray.opacity(0.3))

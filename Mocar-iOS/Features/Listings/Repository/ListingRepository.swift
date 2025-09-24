@@ -131,4 +131,37 @@ class ListingRepository {
         return (listing, priceIndex)
         
     }
+    // 매물 삭제 (sellerId 검증 포함)
+        func deleteListing(id: String, currentUserId: String) async throws {
+            // 1. 문서 가져오기
+            let docRef = db.collection("listings").document(id)
+            let document = try await docRef.getDocument()
+            
+            guard let listing = try? document.data(as: Listing.self) else {
+                throw NSError(domain: "ListingRepository",
+                              code: 404,
+                              userInfo: [NSLocalizedDescriptionKey: "Listing not found"])
+            }
+            
+            // 2. 본인 소유 매물인지 확인
+            guard listing.sellerId == currentUserId else {
+                throw NSError(domain: "ListingRepository",
+                              code: 403,
+                              userInfo: [NSLocalizedDescriptionKey: "You are not allowed to delete this listing"])
+            }
+            
+            // 3. listings 컬렉션에서 삭제
+            try await docRef.delete()
+            print("삭제 완료: \(id)")
+            
+            // 4. favorites 컬렉션에서 해당 listingId 가진 문서 전부 삭제
+            let favoritesSnapshot = try await db.collection("favorites")
+                .whereField("listingId", isEqualTo: id)
+                .getDocuments()
+            
+            for favDoc in favoritesSnapshot.documents {
+                try await favDoc.reference.delete()
+                print("🗑 favorites에서 삭제된 listingId 제거: \(id)")
+            }
+        }
 }

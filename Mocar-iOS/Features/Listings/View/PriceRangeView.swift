@@ -144,12 +144,20 @@ struct PriceRangeView: View {
                     if let ticks = viewModel.detailData?.ticks {
                         HStack {
                             ForEach(ticks, id: \.self) { value in
-                                Text("\(Int(value / 1000).decimalString)")
+                                Text("\(Int(value / 10000).decimalString)")
                                     .font(.system(size: 12))
                                     .frame(maxWidth: .infinity, alignment: .center)
                             }
                         }
                         .frame(width: width)
+                        // 우측 하단 단위 텍스트
+                        HStack {
+                            Spacer()
+                            Text("단위: 만원")
+                                .font(.system(size: 12))
+                                .foregroundColor(Color.textGray200)
+                                .padding(.top, 5)
+                        }
                     }
                 } else {
                     // 데이터 없을 때
