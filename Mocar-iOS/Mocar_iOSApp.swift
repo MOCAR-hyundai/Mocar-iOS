@@ -11,7 +11,7 @@ import FirebaseCore
 @main
 struct Mocar_iOSApp: App {
     @StateObject var userSession = UserSession() // 로그인 상태 관리
-    
+    @State private var isLoading = true // ✅ 인트로 상태
 
     
     // 앱 시작 시 Firebase 초기화
@@ -20,9 +20,22 @@ struct Mocar_iOSApp: App {
     }
     var body: some Scene {
         WindowGroup {
-
-            BottomBar()
-                .environmentObject(userSession)
+            Group {
+                if isLoading {
+                    IntroView() // ✅ 로고만 보여주는 화면
+                } else {
+                    BottomBar()
+                        .environmentObject(userSession)
+                }
+            }
+            .onAppear {
+                Task {
+                    try await Task.sleep(nanoseconds: 1_500_000_000) // 1.5초
+                    isLoading = false
+                }
+            }
+//            BottomBar()
+//                .environmentObject(userSession)
         }
     }
 

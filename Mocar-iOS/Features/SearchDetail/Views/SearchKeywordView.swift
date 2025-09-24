@@ -152,9 +152,13 @@ struct SearchKeywordView: View {
     // MARK: - 검색창
     private var searchField: some View {
         HStack(spacing: 8) {
-            Image(systemName: "magnifyingglass")
-                .foregroundColor(.gray)
+//            Image(systemName: "magnifyingglass")
+//                .foregroundColor(.gray)
+            Image("Search")
+                .padding(.leading, 8)
             TextField("모델명을 입력하세요", text: $query)
+                .foregroundColor(.gray)
+                .padding(.leading, 8)
                 .textInputAutocapitalization(.never)
                 .autocorrectionDisabled(true)
                 .keyboardType(.default)
@@ -170,10 +174,12 @@ struct SearchKeywordView: View {
                 .buttonStyle(.plain)
             }
         }
-        .padding(10)
+//        .padding(10)
+        .padding()
+        .frame(height: 50)
         .background(
             RoundedRectangle(cornerRadius: 8)
-                .stroke(Color.black, lineWidth: 2)
+                .stroke(Color.gray, lineWidth: 1)
         )
     }
     
