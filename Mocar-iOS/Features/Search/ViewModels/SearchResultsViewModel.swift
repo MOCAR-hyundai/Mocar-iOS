@@ -11,7 +11,16 @@ import FirebaseFirestore
 @MainActor
 class SearchResultsViewModel: ObservableObject {
     @Published var listings: [Listing] = []
-    
+    @Published var currentMinPrice: Int?
+    @Published var currentMaxPrice: Int?
+    @Published var currentMinYear: Int?
+    @Published var currentMaxYear: Int?
+    @Published var currentMinMileage: Int?
+    @Published var currentMaxMileage: Int?
+    @Published var currentFuels: [String] = []
+    @Published var currentRegions: [String] = []
+    private var originalListings: [Listing] = [] // 원본 저장
+
     private let db = Firestore.firestore()
     
     // MARK: - 키워드 검색
@@ -105,9 +114,9 @@ class SearchResultsViewModel: ObservableObject {
                 
                 return true
             }
-            
             self.listings = fetched
-            
+            self.originalListings = fetched // 원본 저장
+
             // 디버깅
             print("===== 필터 결과 =====")
             print("브랜드:", filter.brand ?? "전체")
@@ -125,5 +134,40 @@ class SearchResultsViewModel: ObservableObject {
         } catch {
             print("필터 검색 실패:", error)
         }
+    }
+    
+    // MARK: - 앱 단 필터링 (현재 listings 기준)
+    func filterCurrentListings(minPrice: Int? = nil, maxPrice: Int? = nil,
+                               minYear: Int? = nil, maxYear: Int? = nil,
+                               minMileage: Int? = nil, maxMileage: Int? = nil,
+                               fuels: [String]? = nil, regions: [String]? = nil) {
+        func normalize(_ str: String?) -> String {
+            (str ?? "").trimmingCharacters(in: .whitespacesAndNewlines).lowercased()
+        }
+        
+        let minPriceInWon = minPrice.map { $0 * 10000 }
+        let maxPriceInWon = maxPrice.map { $0 * 10000 }
+        
+        listings = originalListings.filter { listing in
+            if let minP = minPriceInWon, listing.price < minP { return false }
+            if let maxP = maxPriceInWon, listing.price > maxP { return false }
+            if let minYear, listing.year < minYear { return false }
+            if let maxYear, listing.year > maxYear { return false }
+            if let minMileage, listing.mileage < minMileage { return false }
+            if let maxMileage, listing.mileage > maxMileage { return false }
+            if let fuels, !fuels.contains(where: { normalize($0) == normalize(listing.fuel) }) { return false }
+            if let regions, !regions.contains(where: { normalize($0) == normalize(listing.region) }) { return false }
+            return true
+        }
+        
+        // 현재 필터 값 상태 저장
+        currentMinPrice = minPrice
+        currentMaxPrice = maxPrice
+        currentMinYear = minYear
+        currentMaxYear = maxYear
+        currentMinMileage = minMileage
+        currentMaxMileage = maxMileage
+        currentFuels = fuels ?? []
+        currentRegions = regions ?? []
     }
 }

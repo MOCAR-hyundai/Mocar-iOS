@@ -28,7 +28,7 @@ struct ListingDetailView: View {
     @State private var isChatActive = false
     
     var body: some View {
-        NavigationStack {
+//        NavigationStack {
             Group {
                 if let detailData = viewModel.detailData {
                     content(detailData: detailData)
@@ -43,7 +43,8 @@ struct ListingDetailView: View {
             }
             buyButton
                 .padding()
-        }
+//        }
+
         .background(Color.backgroundGray100)
         .navigationBarHidden(true)
         .navigationBarBackButtonHidden(true)

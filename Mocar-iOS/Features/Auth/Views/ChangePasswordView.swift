@@ -31,94 +31,101 @@ struct ChangePasswordView: View {
     @Environment(\.dismiss) private var dismiss
     
     var body: some View {
-        VStack(alignment: .leading, spacing: 16) {
+        
+        ZStack {
+              // 전체 배경색
+            Color(Color.backgroundGray100)
+                  .ignoresSafeArea()
             
-            TopBar(style: .Mylistings(title: "비밀번호 변경"))
-                .padding(.bottom)
-                .background(Color.backgroundGray100)
-            
-            VStack(alignment: .leading, spacing: 16){
-                // 현재 비밀번호
-                Text("현재 비밀번호 입력")
-                    .font(.system(size: 14))
-                    .padding(.top, 10)
-                CustomSecureField(
-                    text: $currentPassword,
-                    isSecured: $isCurrentSecured,
-                    placeholder: "현재 비밀번호 입력",
-                    focusedField: $focusedField,
-                    fieldType: .currentPassword
-                )
+            VStack(alignment: .leading, spacing: 16) {
                 
-                // 새 비밀번호
-                Text("새 비밀번호 입력")
-                    .font(.system(size: 14))
-                    .padding(.top, 10)
-                CustomSecureField(
-                    text: $newPassword,
-                    isSecured: $isNewSecured,
-                    placeholder: "새 비밀번호 입력 (8자 이상)",
-                    focusedField: $focusedField,
-                    fieldType: .newPassword
-                )
+                TopBar(style: .Mylistings(title: "비밀번호 변경"))
+                    .padding(.bottom)
+                    .background(Color.backgroundGray100)
                 
-                // 새 비밀번호 확인
-                Text("새 비밀번호 확인")
-                    .font(.system(size: 14))
-                    .padding(.top, 10)
-                CustomSecureField(
-                    text: $confirmPassword,
-                    isSecured: $isConfirmSecured,
-                    placeholder: "새 비밀번호 확인",
-                    focusedField: $focusedField,
-                    fieldType: .confirmPassword
-                )
-                
-                if !errorMessage.isEmpty {
-                    Text(errorMessage)
-                        .foregroundColor(.red)
-                        .font(.footnote)
-                }
-                if !successMessage.isEmpty {
-                    Text(successMessage)
-                        .foregroundColor(.green)
-                        .font(.footnote)
-                }
-                
-                HStack() {
-                    Button(action: {
-                        // 취소 동작 (예: dismiss)
-                        dismiss()
-                    }) {
-                        Text("취소")
-                            .frame(maxWidth: .infinity)
-                            .padding(.vertical, 10)   // 높이 줄임 (기본 16 → 10)
-                            .padding(.horizontal, 8)  // 좌우는 살짝 유지
-                            .background(Color.gray.opacity(0.2))
-                            .foregroundColor(.white)
-                            .cornerRadius(8)
+                VStack(alignment: .leading, spacing: 7){
+                    // 현재 비밀번호
+                    Text("현재 비밀번호 입력")
+                        .font(.system(size: 14))
+                        .padding(.top, 20)
+                    CustomSecureField(
+                        text: $currentPassword,
+                        isSecured: $isCurrentSecured,
+                        placeholder: "현재 비밀번호 입력",
+                        focusedField: $focusedField,
+                        fieldType: .currentPassword
+                    )
+                    
+                    // 새 비밀번호
+                    Text("새 비밀번호 입력")
+                        .font(.system(size: 14))
+                        .padding(.top, 10)
+                    CustomSecureField(
+                        text: $newPassword,
+                        isSecured: $isNewSecured,
+                        placeholder: "새 비밀번호 입력 (8자 이상)",
+                        focusedField: $focusedField,
+                        fieldType: .newPassword
+                    )
+                    
+                    // 새 비밀번호 확인
+                    Text("새 비밀번호 확인")
+                        .font(.system(size: 14))
+                        .padding(.top, 10)
+                    CustomSecureField(
+                        text: $confirmPassword,
+                        isSecured: $isConfirmSecured,
+                        placeholder: "새 비밀번호 확인",
+                        focusedField: $focusedField,
+                        fieldType: .confirmPassword
+                    )
+                    
+                    if !errorMessage.isEmpty {
+                        Text(errorMessage)
+                            .foregroundColor(.red)
+                            .font(.footnote)
+                    }
+                    if !successMessage.isEmpty {
+                        Text(successMessage)
+                            .foregroundColor(.green)
+                            .font(.footnote)
                     }
                     
-                    Button(action: changePassword) {
-                        Text("확인")
-                            .frame(maxWidth: .infinity)
-                            .padding(.vertical, 10)   // 높이 줄임 (기본 16 → 10)
-                            .padding(.horizontal, 8)  // 좌우는 살짝 유지
-                            .background(Color.keyColorBlue)
-                            .foregroundColor(.white)
-                            .cornerRadius(8)
+                    HStack() {
+                        Button(action: {
+                            // 취소 동작 (예: dismiss)
+                            dismiss()
+                        }) {
+                            Text("취소")
+                                .frame(maxWidth: .infinity)
+                                .padding(.vertical, 14)   // 높이 줄임 (기본 16 → 10)
+                                .padding(.horizontal, 8)  // 좌우는 살짝 유지
+                                .background(Color.gray.opacity(0.2))
+                                .foregroundColor(.white)
+                                .cornerRadius(8)
+                        }
+                        
+                        Button(action: changePassword) {
+                            Text("확인")
+                                .frame(maxWidth: .infinity)
+                                .padding(.vertical, 14)   // 높이 줄임 (기본 16 → 10)
+                                .padding(.horizontal, 8)  // 좌우는 살짝 유지
+                                .background(Color.keyColorBlue)
+                                .foregroundColor(.white)
+                                .cornerRadius(8)
+                        }
                     }
+                    .padding(.top, 13)
+                    
+                    Spacer()
                 }
-                .padding(.top, 8)
+                .padding(50)
+                .padding(.top, 40)
                 
-                Spacer()
             }
-            .padding(50)
-            .padding(.top, 40)
-           
+            .background(Color.backgroundGray100)
+            
         }
-        .background(Color.backgroundGray100)
-        //.padding(.horizontal, 20)
     }
     
     private func changePassword() {
@@ -169,36 +176,6 @@ struct ChangePasswordView: View {
                     }
 
                 }
-            }
-        }
-    }
-}
-
-
-// 🔐 커스텀 SecureField (눈 아이콘 토글)
-struct SecureInputField: View {
-    var placeholder: String
-    @Binding var text: String
-    @Binding var isSecured: Bool
-    
-    var body: some View {
-        ZStack(alignment: .trailing) {
-            if isSecured {
-                SecureField(placeholder, text: $text)
-                    .padding(.vertical, 10)   // 🔽 높이 줄이기
-//                    .padding(.horizontal, 12) // 🔽 좌우는 조금 유지
-                    .background(RoundedRectangle(cornerRadius: 10).stroke(Color.gray, lineWidth: 1))
-            } else {
-                TextField(placeholder, text: $text)
-                    .padding(.vertical, 10)   // 🔽 높이 줄이기
-//                    .padding(.horizontal, 12) // 🔽 좌우는 조금 유지
-                    .background(RoundedRectangle(cornerRadius: 10).stroke(Color.gray, lineWidth: 1))
-            }
-            
-            Button(action: { isSecured.toggle() }) {
-                Image(systemName: isSecured ? "eye.slash" : "eye")
-                    .foregroundColor(.gray)
-                    .padding(.trailing, 12)
             }
         }
     }

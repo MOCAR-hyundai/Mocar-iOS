@@ -51,11 +51,12 @@ struct MyOrdersView: View {
                                     service: ListingServiceImpl(repository: ListingRepository(),
                                         userStore: UserStore()
                                     ),
+
                                     listingId: item.listing.id ?? ""
                                 )
                             ) {
                                 OrdersCardView(
-                                    order: item.order,            // ✅ Order도 같이 전달
+                                    order: item.order,            //  Order도 같이 전달
                                     listing: item.listing,
                                     isFavorite: favoritesViewModel.isFavorite(item.listing),
                                     onToggleFavorite: {

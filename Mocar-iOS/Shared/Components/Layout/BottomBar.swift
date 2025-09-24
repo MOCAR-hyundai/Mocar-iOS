@@ -35,7 +35,11 @@ struct BottomBar: View {
                 // 메인 콘텐츠
                 TabView(selection: $selectedTab) {
 
-                    HomeView().tag(0)
+//                    HomeView().tag(0)
+                    HomeView(onSearchTap: {
+                        lastTabBeforeSearch = selectedTab
+                        showSearchFull = true
+                    }).tag(0)
                     SellCarFlowView().tag(1)
 
                    // ChatListView에 currentUserId 전달
@@ -48,7 +52,11 @@ struct BottomBar: View {
                     if let _ = session.user {
                         MyPageView(selectedTab: $selectedTab).tag(4)
                     } else {
-                        HomeView().tag(4)
+//                        HomeView().tag(4)
+                        HomeView(onSearchTap: {
+                            lastTabBeforeSearch = selectedTab
+                            showSearchFull = true
+                        }).tag(4)
                     }
                    
                 }

@@ -9,7 +9,7 @@ import SwiftUI
 
 
 struct HomeView: View {
-    @StateObject private var homeViewModel: HomeViewModel
+//    @StateObject private var homeViewModel: HomeViewModel
     @EnvironmentObject var favoritesVM: FavoritesViewModel
     @StateObject private var userSession = UserSession()
     @State private var showLoginModal = false
@@ -19,15 +19,20 @@ struct HomeView: View {
     @State private var showSearch = false
     @State private var showFilter = false
     
-    init() {
-        let listingRepo = ListingRepository()
-        
-        _homeViewModel = StateObject(
-            wrappedValue: HomeViewModel(
-                service: HomeServiceImpl(listingRepository: listingRepo)
-            )
-        )
-    }
+//    init() {
+//        let listingRepo = ListingRepository()
+//        
+//        _homeViewModel = StateObject(
+//            wrappedValue: HomeViewModel(
+//                service: HomeServiceImpl(listingRepository: listingRepo)
+//            )
+//        )
+//    }
+    @StateObject private var homeViewModel = HomeViewModel(
+        service: HomeServiceImpl(listingRepository: ListingRepository())
+    )
+    
+    var onSearchTap: (() -> Void)? = nil
     
     var body: some View {
         NavigationStack {
@@ -50,7 +55,8 @@ struct HomeView: View {
                 HStack {
                     // 검색창
                     Button {
-                        showSearch = true
+//                        showSearch = true
+                        onSearchTap?()
                     } label: {
                         HStack {
                             Image("Search")
@@ -72,7 +78,8 @@ struct HomeView: View {
 
                     // 필터 버튼
                     Button {
-                        showFilter = true
+//                        showFilter = true
+                        onSearchTap?()
                     } label: {
                         Image("iconfilter")
                             .resizable()
