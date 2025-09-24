@@ -30,24 +30,14 @@ struct YearFilterView: View {
                         set: { newValue in
                             let intValue = Int(newValue.rounded())
                             minYear = min(max(intValue, yearRange.lowerBound), maxYear)
-                            
-                            if minYear == yearRange.lowerBound {
-                                minText = ""
-                            } else {
-                                minText = String(minYear)
-                            }
+                            minText = minYear == yearRange.lowerBound ? "" : "\(minYear)"
                         }),
                     upperValue: Binding(
                         get: { Double(maxYear) },
                         set: { newValue in
                             let intValue = Int(newValue.rounded())
                             maxYear = max(min(intValue, yearRange.upperBound), minYear)
-                            
-                            if maxYear == yearRange.upperBound {
-                                maxText = ""
-                            } else {
-                                maxText = String(maxYear)
-                            }
+                            maxText = maxYear == yearRange.upperBound ? "" : "\(maxYear)"
                         }),
                     range: Double(yearRange.lowerBound)...Double(yearRange.upperBound)
                 )
@@ -63,11 +53,7 @@ struct YearFilterView: View {
                     .background(RoundedRectangle(cornerRadius: 8).stroke(Color.gray))
                     .onChange(of: minText) { newValue, _ in
                         minText = newValue.filter { "0123456789".contains($0) }
-                        if let value = Int(minText) {
-                            minYear = min(max(value, yearRange.lowerBound), maxYear)
-                        } else {
-                            minYear = yearRange.lowerBound
-                        }
+                        minYear = Int(minText) ?? yearRange.lowerBound
                     }
                 
                 Text("년")
@@ -82,11 +68,7 @@ struct YearFilterView: View {
                     .background(RoundedRectangle(cornerRadius: 8).stroke(Color.gray))
                     .onChange(of: maxText) { newValue, _ in
                         maxText = newValue.filter { "0123456789".contains($0) }
-                        if let value = Int(maxText) {
-                            maxYear = max(min(value, yearRange.upperBound), minYear)
-                        } else {
-                            maxYear = yearRange.upperBound
-                        }
+                        maxYear = Int(maxText) ?? yearRange.upperBound
                     }
                 
                 Text("년")
@@ -94,8 +76,8 @@ struct YearFilterView: View {
         }
         .padding(.horizontal, 16)
         .onAppear {
-            minText = ""
-            maxText = ""
+            minText = minYear == yearRange.lowerBound ? "" : "\(minYear)"
+            maxText = maxYear == yearRange.upperBound ? "" : "\(maxYear)"
         }
         Spacer()
     }
