@@ -80,21 +80,25 @@ struct CateRangeSlider: View {
                 HStack {
                     UnitTextField(text: $lowerText, placeholder: lowerPlaceholder, unit: unit)
                         .frame(maxWidth: .infinity)
-                        .onChange(of: lowerText) { newValue in
-                            if let value = Double(newValue) {
+                        .onChange(of: lowerText) { newText in
+                            if let value = Double(newText) {
                                 lowerValue = min(max(minValue, value), upperValue)
+                            } else if newText.isEmpty {
+                                lowerValue = minValue
                             }
                         }
-
+                    
                     Spacer()
                     Text(" ~ ")
                     Spacer()
                     
                     UnitTextField(text: $upperText, placeholder: upperPlaceholder, unit: unit)
                         .frame(maxWidth: .infinity)
-                        .onChange(of: upperText) { newValue in
-                            if let value = Double(newValue) {
-                                upperValue = min(max(lowerValue, value), maxValue)
+                        .onChange(of: upperText) { newText in
+                            if let value = Double(newText) {
+                                upperValue = max(min(value, maxValue), lowerValue)
+                            } else if newText.isEmpty {
+                                upperValue = maxValue
                             }
                         }
                 }
@@ -163,6 +167,11 @@ struct CateRangeSlider: View {
                 }
             }
             .padding()
+            .onAppear {
+                    // 팝업 열릴 때 텍스트 초기화
+                    lowerText = (Int(lowerValue) == Int(minValue)) ? "" : String(Int(lowerValue))
+                    upperText = (Int(upperValue) == Int(maxValue)) ? "" : String(Int(upperValue))
+                }
         }
  }
 
