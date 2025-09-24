@@ -672,7 +672,7 @@ final class SearchDetailViewModel: ObservableObject {
             do {
                 self.recentKeywords = try await recentHistoryRepository.fetchKeywords()
             } catch {
-                print("❌ 최근 검색 로드 실패:", error.localizedDescription)
+                print("최근 검색 로드 실패:", error.localizedDescription)
             }
         }
     }
@@ -683,7 +683,7 @@ final class SearchDetailViewModel: ObservableObject {
                 try await recentHistoryRepository.saveKeyword(keyword)
                 self.recentKeywords = try await recentHistoryRepository.fetchKeywords()
             } catch {
-                print("❌ 키워드 저장 실패:", error.localizedDescription)
+                print("키워드 저장 실패:", error.localizedDescription)
             }
         }
     }
@@ -693,7 +693,7 @@ final class SearchDetailViewModel: ObservableObject {
             try await recentHistoryRepository.clearKeywords()
             self.recentKeywords = []
         } catch {
-            print("❌ 최근 키워드 전체 삭제 실패:", error.localizedDescription)
+            print("최근 키워드 전체 삭제 실패:", error.localizedDescription)
         }
     }
     
@@ -719,7 +719,7 @@ final class SearchDetailViewModel: ObservableObject {
                 // 저장 후 최신 필터 목록 갱신
                 self.recentSearches = try await recentHistoryRepository.fetchFilters()
             } catch {
-                print("❌ 필터 저장 실패:", error.localizedDescription)
+                print("필터 저장 실패:", error.localizedDescription)
             }
         }
     }
@@ -735,7 +735,7 @@ final class SearchDetailViewModel: ObservableObject {
                     self.recentSearches.removeAll { $0.id == filter.id }
                 }
             } catch {
-                print("❌ 필터 삭제 실패:", error.localizedDescription)
+                print("필터 삭제 실패:", error.localizedDescription)
             }
         }
     }
@@ -751,7 +751,7 @@ final class SearchDetailViewModel: ObservableObject {
                     self.recentSearches.removeAll()
                 }
             } catch {
-                print("❌ 전체 필터 삭제 실패:", error.localizedDescription)
+                print("전체 필터 삭제 실패:", error.localizedDescription)
             }
         }
     }

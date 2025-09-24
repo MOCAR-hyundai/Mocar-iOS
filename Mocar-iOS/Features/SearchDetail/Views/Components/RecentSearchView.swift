@@ -57,7 +57,7 @@ struct RecentSearchView: View {
                                     isPresented = false
                                 },
                                 onDelete: {
-                                        viewModel.removeFilter(filter)
+                                    viewModel.removeFilter(filter)
                                 }
                             )
                             .padding(.vertical, 8)
@@ -70,12 +70,17 @@ struct RecentSearchView: View {
             }
             
             // 닫기 버튼
-            Button("닫기") {
+            Button(action: {
                 isPresented = false
+            }) {
+                Text("닫기")
+                    .frame(maxWidth: .infinity, maxHeight: .infinity)
+                    .fontWeight(.bold)
+                    .foregroundColor(.black)
             }
-            .frame(maxWidth: .infinity)
             .frame(height: 50)
-            .background(Color(UIColor.systemGray6))
+            .background(Color.gray.opacity(0.2))
+            .contentShape(Rectangle())
             .cornerRadius(8)
             .padding()
         }
