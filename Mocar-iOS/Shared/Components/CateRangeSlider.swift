@@ -80,8 +80,12 @@ struct CateRangeSlider: View {
                 HStack {
                     UnitTextField(text: $lowerText, placeholder: lowerPlaceholder, unit: unit)
                         .frame(maxWidth: .infinity)
-                        .onChange(of: lowerValue) { newValue in
-                            lowerText = (Int(newValue) == Int(minValue)) ? "" : String(Int(newValue))
+                        .onChange(of: lowerText) { newText in
+                            if let value = Double(newText) {
+                                lowerValue = min(max(minValue, value), upperValue)
+                            } else if newText.isEmpty {
+                                lowerValue = minValue
+                            }
                         }
                     
                     Spacer()
@@ -90,8 +94,12 @@ struct CateRangeSlider: View {
                     
                     UnitTextField(text: $upperText, placeholder: upperPlaceholder, unit: unit)
                         .frame(maxWidth: .infinity)
-                        .onChange(of: upperValue) { newValue in
-                            upperText = (Int(newValue) == Int(maxValue)) ? "" : String(Int(newValue))
+                        .onChange(of: upperText) { newText in
+                            if let value = Double(newText) {
+                                upperValue = max(min(value, maxValue), lowerValue)
+                            } else if newText.isEmpty {
+                                upperValue = maxValue
+                            }
                         }
                 }
                 
