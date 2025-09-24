@@ -84,7 +84,7 @@ struct ListingEditView: View {
                                         .cornerRadius(12)
                                 }
                                 
-                                // ✅ 우측 하단 카메라 버튼
+                                // 우측 하단 카메라 버튼
                                 Button {
                                     showImagePicker = true
                                 } label: {

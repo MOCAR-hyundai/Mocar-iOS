@@ -48,6 +48,9 @@ protocol ListingService {
     
     //차량 상태 업데이트
     func updateListingAndOrders(listingId: String, status: ListingStatus) async throws
+    
+    // 매물 삭제
+    func deleteListing(listingId: String, currentUserId: String) async throws
 }
 
 
@@ -144,6 +147,10 @@ final class ListingServiceImpl: ListingService {
     
     func updateListingAndOrders(listingId: String, status: ListingStatus) async throws {
         try await repository.updateListingAndOrders(listingId: listingId, newStatus: status)
+    }
+    
+    func deleteListing(listingId: String, currentUserId: String) async throws {
+        try await repository.deleteListing(id: listingId, currentUserId: currentUserId)
     }
 }
 

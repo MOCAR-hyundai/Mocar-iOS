@@ -16,6 +16,9 @@ struct ListingDetailView: View {
     @State private var navigateToLogin = false
     @State private var showLoginModal : Bool = false
     let listingId: String
+    @State private var showDeleteConfirm = false
+    @Environment(\.dismiss) private var dismiss
+
     
     init(service: ListingService, listingId: String) {
         _viewModel = StateObject(wrappedValue: ListingDetailViewModel(service: service))
@@ -28,7 +31,7 @@ struct ListingDetailView: View {
     @State private var isChatActive = false
     
     var body: some View {
-//        NavigationStack {
+        VStack {
             Group {
                 if let detailData = viewModel.detailData {
                     content(detailData: detailData)
@@ -43,7 +46,7 @@ struct ListingDetailView: View {
             }
             buyButton
                 .padding()
-//        }
+        }
 
         .background(Color.backgroundGray100)
         .navigationBarHidden(true)
@@ -69,6 +72,27 @@ struct ListingDetailView: View {
                 .background(Color.clear) // 배경 투명
                 .transition(.opacity) // 부드럽게 등장
                 .animation(.easeInOut, value: showLoginModal)
+            }
+            if showDeleteConfirm {
+                Color.black.opacity(0.4).ignoresSafeArea()
+                ConfirmModalView(
+                    message: "정말 삭제하시겠습니까?",
+                    confirmTitle: "삭제",
+                    cancelTitle: "취소",
+                    onConfirm: {
+                        Task {
+                            await viewModel.deleteListing()
+                            showDeleteConfirm = false
+                            dismiss()   // 삭제 후 이전 화면으로
+                        }
+                    },
+                    onCancel: {
+                        showDeleteConfirm = false
+                    }
+                )
+                .background(Color.clear)
+                .transition(.opacity)
+                .animation(.easeInOut, value: showDeleteConfirm)
             }
         }
     }
@@ -208,6 +232,15 @@ struct ListingDetailView: View {
                             .fontWeight(.bold)
                             .frame(maxWidth: .infinity, minHeight: 50)
                             .background(RoundedRectangle(cornerRadius: 8).fill(Color.blue))
+                        Button {
+                            showDeleteConfirm = true
+                        } label: {
+                            Text("삭제하기")
+                                .foregroundStyle(.white)
+                                .fontWeight(.bold)
+                                .frame(maxWidth: .infinity, minHeight: 50)
+                                .background(RoundedRectangle(cornerRadius: 8).fill(Color.borderGray))
+                        }
                     }
                 } else {
                     //  구매자일 때 → 구매 문의 버튼
@@ -248,7 +281,7 @@ struct ListingDetailView: View {
             }
             .hidden()
         }
-        .padding(.vertical, 8)
+        //.padding(.vertical, 8)
         .background(Color.backgroundGray100)
     }
 
@@ -327,6 +360,7 @@ struct ListingDetailView: View {
                     Text("시세 정보 없음")
                         .foregroundStyle(.gray)
                         .padding(.bottom, 15)
+                        .frame(maxWidth: .infinity, alignment: .center)
                 } else {
                     //  정상 데이터 출력
                     Text("시세구간")
