@@ -55,27 +55,30 @@ struct HomeView: View {
                 // MARK: - 검색창 + 필터 버튼
                 HStack {
                     // 검색창
-                    Button {
-//                        showSearch = true
+//                    Button {
+////                        showSearch = true
+//                        onSearchTap?()
+//                    } label: {
+//                        HStack {
+//                            Image("Search")
+//                                .padding(.leading, 8)
+//
+//                            Text("Search")
+//                                .foregroundColor(.gray)
+//                                .padding(.leading, 8)
+//
+//                            Spacer()
+//                        }
+//                        .padding()
+//                        .frame(height: 50)
+//                        .background(
+//                            RoundedRectangle(cornerRadius: 8)
+//                                .stroke(Color.gray, lineWidth: 1)
+//                        )
+//                    }
+                    SearchBar(style: .button(text: "Search", action: {
                         onSearchTap?()
-                    } label: {
-                        HStack {
-                            Image("Search")
-                                .padding(.leading, 8)
-
-                            Text("Search")
-                                .foregroundColor(.gray)
-                                .padding(.leading, 8)
-
-                            Spacer()
-                        }
-                        .padding()
-                        .frame(height: 50)
-                        .background(
-                            RoundedRectangle(cornerRadius: 8)
-                                .stroke(Color.gray, lineWidth: 1)
-                        )
-                    }
+                    }))
 
                     // 필터 버튼
                     Button {
