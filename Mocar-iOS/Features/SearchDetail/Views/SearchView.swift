@@ -35,36 +35,10 @@ struct SearchView: View {
                                 .font(.title2)
                                 .foregroundColor(.black)
                         }
-                    
                     NavigationLink(value: SearchDestination.searchKeyword) {
-                        HStack {
-//                            Image(systemName: "magnifyingglass")
-//                                .foregroundColor(.gray)
-//                            Text("모델, 차량번호, 판매자를 검색해보세요")
-//                                .foregroundColor(.gray)
-//                            Spacer()
-                            Image("Search")
-                                .padding(.leading, 8)
-
-                            Text("모델, 차량번호, 판매자를 검색해보세요")
-                                .foregroundColor(.gray)
-                                .padding(.leading, 8)
-
-                            Spacer()
-                        }
-//                        .padding(10)
-//                        .background(
-//                            RoundedRectangle(cornerRadius: 8)
-//                                .stroke(Color.black, lineWidth: 2)
-//                        )
-                        .padding()
-                        .frame(height: 50)
-                        .background(
-                            RoundedRectangle(cornerRadius: 8)
-                                .stroke(Color.gray, lineWidth: 1)
-                        )
+                        SearchBar(style: .placeholder(text: "차량 모델을 검색해보세요"))
                     }
-                    .buttonStyle(PlainButtonStyle())
+                    .buttonStyle(.plain)
                 }
                 .padding(.top, 16)
                 .padding(.horizontal)

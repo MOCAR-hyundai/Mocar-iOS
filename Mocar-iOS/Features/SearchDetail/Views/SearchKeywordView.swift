@@ -51,7 +51,8 @@ struct SearchKeywordView: View {
                         .font(.title2)
                         .foregroundColor(.black)
                 }
-                searchField
+                
+                SearchBar(style: .textField(query: $query))
             }
             .padding(.top, 16)
             .padding(.horizontal)
