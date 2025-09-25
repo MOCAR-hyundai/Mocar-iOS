@@ -17,7 +17,7 @@ struct MyListingsView: View {
     
     @State private var selectedCategory: String? = nil
     
-    // ✅ 선택한 카테고리에 따라 listings 필터링
+    //  선택한 카테고리에 따라 listings 필터링
       var filteredListings: [Listing] {
           guard let selectedCategory = selectedCategory else {
               return vm.listings
@@ -88,7 +88,7 @@ struct MyListingsView: View {
                 ], spacing: 16) {
 
 //                    ForEach(vm.listings) { item in
-                    // ✅ 필터링된 배열 사용
+                    //  필터링된 배열 사용
                     ForEach(filteredListings) { item in
                         NavigationLink(
                             destination: ListingDetailView(
@@ -98,13 +98,31 @@ struct MyListingsView: View {
                                             listingId: item.id ?? ""
                             )
                         ) {
-                            MyListingsCardView(
-                                listing: item,
-                                isFavorite: favoritesViewModel.isFavorite(item),
-                                onToggleFavorite: {
-                                    Task { await favoritesViewModel.toggleFavorite(item) }
+                            ZStack {
+                                BaseListingCardView(
+                                    listing: item,
+                                    isFavorite: favoritesViewModel.isFavorite(item),
+                                    onToggleFavorite: {
+                                        Task { await favoritesViewModel.toggleFavorite(item) }
+                                    }
+                                ){
+                                    // 가격
+                                    Text(NumberFormatter.koreanPriceString(from: item.price))
+                                        .font(.system(size: 16, weight: .semibold))
+                                        .foregroundColor(.keyColorBlue)
                                 }
-                            )
+                                
+                                // 상태 오버레이
+                                switch item.status {
+                                case .reserved:
+                                    statusOverlay(text: "예약 중")
+                                case .soldOut:
+                                    statusOverlay(text: "판매 완료")
+                                default:
+                                    EmptyView()
+                                }
+                            }
+
                         }
                         .buttonStyle(PlainButtonStyle())
                     }
@@ -119,4 +137,17 @@ struct MyListingsView: View {
         }
         .background(Color.backgroundGray100)
     }
+    
+    // 오버레이 뷰 따로 분리
+      @ViewBuilder
+      private func statusOverlay(text: String) -> some View {
+          ZStack {
+              Color.black.opacity(0.5)
+                  .cornerRadius(12)
+              Text(text)
+                  .font(.system(size: 16, weight: .bold))
+                  .foregroundColor(.white)
+          }
+          .frame(maxWidth: .infinity, maxHeight: .infinity)
+      }
 }

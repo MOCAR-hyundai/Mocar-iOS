@@ -62,7 +62,7 @@ class MyPageViewModel: ObservableObject {
         if let imageData = image.jpegData(compressionQuality: 0.8) {
             storageRef.putData(imageData, metadata: nil) { _, error in
                 if let error = error {
-                    print("❌ 업로드 실패: \(error.localizedDescription)")
+                    print(" 업로드 실패: \(error.localizedDescription)")
                     completion(false)
                     return
                 }
@@ -73,7 +73,7 @@ class MyPageViewModel: ObservableObject {
                         ])
                         DispatchQueue.main.async {
                             self.photoURL = url.absoluteString
-                            completion(true)  // ✅ 성공
+                            completion(true)  //  성공
                         }
                     } else {
                         completion(false)

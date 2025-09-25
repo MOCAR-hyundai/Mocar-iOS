@@ -213,13 +213,18 @@ struct SearchResultsView: View {
                             service: ListingServiceImpl(repository: ListingRepository(),userStore: UserStore()),
                             listingId: listing.id ?? ""
                         )) {
-                            ListingCard(
+                            BaseListingCardView(
                                 listing: listing,
                                 isFavorite: favoritesViewModel.isFavorite(listing),
                                 onToggleFavorite: {
                                     Task { await favoritesViewModel.toggleFavorite(listing) }
                                 }
                             )
+                            {
+                                Text(NumberFormatter.koreanPriceString(from: listing.price))
+                                    .font(.system(size: 16, weight: .semibold))
+                                    .foregroundColor(.keyColorBlue)
+                            }
                             .frame(width: cardWidth)
                         }
                         .buttonStyle(PlainButtonStyle())
@@ -307,102 +312,7 @@ struct FilterButtonLabel: View {
         }
     }
 }
-struct ListingCard: View {
-    let listing: Listing
-    let isFavorite: Bool
-    let onToggleFavorite: () -> Void
-    
-    let cardWidth = (UIScreen.main.bounds.width - 12*3) / 2 // 좌우 패딩 12, 그리드 간격 12
 
-    var body: some View {
-        VStack(alignment: .leading, spacing: 4) {
-            
-            ZStack(alignment: .topTrailing) {
-                // 이미지 배경 통일
-                Color.cardBgGray // 배경색
-                    .frame(height: 124)
-                    .frame(maxWidth: .infinity)
-                
-                  // 실제 이미지
-                if let first = listing.images.first, let url = URL(string: first) {
-                    AsyncImage(url: url) { phase in
-                        switch phase {
-                        case .empty:
-                            ProgressView()
-                                .frame(width: cardWidth, height: 124)
-                        case .success(let image):
-                            image
-                                .resizable()
-                                .scaledToFill()    // 꽉 채우기
-                                .frame(width: cardWidth, height: 124)
-                                .frame(maxWidth: .infinity, alignment: .center)
-                                .clipped()         // 넘치는 부분 잘라냄
-                        case .failure:
-                            Image(systemName: "car.fill")
-                                .resizable()
-                                .scaledToFit()
-                                .frame(width: cardWidth, height: 124)
-                                .frame(maxWidth: .infinity, alignment: .center)
-                                .foregroundColor(.gray)
-                        @unknown default:
-                            EmptyView()
-                        }
-                    }
-                }
-                  
-                // 좋아요 버튼
-//                Button(action: {
-//                    favoritesViewModel.toggleFavorite(listing)
-//                }) {
-//                    Image(systemName: favoritesViewModel.isFavorite(listing) ? "heart.fill" : "heart")
-//                        .foregroundColor(favoritesViewModel.isFavorite(listing) ? .red : Color.keyColorDarkGray)
-//                        .padding(5)
-//                        .background(Color.clear)
-//                        .clipShape(Circle())
-//                        .padding(5)
-//                }
-                FavoriteButton(
-                    isFavorite: isFavorite,
-                    onToggle: onToggleFavorite
-                )
-            }
-            
-            // 차량 정보
-            VStack(alignment: .leading, spacing: 6) {
-                Text(listing.title)
-//                Text("23/02식(23년형) ・ 23,214km · 하이브리드(가솔린) ・ 경기")
-                    .font(.system(size: 13, weight: .semibold))
-                    .foregroundColor(.black)
-                    .lineLimit(2)
-                    .multilineTextAlignment(.leading) // 왼쪽 정렬
-                
-                Text("\(listing.year)년 · \(listing.mileage)km · \(listing.fuel) · \(listing.region)")
-//                Text("23/02식(23년형) ・ 23,214km · 하이브리드(가솔린) ・ 경기")
-                    .foregroundColor(.secondary)
-                    .font(.system(size: 11, weight: .regular))
-                    .lineLimit(2)          // 최대 2줄까지 허용
-                    .multilineTextAlignment(.leading) // 왼쪽 정렬
- 
-                
-                Text("\(listing.price)원")
-//                Text("1억 3,860만원")
-                    .font(.system(size: 16, weight: .semibold))
-                    .foregroundColor(Color.keyColorBlue)
-            }
-            .frame(height: 80)
-            .padding(.bottom, 6)
-            .padding(.horizontal, 6)
-            .padding(3)
-        }
-        .frame(height: 223)
-        .background(Color.white)
-        .cornerRadius(12)
-        .overlay(
-            RoundedRectangle(cornerRadius: 12)
-                .stroke(Color.lineGray, lineWidth: 1) // 회색 테두리, 두께 1
-        )
-    }
-}
 
 // MARK: - 상세 페이지
 struct SearchListingDetailView: View {

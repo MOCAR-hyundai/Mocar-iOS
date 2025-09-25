@@ -66,7 +66,7 @@ final class FavoriteRepository {
                 .whereField("userId", isEqualTo: userId)
                 .addSnapshotListener { snapshot, error in
                     if let error = error {
-                        print("❌ listenFavorites error: \(error)")
+                        print(" listenFavorites error: \(error)")
                         continuation.yield([])
                         return
                     }
@@ -76,7 +76,7 @@ final class FavoriteRepository {
                         return
                     }
                     
-                    // ✅ orphan 제거 및 유효 favorites만 yield
+                    //  orphan 제거 및 유효 favorites만 yield
                     Task.detached {
                         var validFavorites: [Favorite] = []
                         
@@ -90,13 +90,13 @@ final class FavoriteRepository {
                                     validFavorites.append(fav)
                                 } else {
                                     try? await doc.reference.delete()
-                                    print("🗑 orphan favorite 삭제됨: \(fav.listingId)")
+                                    print(" orphan favorite 삭제됨: \(fav.listingId)")
                                 }
                             }
                         }
                         
                         continuation.yield(validFavorites)
-                        print("✅ listenFavorites yield count: \(validFavorites.count)")
+                        print(" listenFavorites yield count: \(validFavorites.count)")
                     }
                 }
             
@@ -122,7 +122,7 @@ final class FavoriteRepository {
                 if listingDoc?.exists == true {
                     validFavorites.append(fav)
                 } else {
-                    try? await doc.reference.delete() // ❌ orphan 제거
+                    try? await doc.reference.delete() //  orphan 제거
                 }
             }
         }

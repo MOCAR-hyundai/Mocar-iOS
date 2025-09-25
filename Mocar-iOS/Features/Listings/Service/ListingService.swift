@@ -83,9 +83,9 @@ final class ListingServiceImpl: ListingService {
             //seller = userStore.getUser(userId: found.sellerId)
             do {
                 seller = try await userStore.fetchUser(userId: found.sellerId)
-                print("✅ seller fetched:", seller?.name ?? "nil", seller?.photoUrl ?? "nil")
+                print(" seller fetched:", seller?.name ?? "nil", seller?.photoUrl ?? "nil")
             } catch {
-                print("❌ Failed to fetch seller:", error.localizedDescription)
+                print(" Failed to fetch seller:", error.localizedDescription)
             }
         }
         

@@ -26,24 +26,6 @@ struct MyOrdersView: View {
                         GridItem(.flexible()),
                         GridItem(.flexible())
                     ], spacing: 16) {
-//                        ForEach(vm.myOrders, id: \.listing.id) { item in
-//                            NavigationLink(
-//                                destination: ListingDetailView(
-//                                    listingId: item.listing.id ?? "",
-//                                    favoritesViewModel: favoritesViewModel
-//                                )
-//                            ) {
-//                                OrdersCardView(
-//                                    order: item.order,
-//                                    listing: item.listing,
-//                                    isFavorite: favoritesViewModel.isFavorite(item.listing),
-//                                    onToggleFavorite: {
-//                                        favoritesViewModel.toggleFavorite(item.listing)
-//                                    }
-//                                )
-//                            }
-//                            .buttonStyle(PlainButtonStyle())
-//                        }
 
                         ForEach(vm.myOrders) { item in
                             NavigationLink(
