@@ -216,7 +216,7 @@ final class ListingDetailViewModel: ObservableObject {
                                 carType: listing.carType
                             ),
                             seller: self.detailData?.seller,
-                            prices: self.detailData?.prices ?? [],    // ✅ 추가
+                            prices: self.detailData?.prices ?? [],    //  추가
                             minPrice: self.detailData?.minPrice ?? 0,
                             maxPrice: self.detailData?.maxPrice ?? 0,
                             safeMin: self.detailData?.safeMin ?? 0,

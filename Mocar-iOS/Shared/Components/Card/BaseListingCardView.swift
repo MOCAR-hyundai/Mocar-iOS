@@ -7,16 +7,16 @@
 
 import SwiftUI
 
-struct VerticalListingCardView: View {
+struct BaseListingCardView<Content: View>: View {
     let listing: Listing
     let isFavorite: Bool
     let onToggleFavorite: () -> Void
+    let bottomContent: () -> Content  // 👈 하단 콘텐츠를 외부에서 주입
     
     var body: some View {
         VStack(alignment: .leading, spacing: 4) {
-            
             ZStack(alignment: .topTrailing) {
-                if let imageUrl = listing.images.first, let url = URL(string: imageUrl) {
+                if let url = URL(string: listing.images.first ?? "") {
                     AsyncImage(url: url) { phase in
                         switch phase {
                         case .empty:
@@ -45,11 +45,8 @@ struct VerticalListingCardView: View {
                         .frame(width: 60, height: 60) // 아이콘 크기 (작게)
                         .frame(width: 170, height: 125) // 이미지 영역 크기 강제
                 }
-                // 좋아요 버튼
-                FavoriteButton(
-                    isFavorite: isFavorite,
-                    onToggle: onToggleFavorite
-                )
+                
+                FavoriteButton(isFavorite: isFavorite, onToggle: onToggleFavorite)
             }
             
             VStack(alignment: .leading, spacing: 6) {
@@ -57,31 +54,31 @@ struct VerticalListingCardView: View {
                     .font(.system(size: 13, weight: .semibold))
                     .foregroundColor(.black)
                     .lineLimit(2)
-                    .multilineTextAlignment(.leading) // 왼쪽 정렬
+                    .fixedSize(horizontal: false, vertical: true)
                 
                 Text("\(String(listing.year))식 · \(listing.mileage) km · \(listing.fuel)")
                     .foregroundColor(.secondary)
                     .font(.system(size: 11, weight: .regular))
-                    .lineLimit(2)          // 최대 2줄까지 허용
+                    .lineLimit(1)          // 최대 2줄까지 허용
                     .multilineTextAlignment(.leading) // 왼쪽 정렬
- 
+                    .fixedSize(horizontal: false, vertical: true)
                 
-                Text("\(NumberFormatter.koreanPriceString(from: listing.price))")
-                    .font(.system(size: 16, weight: .semibold))
-                    .foregroundColor(Color.keyColorBlue)
+                //  하단 콘텐츠는 외부에서 주입
+                bottomContent()
             }
             .frame(height: 80)
             .padding(.bottom, 6)
             .padding(.horizontal, 6)
             .padding(3)
         }
-        .frame(height: 223)
+        .frame(width: 170, height: 223)
         .background(Color.white)
         .cornerRadius(12)
         .overlay(
             RoundedRectangle(cornerRadius: 12)
-                .stroke(Color.lineGray, lineWidth: 1) // 회색 테두리, 두께 1
+                .stroke(Color.lineGray, lineWidth: 1)
         )
     }
 }
+
 

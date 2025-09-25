@@ -657,7 +657,7 @@ struct MockData {
         Message(
             id: "msg_1",
             senderId: "user_1",
-            text: "안녕하세요 👋",
+            text: "안녕하세요 ",
             imageUrl: nil,
             createdAt: Date().addingTimeInterval(-120),
             readBy: ["user_1"]
@@ -665,7 +665,7 @@ struct MockData {
         Message(
             id: "msg_2",
             senderId: "user_2",
-            text: "네, 반갑습니다 😀",
+            text: "네, 반갑습니다 ",
             imageUrl: nil,
             createdAt: Date().addingTimeInterval(-60),
             readBy: ["user_1", "user_2"]

@@ -161,7 +161,7 @@ class ListingRepository {
             
             for favDoc in favoritesSnapshot.documents {
                 try await favDoc.reference.delete()
-                print("🗑 favorites에서 삭제된 listingId 제거: \(id)")
+                print(" favorites에서 삭제된 listingId 제거: \(id)")
             }
         }
 }

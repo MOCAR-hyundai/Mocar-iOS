@@ -92,7 +92,7 @@ class ChatListViewModel: ObservableObject {
                        let senderId = data["senderId"] as? String ?? ""
                        let readBy = data["readBy"] as? [String] ?? []
                        
-                       // ✅ 내가 보낸 건 제외 + 내가 아직 안 읽은 것만 카운트
+                       //  내가 보낸 건 제외 + 내가 아직 안 읽은 것만 카운트
                        if senderId != currentUserId && !readBy.contains(currentUserId) {
                            unreadCount += 1
                        }
@@ -103,7 +103,7 @@ class ChatListViewModel: ObservableObject {
                      }
                  }
 //                if let error = error {
-//                    print("❌ Failed to fetch messages for chat \(chatId): \(error)")
+//                    print(" Failed to fetch messages for chat \(chatId): \(error)")
 //                    return
 //                }
 //                
@@ -139,12 +139,12 @@ class ChatListViewModel: ObservableObject {
 //            .collection("messages")
 //            .addSnapshotListener { snapshot, error in
 //                if let error = error {
-//                    print("❌ Failed to fetch messages: \(error)")
+//                    print(" Failed to fetch messages: \(error)")
 //                    return
 //                }
 //                guard let docs = snapshot?.documents else { return }
 //
-//                // 🔥 내가 안 읽은 메시지만 필터링
+//                // 내가 안 읽은 메시지만 필터링
 //                let unreadMessages = docs.filter { doc in
 //                    let readBy = doc["readBy"] as? [String] ?? []
 //                    return !readBy.contains(currentUserId)
@@ -169,7 +169,7 @@ class ChatListViewModel: ObservableObject {
             .whereField("readBy", arrayContains: currentUserId) // 읽은 건 빼고
             .addSnapshotListener { snapshot, error in
                 if let error = error {
-                    print("❌ Failed to fetch unread messages: \(error)")
+                    print(" Failed to fetch unread messages: \(error)")
                     return
                 }
 

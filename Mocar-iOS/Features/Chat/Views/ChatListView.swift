@@ -46,7 +46,7 @@ struct ChatListView: View {
                     
                     Spacer()
                     
-                    // 🔍 버튼
+                    //  버튼
                    Button {
                        withAnimation {
                            showSearchBar.toggle()
@@ -170,7 +170,7 @@ struct ChatListView: View {
             .background(Color.backgroundGray100)
             .onAppear {                               // 나중에 살려야 한다!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
                 vm.fetchChats(for: currentUserId)
-                userStore.fetchUser(userId: currentUserId)  // 🔥 현재 로그인한 사용자 프로필도 불러오기
+                userStore.fetchUser(userId: currentUserId)  //  현재 로그인한 사용자 프로필도 불러오기
             }
         }
     }
@@ -221,10 +221,10 @@ struct ChatRow: View {
 //            }
 //            .background(Color.clear) // 배경 투명
 //            .padding(.trailing, 3)
-            // 🔥 상대방 ID
+            //  상대방 ID
             let otherUserId = (chat.buyerId == currentUserId) ? chat.sellerId : chat.buyerId
 
-            // 🔥 상대방 프로필
+            //  상대방 프로필
             if let user = userStore.users[otherUserId] {
                 AsyncImage(url: URL(string: user.photoUrl ?? "")) { image in
                     image.resizable()
@@ -326,7 +326,7 @@ func formattedDate(_ date: Date) -> String {
 // MARK: - 목업 프리뷰
 struct ChatListView_Previews: PreviewProvider {
     static var previews: some View {
-        // 1️⃣ ChatListViewModel 목업
+        //  ChatListViewModel 목업
         let vm = ChatListViewModel()
         vm.chats = [
             Chat(
@@ -354,7 +354,7 @@ struct ChatListView_Previews: PreviewProvider {
             "chat_002": 0
         ]
 
-        // 2️⃣ UserStore 목업
+        //  UserStore 목업
         let userStore = UserStore()
         userStore.users = [
             "user_001": User(
@@ -392,7 +392,7 @@ struct ChatListView_Previews: PreviewProvider {
             )
         ]
 
-        // 3️⃣ ChatListView에 주입
+        //  ChatListView에 주입
         return ChatListView(
             currentUserId: "user_001",
             vm: vm,

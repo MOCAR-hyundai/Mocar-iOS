@@ -205,7 +205,7 @@ struct MyPageView: View {
                 }
             }
             
-            // ✅ 로그아웃 확인 모달
+            //  로그아웃 확인 모달
             if showLogoutConfirm {
                 Color.black.opacity(0.4)
                     .ignoresSafeArea()

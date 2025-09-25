@@ -188,7 +188,7 @@ struct HomeView: View {
                                                 listingId: listing.id ?? ""
                                             )
                                         ) {
-                                            VerticalListingCardView(
+                                            BaseListingCardView(
                                                 listing: listing,
                                                 isFavorite: favoritesVM.isFavorite(listing),
                                                 onToggleFavorite: {
@@ -199,6 +199,11 @@ struct HomeView: View {
                                                     }
                                                 }
                                             )
+                                            {
+                                                Text(NumberFormatter.koreanPriceString(from: listing.price))
+                                                    .font(.system(size: 16, weight: .semibold))
+                                                    .foregroundColor(.keyColorBlue)
+                                            }
                                         }
                                         .buttonStyle(PlainButtonStyle())
                                     }
