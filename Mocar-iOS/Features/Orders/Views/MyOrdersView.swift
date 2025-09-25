@@ -58,7 +58,3 @@ struct MyOrdersView: View {
 //        }
     }
 }
-
-#Preview {
-//    MyOrdersView()
-}
