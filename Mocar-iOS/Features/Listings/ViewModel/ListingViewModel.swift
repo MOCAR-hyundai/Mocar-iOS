@@ -18,7 +18,7 @@ import FirebaseAuth
 //이 클래스의 모든 메서드와 프로퍼티 접근이 메인 스레드에서만 실행되도록 보장
 //네트워크/DB 작업은 백그라운드에서 실행되지만, UI 바인딩은 메인 스레드로 안전하게 전환
 @MainActor
-final class ListingDetailViewModel: ObservableObject {
+final class ListingViewModel: ObservableObject {
     // 전체 매물 (홈에서 받아오거나, 다른 곳에서 공유 가능)
     @Published var listings: [Listing] = []
     // 상세 분석 데이터 (서비스에서 한 번에 받아옴)
@@ -105,11 +105,16 @@ final class ListingDetailViewModel: ObservableObject {
    }
     
     //MARK: - 매물 상태 변경
-    func changeStatus(to status: ListingStatus) async {
-        guard let listingId = detailData?.listing.id else { return }
+    func changeStatus(to status: ListingStatus, buyerId: String) async {
+        guard let listing = detailData?.listing else { return }
         
         do {
-            try await service.updateListingAndOrders(listingId: listingId, status: status)
+            try await service.updateListingAndOrders(
+                listingId: listing.safeId,   // safeId로 보장
+                status: status,
+                sellerId: listing.sellerId,  // 판매자 ID는 listing에서
+                buyerId: buyerId             // 구매자 ID는 Chat에서 전달
+            )
             if let current = detailData {
                 self.detailData = current.withStatus(status) // UI 즉시 반영
             }

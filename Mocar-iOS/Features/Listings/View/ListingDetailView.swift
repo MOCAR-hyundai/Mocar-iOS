@@ -11,7 +11,7 @@ import FirebaseAuth
 
 
 struct ListingDetailView: View {
-    @StateObject private var viewModel: ListingDetailViewModel
+    @StateObject private var viewModel: ListingViewModel
     @EnvironmentObject var favoritesVM: FavoritesViewModel
     @State private var navigateToLogin = false
     @State private var showLoginModal : Bool = false
@@ -21,7 +21,7 @@ struct ListingDetailView: View {
 
     
     init(service: ListingService, listingId: String) {
-        _viewModel = StateObject(wrappedValue: ListingDetailViewModel(service: service))
+        _viewModel = StateObject(wrappedValue: ListingViewModel(service: service))
         self.listingId = listingId
     }
 
@@ -108,18 +108,28 @@ struct ListingDetailView: View {
             )
             .padding()
             .overlay(alignment: .trailing) {
-                HStack{  // 상태와 버튼 사이 간격
+                HStack {
                     if let currentUserId = Auth.auth().currentUser?.uid,
                        currentUserId == detailData.listing.sellerId {
                         Menu {
                             Button("판매중") {
-                                Task { await viewModel.changeStatus(to: .onSale) }
+                                Task {
+                                    await viewModel.changeStatus(to: .onSale, buyerId: "")
+                                }
                             }
                             Button("예약중") {
-                                Task { await viewModel.changeStatus(to: .reserved) }
+                                Task {
+                                    await viewModel.changeStatus(to: .reserved, buyerId: "")
+                                }
                             }
                             Button("판매완료") {
-                                Task { await viewModel.changeStatus(to: .soldOut) }
+                                if let chat = selectedChat {
+                                    Task {
+                                        await viewModel.changeStatus(to: .soldOut, buyerId: chat.buyerId)
+                                    }
+                                } else {
+                                    print("ERROR -- 구매자 정보 없음 (chat이 nil)")
+                                }
                             }
                         } label: {
                             Image(systemName: "ellipsis")
@@ -131,6 +141,7 @@ struct ListingDetailView: View {
                     }
                 }
             }
+
 
 
 
@@ -269,7 +280,8 @@ struct ListingDetailView: View {
                         ChatDetailView(
                             chat: chat,
                             currentUserId: currentUserId,
-                            userStore: userStore
+                            userStore: userStore,
+                            listingId: chat.listingId //2509
                         )
                     } else {
                         EmptyView()
@@ -393,8 +405,21 @@ struct ListingDetailView: View {
                     self.selectedChat = existingChat
                     self.isChatActive = true
                 } else {
+//                    let newChat = Chat(
+//                        id: nil,
+//                        buyerId: currentUserId,
+//                        sellerId: listing.sellerId,
+//                        listingId: listing.id ?? "",
+//                        lastMessage: nil,
+//                        listingTitle: listing.title,
+//                        lastAt: Date()
+//                    )
+//                    self.selectedChat = newChat
+//                    self.isChatActive = true
+                    // ✅ 새로운 채팅방 Firestore에 저장
+                    let chatRef = db.collection("chats").document()
                     let newChat = Chat(
-                        id: nil,
+                        id: chatRef.documentID,
                         buyerId: currentUserId,
                         sellerId: listing.sellerId,
                         listingId: listing.id ?? "",
@@ -402,10 +427,24 @@ struct ListingDetailView: View {
                         listingTitle: listing.title,
                         lastAt: Date()
                     )
-                    self.selectedChat = newChat
-                    self.isChatActive = true
+                    
+
+                    do {
+                        try chatRef.setData(from: newChat) { err in
+                            if let err = err {
+                                print("🔥 채팅방 생성 실패: \(err)")
+                            } else {
+                                print("✅ 채팅방 생성 성공: \(chatRef.documentID)")
+                                self.selectedChat = newChat
+                                self.isChatActive = true
+                            }
+                        }
+                    } catch {
+                        print("🔥 채팅방 인코딩 실패: \(error)")
+                    }
                 }
             }
+        
     }
 }
 

@@ -8,7 +8,6 @@
 import Foundation
 
 //Repository에서 데이터 가져오기 + 비지니스 로직(가공), ui와는 독립적
-
 struct ListingDetailData {
     let listing: Listing        // 단일 매물
     let seller: User?           // 판매자 정보 추가
@@ -47,7 +46,7 @@ protocol ListingService {
     func getListingDetail(id: String, allListings: [Listing]) async throws -> ListingDetailData
     
     //차량 상태 업데이트
-    func updateListingAndOrders(listingId: String, status: ListingStatus) async throws
+    func updateListingAndOrders(listingId: String,status: ListingStatus,sellerId: String,buyerId: String) async throws
     
     // 매물 삭제
     func deleteListing(listingId: String, currentUserId: String) async throws
@@ -150,9 +149,12 @@ final class ListingServiceImpl: ListingService {
         return (0...5).map { i in minPrice + Double(i) * step }
     }
     
-    func updateListingAndOrders(listingId: String, status: ListingStatus) async throws {
-        try await repository.updateListingAndOrders(listingId: listingId, newStatus: status)
+    func updateListingAndOrders(listingId: String,status: ListingStatus,sellerId: String,buyerId: String
+    ) async throws {
+        try await repository.updateListingAndOrders(listingId: listingId,newStatus: status,sellerId: sellerId,buyerId: buyerId
+        )
     }
+
     
     func deleteListing(listingId: String, currentUserId: String) async throws {
         try await repository.deleteListing(id: listingId, currentUserId: currentUserId)
