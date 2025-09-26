@@ -14,10 +14,13 @@ struct ChatDetailView: View {
     @State var chat: Chat   // let → @State 로 변경
     let currentUserId: String
     @ObservedObject var userStore: UserStore
+    let listingId: String
     
     
     @Environment(\.dismiss) private var dismiss
     
+    @State private var listing: Listing?  //2509
+    @State private var isSeller: Bool = false //2509
     @State private var messages: [Message] = []
     @State private var messageText: String = ""
     
@@ -34,12 +37,12 @@ struct ChatDetailView: View {
     }
     
     //  프리뷰용 init
-      init(chat: Chat, currentUserId: String, userStore: UserStore, previewMessages: [Message] = []) {
-          self.chat = chat
-          self.currentUserId = currentUserId
-          self.userStore = userStore
-          _messages = State(initialValue: previewMessages)
-      }
+//      init(chat: Chat, currentUserId: String, userStore: UserStore, previewMessages: [Message] = []) {
+//          self.chat = chat
+//          self.currentUserId = currentUserId
+//          self.userStore = userStore
+//          _messages = State(initialValue: previewMessages)
+//      }
     
     var body: some View {
         VStack {
@@ -67,6 +70,37 @@ struct ChatDetailView: View {
                             .font(.system(size: 18, weight: .bold))
 
                         Spacer()
+                
+                //2509
+                if isSeller, let listing = listing {
+                    Menu {
+                        Button("판매중") {
+                            Task { await updateListingStatus(.onSale, buyerId: "") }
+                        }
+                        Button("예약중") {
+                            Task { await updateListingStatus(.reserved, buyerId: "") }
+                        }
+                        Button("판매완료") {
+                            Task {
+                                await updateListingStatus(.soldOut, buyerId: chat.buyerId)
+                            }
+                        }
+                    } label: {
+                        HStack(spacing: 4) {
+                            Text(listing.status.displayText)
+                                .font(.system(size: 14))
+                                .foregroundColor(.black)
+                            Image(systemName: "chevron.down")
+                                .font(.system(size: 12))
+                                .foregroundColor(.gray)
+                        }
+                        .padding(6)
+                        .background(Color.white)
+                        .cornerRadius(6)
+                    }
+                }
+                
+                
                     }
                     .padding(6)
                     .background(Color.backgroundGray100)
@@ -265,7 +299,36 @@ struct ChatDetailView: View {
         .onDisappear {
             stopListeningMessages()    //  리스너 해제
         }
+        //2509
+        .task {
+            // listingId 기반으로 매물 불러오기
+            if let fetched = try? await ListingRepository().fetchListing(id: listingId) {
+                listing = fetched
+                isSeller = (fetched.sellerId == currentUserId)
+            }
+        }
+    }
+    
+    //MARK: - 상태 없데이트 함수 2509
+    private func updateListingStatus(_ newStatus: ListingStatus,buyerId: String) async {
+        guard let listing = listing else { return }
+        let repo = ListingRepository()
         
+        do {
+            let sellerId = listing.sellerId
+            try await repo.updateListingAndOrders(
+                listingId: listing.id ?? "",
+                newStatus: newStatus,
+                sellerId: sellerId,
+                buyerId: buyerId
+           )
+            print("판매자: \(sellerId), 구매자:\(buyerId)")
+            DispatchQueue.main.async {
+                self.listing = self.listing?.with(status: newStatus)
+            }
+        } catch {
+            print("상태 변경 실패: \(error.localizedDescription)")
+        }
     }
     
     // MARK: - 메시지 리스너

@@ -13,7 +13,7 @@ import FirebaseFirestore
 struct ListingEditView: View {
     @Environment(\.dismiss) private var dismiss
     
-    @ObservedObject var viewModel: ListingDetailViewModel
+    @ObservedObject var viewModel: ListingViewModel
     
     let listing: Listing
     
@@ -27,7 +27,7 @@ struct ListingEditView: View {
     
     @State private var showImagePicker = false
     
-    init(listing: Listing, viewModel: ListingDetailViewModel) {
+    init(listing: Listing, viewModel: ListingViewModel) {
             self.listing = listing
             self._viewModel = ObservedObject(initialValue: viewModel) // 여기 바꿔야 함
             self._images = State(initialValue: listing.images)

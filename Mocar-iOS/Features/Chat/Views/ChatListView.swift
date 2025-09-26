@@ -114,7 +114,8 @@ struct ChatListView: View {
                                 destination: ChatDetailView(
                                     chat: chat,
                                     currentUserId: currentUserId,
-                                    userStore: userStore
+                                    userStore: userStore,
+                                    listingId: chat.listingId
                                 )
                             ) {
                                 EmptyView()

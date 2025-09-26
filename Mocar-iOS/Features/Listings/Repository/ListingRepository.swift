@@ -66,8 +66,13 @@ class ListingRepository {
     func fetchListingsByBrand(brand: String) async throws -> [Listing] {
         do {
             let snapshot = try await db.collection("listings")
-                .whereField("brand", isEqualTo: brand)   // Firestore 필드: brand
+                .whereField("brand", isEqualTo: brand)
+                .whereField("status", in: [
+                    ListingStatus.onSale.rawValue,
+                    ListingStatus.reserved.rawValue
+                ])
                 .getDocuments()
+            
             return snapshot.documents.compactMap { doc in
                 try? doc.data(as: Listing.self)
             }
@@ -78,7 +83,7 @@ class ListingRepository {
     }
     
     //차량 상태 불러오기
-    func updateListingAndOrders(listingId: String, newStatus: ListingStatus) async throws {
+    func updateListingAndOrders(listingId: String, newStatus: ListingStatus, sellerId: String, buyerId: String) async throws {
         // 1) listings 상태 변경
         try await db.collection("listings")
             .document(listingId)
@@ -88,24 +93,70 @@ class ListingRepository {
         let snapshot = try await db.collection("orders")
             .whereField("listingId", isEqualTo: listingId)
             .getDocuments()
-
-        for doc in snapshot.documents {
-            var updateData: [String: Any] = [:]
-
-            if newStatus == .reserved {
-                updateData["status"] = OrderStatus.reserved.rawValue
-                updateData["reservedAt"] = ISO8601DateFormatter().string(from: Date())
-            } else if newStatus == .soldOut {
-                updateData["status"] = OrderStatus.sold.rawValue
-                updateData["soldAt"] = ISO8601DateFormatter().string(from: Date())
-            }
-
-            if !updateData.isEmpty {
+        
+        
+        if snapshot.isEmpty {
+            // Order 없으면 새로 생성
+            let orderId = UUID().uuidString
+            let orderData: [String: Any] = [
+                "orderId": orderId,
+                "listingId": listingId,
+                "sellerId": sellerId,
+                "buyerId": buyerId,
+                "status": newStatus.rawValue,
+                "reservedAt": newStatus == .reserved ? ISO8601DateFormatter().string(from: Date()) : NSNull(),
+                "soldAt": newStatus == .soldOut ? ISO8601DateFormatter().string(from: Date()) : NSNull()
+            ]
+            print("db 저장 판매자: \(sellerId), 구매자:\(buyerId)")
+            try await db.collection("orders").addDocument(data: orderData)
+        } else {
+            // 기존 Order 업데이트
+            for doc in snapshot.documents {
+                var updateData: [String: Any] = [
+                    "status": newStatus.rawValue,
+                    "sellerId": sellerId,
+                    "buyerId": buyerId
+                ]
+                switch newStatus {
+                case .reserved:
+                    updateData["reservedAt"] = ISO8601DateFormatter().string(from: Date())
+                case .soldOut:
+                    updateData["soldAt"] = ISO8601DateFormatter().string(from: Date())
+                case .onSale:
+                    updateData["reservedAt"] = FieldValue.delete()
+                    updateData["soldAt"] = FieldValue.delete()
+                case .draft:
+                    updateData["status"] = "draft"
+                }
                 try await db.collection("orders")
                     .document(doc.documentID)
                     .updateData(updateData)
             }
+            print("db 저장 판매자: \(sellerId), 구매자:\(buyerId)")
         }
+       
+
+//        for doc in snapshot.documents {
+//            var updateData: [String: Any] = ["status": newStatus.rawValue]
+//
+//            switch newStatus {
+//            case .reserved:
+//                updateData["reservedAt"] = ISO8601DateFormatter().string(from: Date())
+//            case .soldOut:
+//                updateData["soldAt"] = ISO8601DateFormatter().string(from: Date())
+//            case .onSale:
+//                // 판매중으로 되돌릴 때는 시간 필드는 null 처리
+//                updateData["reservedAt"] = FieldValue.delete()
+//                updateData["soldAt"] = FieldValue.delete()
+//            case .draft:
+//                // 초안 상태일 때는 orders에 반영하지 않거나 필요에 맞게 처리
+//                updateData["status"] = "draft"
+//            }
+//
+//            try await db.collection("orders")
+//                .document(doc.documentID)
+//                .updateData(updateData)
+//        }
     }
     
     //가격 범위 불러오기
